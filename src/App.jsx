@@ -42,70 +42,6 @@ const shiftTemplates = [
   { label: "Evening", start: "12:00", end: "20:00" },
 ];
 
-const demoUserId = "00000000-0000-4000-8000-000000000001";
-
-function buildDemoWorkspace() {
-  const name = "Alex Morgan";
-  const employee = { id: demoUserId, display_name: name, job_title: "Product Designer", role: "employee" };
-  const today = new Date();
-  const todayKey = dateKey(today);
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  const earlier = new Date(today);
-  earlier.setHours(Math.max(7, today.getHours() - 1), 0, 0, 0);
-  const periodStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-  const periodEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-  const tasks = [
-    { id: "demo-task-1", title: "Review homepage redesign concepts", description: "Review the updated screens before the design sync.", assignee_id: demoUserId, created_by: demoUserId, due_date: todayKey, priority: "high", status: "in_progress", created_at: earlier.toISOString() },
-    { id: "demo-task-2", title: "Share research notes with the team", description: "", assignee_id: demoUserId, created_by: demoUserId, due_date: todayKey, priority: "normal", status: "todo", created_at: earlier.toISOString() },
-    { id: "demo-task-3", title: "Prepare prototype for handoff", description: "", assignee_id: demoUserId, created_by: demoUserId, due_date: dateKey(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)), priority: "normal", status: "todo", created_at: earlier.toISOString() },
-  ];
-  const announcements = [
-    { id: "demo-announcement-1", title: "Design showcase this Friday", body: "Bring a work-in-progress to share with the team. We look forward to seeing what you’re building.", author: { display_name: "Maya Chen" }, created_at: earlier.toISOString() },
-    { id: "demo-announcement-2", title: "Benefits enrollment is open", body: "Review your options for next year before October 30.", author: { display_name: "People team" }, created_at: yesterday.toISOString() },
-    { id: "demo-announcement-3", title: "Welcome to the new studio", body: "Our updated team space is ready. Take a look around when you have a moment.", author: { display_name: "Jordan Lee" }, created_at: yesterday.toISOString() },
-  ];
-  const shifts = [];
-  const nextShiftDate = new Date(today);
-  nextShiftDate.setHours(9, 0, 0, 0);
-  while (shifts.length < 5) {
-    if (nextShiftDate.getDay() !== 0 && nextShiftDate.getDay() !== 6) {
-      const day = new Date(nextShiftDate);
-      const starts = new Date(day);
-      starts.setHours(shifts.length % 2 === 0 ? 9 : 8, 0, 0, 0);
-      const ends = new Date(starts);
-      ends.setHours(ends.getHours() + 8);
-      shifts.push({ id: `demo-shift-${shifts.length + 1}`, employee_id: demoUserId, starts_at: starts.toISOString(), ends_at: ends.toISOString(), location: shifts.length % 2 === 0 ? "Studio · Design team" : "Hybrid · Design team", employee });
-    }
-    nextShiftDate.setDate(nextShiftDate.getDate() + 1);
-  }
-  const historyStart = new Date(today);
-  historyStart.setDate(historyStart.getDate() - ((historyStart.getDay() + 6) % 7));
-  const timeEntries = [];
-  [0, 1, 2].forEach((offset, index) => {
-    const start = new Date(historyStart);
-    start.setDate(start.getDate() + offset);
-    start.setHours(9, 0, 0, 0);
-    const end = new Date(start);
-    end.setHours(17 + (index === 1 ? 1 : 0), index === 0 ? 0 : 30, 0, 0);
-    if (start < today) timeEntries.push({ id: `demo-time-${index}`, employee_id: demoUserId, clocked_in_at: start.toISOString(), clocked_out_at: end.toISOString() });
-  });
-  timeEntries.push({ id: "demo-time-open", employee_id: demoUserId, clocked_in_at: earlier.toISOString(), clocked_out_at: null });
-  return {
-    employee,
-    user: { id: demoUserId, email: "alex.morgan@example.com" },
-    data: {
-      employees: [employee], tasks, announcements, timeEntries, shifts,
-      leaveRequests: [], shiftRequests: [],
-      payslips: [{
-        id: "demo-payslip-1", employee_id: demoUserId,
-        period_start: dateKey(periodStart), period_end: dateKey(periodEnd),
-        gross_pay: 4800, deductions: 960, published_at: today.toISOString(),
-      }],
-    },
-  };
-}
-
 function getErrorMessage(error) {
   return error?.message || "Something went wrong. Please try again.";
 }
@@ -201,7 +137,7 @@ function ConfigScreen() {
   );
 }
 
-function AuthScreen({ onDemo }) {
+function AuthScreen() {
   const [mode, setMode] = useState("signin");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -260,7 +196,7 @@ function AuthScreen({ onDemo }) {
         <div className="auth-symbol"><BrandMark /></div>
         <p className="eyebrow">{mode === "signup" ? "Welcome to Legion" : "Your work, in good company"}</p>
         <h1>{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
-        <p className="body-copy">{mode === "signup" ? "Create your employee account with your company email." : "Sign in to your secure employee workspace."}</p>
+        <p className="body-copy">{mode === "signup" ? "Use an email address you can access to create your employee account." : "Sign in to your secure employee workspace."}</p>
         <form className="form-stack" onSubmit={submit}>
           {mode === "signup" && <label className="field"><span>Full name</span><input required autoComplete="name" value={name} onChange={event => setName(event.target.value)} placeholder="Your name" /></label>}
           <label className="field"><span>Work email</span><input required type="email" autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@company.com" /></label>
@@ -279,8 +215,7 @@ function AuthScreen({ onDemo }) {
             {mode === "signup" ? "Sign in" : "Create account"}
           </button>
         </p>
-        <div className="auth-demo"><span>Just looking around?</span><button className="outline-button full-button" type="button" onClick={onDemo}><Sparkles size={15} /> Preview sample workspace</button><small>Sample employee data · read-only · no sign-in required</small></div>
-        <p className="auth-footnote">Your organization controls account access. New accounts start with employee permissions.</p>
+        <p className="auth-footnote">New accounts start with employee permissions. Your company administrator can grant manager access.</p>
       </section>
       <footer className="auth-footer">LEGION WORKFORCE <span>·</span> PEOPLE OPERATIONS, IN SYNC</footer>
     </main>
@@ -320,8 +255,6 @@ function App() {
   const [now, setNow] = useState(Date.now());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
-  const [demoMode, setDemoMode] = useState(false);
-
   const isManager = profile && ["manager", "admin"].includes(profile.role);
   const visibleNavigation = isManager ? [...navigation, managerNavigation] : navigation;
   const today = dateKey(new Date(now));
@@ -369,7 +302,6 @@ function App() {
     });
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
-      if (nextSession) setDemoMode(false);
       setSession(nextSession);
       if (!nextSession) {
         setProfile(null);
@@ -384,7 +316,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!session?.user || demoMode) return;
+    if (!session?.user) return;
     let live = true;
     setLoading(true);
     loadWorkspace(session.user).finally(() => { if (live) setLoading(false); });
@@ -395,7 +327,7 @@ function App() {
       live = false;
       supabase.removeChannel(channel);
     };
-  }, [session?.user?.id, loadWorkspace, demoMode]);
+  }, [session?.user?.id, loadWorkspace]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -409,10 +341,6 @@ function App() {
   }, [toast]);
 
   const mutate = useCallback(async operation => {
-    if (demoMode) {
-      setToast("Sample preview only — connect Supabase to save changes.");
-      return null;
-    }
     setError("");
     try {
       const result = await operation();
@@ -423,7 +351,7 @@ function App() {
       setError(getErrorMessage(operationError));
       return null;
     }
-  }, [demoMode, loadWorkspace, session?.user]);
+  }, [loadWorkspace, session?.user]);
 
   const openEntry = data.timeEntries.find(entry => entry.employee_id === userId && !entry.clocked_out_at);
   const personalTasks = data.tasks.filter(task => task.assignee_id === userId);
@@ -599,30 +527,13 @@ function App() {
   }
 
   async function signOut() {
-    if (demoMode) {
-      setDemoMode(false);
-      setSession(null);
-      setProfile(null);
-      setData({ employees: [], tasks: [], announcements: [], timeEntries: [], shifts: [], leaveRequests: [], shiftRequests: [], payslips: [] });
-      setActiveView("overview");
-      return;
-    }
     const { error: signOutError } = await supabase.auth.signOut();
     if (signOutError) setError(getErrorMessage(signOutError));
   }
 
   if (!supabaseConfigured) return <ConfigScreen />;
-  if (loading && !demoMode) return <div className="full-loader"><Brand /><LoaderCircle className="spin" size={23} /><span>Connecting to your workspace…</span></div>;
-  if (!session && !demoMode) return <AuthScreen onDemo={() => {
-    const demo = buildDemoWorkspace();
-    setSession({ user: demo.user });
-    setProfile(demo.employee);
-    setData(demo.data);
-    setError("");
-    setDemoMode(true);
-    setLoading(false);
-    setActiveView("overview");
-  }} />;
+  if (loading) return <div className="full-loader"><Brand /><LoaderCircle className="spin" size={23} /><span>Connecting to your workspace…</span></div>;
+  if (!session) return <AuthScreen />;
   if (passwordRecovery) return <PasswordRecovery onComplete={() => { setPasswordRecovery(false); setToast("Your password has been updated."); }} />;
 
   const taskSections = isManager ? data.tasks : personalTasks;
@@ -655,8 +566,7 @@ function App() {
         </header>
         <div className="page-content">
           {error && <div className="error-banner" role="alert"><span>{error}</span>{session && <button className="retry-action" onClick={() => loadWorkspace(session.user)}>Retry</button>}<button onClick={() => setError("")} aria-label="Dismiss error"><X size={16} /></button></div>}
-          {demoMode && <div className="demo-banner"><Sparkles size={15} /><span><strong>Sample workspace preview</strong> — data is illustrative. Changes aren’t saved.</span><button onClick={() => { setDemoMode(false); setSession(null); setActiveView("overview"); }}>Exit preview</button></div>}
-          {dataLoading && !demoMode && <div className="sync-banner"><LoaderCircle className="spin" size={14} /> Syncing the latest workspace data…</div>}
+          {dataLoading && <div className="sync-banner"><LoaderCircle className="spin" size={14} /> Syncing the latest workspace data…</div>}
           {activeView === "overview" && <Overview
             name={firstName}
             tasks={visibleTasks}
