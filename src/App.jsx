@@ -19,7 +19,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { supabase, supabaseConfigured } from "./lib/supabase.js";
+
 
 const navigation = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -153,6 +153,19 @@ function AuthScreen() {
     setMessage("");
     try {
       if (mode === "signup") {
+        const strongPassword =
+  password.length >= 12 &&
+  /[a-z]/.test(password) &&
+  /[A-Z]/.test(password) &&
+  /[0-9]/.test(password) &&
+  /[!@#$%^&*()_+\-=\[\]{};':"\\|<>?,./`~]/.test(password);
+
+if (!strongPassword) {
+  setError(
+    "Use at least 12 characters, including uppercase and lowercase letters, a number and a symbol."
+  );
+  return;
+}
         const { data, error: authError } = await supabase.auth.signUp({
           email,
           password,
@@ -201,6 +214,20 @@ function AuthScreen() {
           {mode === "signup" && <label className="field"><span>Full name</span><input required autoComplete="name" value={name} onChange={event => setName(event.target.value)} placeholder="Your name" /></label>}
           <label className="field"><span>Work email</span><input required type="email" autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@company.com" /></label>
           <label className="field"><span>Password</span><input required type="password" minLength={8} autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={event => setPassword(event.target.value)} placeholder={mode === "signup" ? "At least 8 characters" : "Your password"} /></label>
+          {mode === "signup" && (
+  <p
+    id="signup-password-help"
+    style={{
+      margin: 0,
+      fontSize: 12,
+      lineHeight: 1.5,
+      color: "#b8c8de",
+    }}
+  >
+    Use 12 or more characters with uppercase and lowercase
+    letters, a number and a symbol, such as !, @ or #.
+  </p>
+)}
           {mode === "signin" && <button className="text-link forgot-link" type="button" onClick={resetPassword} disabled={busy}>Forgot your password?</button>}
           {error && <p className="form-error" role="alert">{error}</p>}
           {message && <p className="form-success" role="status">{message}</p>}
@@ -256,7 +283,7 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
   const isManager = profile && ["manager", "admin"].includes(profile.role);
-  const visibleNavigation = isManager ? [...navigation, managerNavigation] : navigation;
+  const visibleNavigation = (isManager ? [...navigation, managerNavigation] : navigation).filter(item => item.id !== "insights" || isManager);
   const today = dateKey(new Date(now));
   const userId = session?.user?.id;
 
@@ -365,7 +392,7 @@ function App() {
   const todaySeconds = data.timeEntries
     .filter(entry => entry.employee_id === userId && entry.clocked_out_at && dateKey(new Date(entry.clocked_in_at)) === today)
     .reduce((sum, entry) => sum + Math.max(0, Math.floor((new Date(entry.clocked_out_at).getTime() - new Date(entry.clocked_in_at).getTime()) / 1000)), 0);
-  const employeeShifts = data.shifts.filter(shift => shift.employee_id === userId && new Date(shift.ends_at) >= new Date(today));
+  const employeeShifts = data.shifts.filter(shift =>shift.employee_id === userId &&new Date(shift.ends_at) > new Date());
   const myLeaveRequests = data.leaveRequests.filter(request => request.employee_id === userId);
   const myShiftRequests = data.shiftRequests.filter(request => request.employee_id === userId);
   const pendingCount = myLeaveRequests.filter(request => request.status === "pending").length;
@@ -408,7 +435,43 @@ function App() {
     }));
     if (result) { form.reset(); setToast("Your update has been shared with the team."); }
   }
+async function editAnnouncement(announcement, values) {
+  const title = values.title.trim();
+  const body = values.body.trim();
 
+  if (!title || !body) {
+    setError("Enter a headline and message.");
+    return null;
+  }
+
+  const result = await mutate(() => supabase
+    .from("announcements")
+    .update({ title, body })
+    .eq("id", announcement.id)
+    .eq("title", announcement.title)
+    .eq("body", announcement.body)
+    .select("id")
+    .single());
+
+  if (result) setToast("Notice updated.");
+  return result;
+}
+
+async function deleteAnnouncement(announcement) {
+  if (!window.confirm("Delete this company notice?")) return null;
+
+  const result = await mutate(() => supabase
+    .from("announcements")
+    .delete()
+    .eq("id", announcement.id)
+    .eq("title", announcement.title)
+    .eq("body", announcement.body)
+    .select("id")
+    .single());
+
+  if (result) setToast("Notice deleted.");
+  return result;
+}
   async function submitLeave(event) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -510,7 +573,7 @@ function App() {
     pdf.text(`Employee: ${employee?.display_name || "Employee"}`, 20, 69);
     pdf.text(`Pay period: ${formatDateRange(payslip.period_start, payslip.period_end)}`, 20, 78);
     pdf.line(20, 87, 190, 87);
-    const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+    const currency = new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" });
     pdf.text("Gross pay", 20, 102);
     pdf.text(currency.format(payslip.gross_pay), 190, 102, { align: "right" });
     pdf.text("Deductions", 20, 112);
@@ -527,9 +590,22 @@ function App() {
   }
 
   async function signOut() {
-    const { error: signOutError } = await supabase.auth.signOut();
-    if (signOutError) setError(getErrorMessage(signOutError));
+  try {
+    await disableDeviceNotifications(userId);
+  } catch {
+    console.warn("Device notification cleanup could not be completed.");
   }
+
+  try {
+    const { error: signOutError } = await withTimeout(() =>
+      supabase.auth.signOut({ scope: "local" })
+    );
+
+    if (signOutError) throw signOutError;
+  } catch (signOutError) {
+    setError(getErrorMessage(signOutError));
+  }
+}
 
   if (!supabaseConfigured) return <ConfigScreen />;
   if (loading) return <div className="full-loader"><Brand /><LoaderCircle className="spin" size={23} /><span>Connecting to your workspace…</span></div>;
@@ -565,6 +641,18 @@ function App() {
           <div className="topbar-right"><span className="date-chip"><CalendarDays size={15} />{formatDate(new Date(now), { weekday: "short", month: "short", day: "numeric" })}</span><div className="top-avatar">{initials(displayName)}</div></div>
         </header>
         <div className="page-content">
+          <div className="page-navigation">
+  <button
+      type="button"
+      className="page-back-button"
+      onClick={goBack}
+      disabled={pageHistory.current.length === 0}
+      aria-label="Go back to the previous page"
+  >
+    <ArrowLeft size={18} />
+    <span>Back</span>
+  </button>
+</div>
           {error && <div className="error-banner" role="alert"><span>{error}</span>{session && <button className="retry-action" onClick={() => loadWorkspace(session.user)}>Retry</button>}<button onClick={() => setError("")} aria-label="Dismiss error"><X size={16} /></button></div>}
           {dataLoading && <div className="sync-banner"><LoaderCircle className="spin" size={14} /> Syncing the latest workspace data…</div>}
           {activeView === "overview" && <Overview
@@ -652,6 +740,9 @@ function TaskRow({ task, employee, onChange, managerMode = false }) {
   const statusLabel = task.status === "done" ? "Done" : task.status === "in_progress" ? "In progress" : "To do";
   return <div className={`task-row${task.status === "done" ? " task-done" : ""}`}>
     <button className={`task-status-icon status-${task.status}`} aria-label={`Set ${task.title} status`} onClick={() => onChange(task, task.status === "done" ? "todo" : "done")}>{task.status === "done" ? <Check size={13} /> : task.status === "in_progress" ? <span className="status-dot" /> : null}</button>
+    {task.assignee_id && (
+  <EmployeeAvatar employeeId={task.assignee_id} />
+)}
     <div className="task-copy"><strong>{task.title}</strong><span>{task.due_date ? `Due ${formatDate(task.due_date)}` : "No due date"}{managerMode && employee ? ` · ${employee.display_name}` : ""}</span></div>
     {managerMode && <span className={`priority-pill${task.priority === "high" ? " priority-high" : ""}`}>{task.priority}</span>}
     {!managerMode && <label className="task-select"><span className="sr-only">Task status</span><select aria-label={`Progress for ${task.title}`} value={task.status} onChange={event => onChange(task, event.target.value)}><option value="todo">To do</option><option value="in_progress">In progress</option><option value="done">Done</option></select><span>{statusLabel}</span></label>}
@@ -675,13 +766,111 @@ function WeeklyHours({ entries = [] }) {
   return <div className="week-chart">{dayEntries.map(day => <div className={`week-day${dateKey(day.date) === today ? " today" : ""}`} key={dateKey(day.date)}><span>{new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(day.date).toUpperCase()}</span><div className="week-day-track"><i style={{ height: `${Math.min(100, day.seconds / max * 100)}%` }} /></div><strong>{day.seconds ? `${Math.floor(day.seconds / 3600)}h ${Math.floor(day.seconds % 3600 / 60)}m` : "—"}</strong></div>)}</div>;
 }
 
-function AnnouncementRow({ announcement }) {
-  return <article className="announcement-row"><span className="announcement-icon"><Megaphone size={15} /></span><div><strong>{announcement.title}</strong><p>{announcement.body}</p><time>{announcement.author?.display_name || "Company team"} · {formatDate(announcement.created_at, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time></div></article>;
+function AnnouncementRow({ announcement, onEdit, onDelete }) {
+  const [editing, setEditing] = useState(false);
+
+  async function save(event) {
+    event.preventDefault();
+    const values = new FormData(event.currentTarget);
+
+    const result = await onEdit(announcement, {
+      title: String(values.get("title") || ""),
+      body: String(values.get("body") || ""),
+    });
+
+    if (result) setEditing(false);
+  }
+
+  return (
+    <article className="announcement-row">
+      <EmployeeAvatar
+  employeeId={announcement.author_id}
+  name="Company team"
+/>
+
+      <div style={{ flex: 1 }}>
+        {editing ? (
+          <form className="form-stack" onSubmit={save}>
+            <label className="field">
+              <span>Headline</span>
+              <input
+                name="title"
+                required
+                maxLength={120}
+                defaultValue={announcement.title}
+              />
+            </label>
+
+            <label className="field">
+              <span>Message</span>
+              <textarea
+                name="body"
+                required
+                maxLength={2000}
+                defaultValue={announcement.body}
+              />
+            </label>
+
+            <div className="request-actions">
+              <button type="submit" className="primary-button">
+                Save changes
+              </button>
+              <button
+                type="button"
+                className="outline-button"
+                onClick={() => setEditing(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <strong>{announcement.title}</strong>
+            <p>{announcement.body}</p>
+            <time>
+              {announcement.author?.display_name || "Company team"} ·{" "}
+              {formatDate(announcement.created_at, {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </time>
+
+            {(onEdit || onDelete) && (
+              <div className="request-actions" style={{ marginTop: 12 }}>
+                {onEdit && (
+                  <button
+                    type="button"
+                    className="outline-button small-outline"
+                    onClick={() => setEditing(true)}
+                  >
+                    Edit
+                  </button>
+                )}
+
+                {onDelete && (
+                  <button
+                    type="button"
+                    className="decline-button"
+                    onClick={() => onDelete(announcement)}
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </article>
+  );
 }
 
 function PayslipPreview({ payslip, onDownload }) {
   const net = Number(payslip.gross_pay) - Number(payslip.deductions);
-  return <div className="payslip-preview"><span className="muted-label">TAKE-HOME PAY</span><strong className="pay-total">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(net)}</strong><span className="pay-period">{formatDateRange(payslip.period_start, payslip.period_end)}</span><div className="payslip-breakdown"><span>Gross pay <strong>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(payslip.gross_pay)}</strong></span><span>Deductions <strong>−{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(payslip.deductions)}</strong></span></div><button className="outline-button full-button" onClick={() => onDownload(payslip)}><ArrowDownToLine size={15} /> Download statement</button></div>;
+  return <div className="payslip-preview"><span className="muted-label">TAKE-HOME PAY</span><strong className="pay-total">{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(net)}</strong><span className="pay-period">{formatDateRange(payslip.period_start, payslip.period_end)}</span><div className="payslip-breakdown"><span>Gross pay <strong>{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(payslip.gross_pay)}</strong></span><span>Deductions <strong>−{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(payslip.deductions)}</strong></span></div><button className="outline-button full-button" onClick={() => onDownload(payslip)}><ArrowDownToLine size={15} /> Download statement</button></div>;
 }
 
 function EmptyState({ icon: Icon, title, text }) {
@@ -731,10 +920,76 @@ function LeaveView({ isManager, employeeId, requests, shiftRequests, shifts, emp
         </Card>
       </div>
       <div className="stack-column">
-        {!isManager && <Card title="Request a shift change" subtitle="Ask your manager to review a different shift time."><form className="form-grid" onSubmit={onShiftRequest}><Field label="Scheduled shift"><select name="shift" required defaultValue="">{myShifts.map(shift => <option key={shift.id} value={shift.id}>{formatDate(shift.starts_at)} · {formatTime(shift.starts_at)}–{formatTime(shift.ends_at)}</option>)}</select></Field><Field label="Requested shift"><select name="template">{shiftTemplates.map(shift => <option key={shift.label} value={shift.label}>{shift.label} · {new Date(`2000-01-01T${shift.start}:00`).toLocaleTimeString("en-US", { hour: "numeric" })}–{new Date(`2000-01-01T${shift.end}:00`).toLocaleTimeString("en-US", { hour: "numeric" })}</option>)}</select></Field><Field label="Reason"><textarea className="wide-field" name="reason" required maxLength={1000} placeholder="Help your manager understand the change." /></Field><button className="primary-button form-action" type="submit">Request shift change <ArrowRight size={15} /></button></form></Card>}
-        <Card title={isManager ? "Team shift schedule" : "Upcoming shifts"} subtitle={isManager ? "Published shifts across the team." : "Your published work schedule."} action={<span className="metric-chip">{shifts.length}</span>}>
-          {shifts.length ? <div className="shift-list">{shifts.map(shift => <ShiftRow key={shift.id} shift={shift} showEmployee={isManager} />)}</div> : <EmptyState icon={Clock3} title="No shifts scheduled" text={isManager ? "Publish a shift to get a schedule started." : "Your manager has not published shifts yet."} />}
-        </Card>
+        {!isManager && (
+  <Card
+    title="Request a shift change"
+    subtitle="Ask your manager to review a different shift time."
+  >
+    {!myShifts.length && (
+      <p className="muted-copy" role="status">
+        No current or upcoming shift is assigned to you.
+        Ask your manager to publish your shift first.
+      </p>
+    )}
+
+    <form className="form-grid" onSubmit={onShiftRequest}>
+      <Field label="Scheduled shift">
+        <select
+          name="shift"
+          required
+          defaultValue=""
+          disabled={!myShifts.length}
+        >
+          <option value="" disabled>
+            {myShifts.length
+              ? "Select your scheduled shift"
+              : "No assigned shifts"}
+          </option>
+
+          {myShifts.map(shift => (
+            <option key={shift.id} value={shift.id}>
+              {formatDate(shift.starts_at, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })} · {formatTime(shift.starts_at)}–{formatTime(shift.ends_at)}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label="Requested shift">
+        <select name="template" disabled={!myShifts.length}>
+          {shiftTemplates.map(shift => (
+            <option key={shift.label} value={shift.label}>
+              {shift.label} ·{" "}
+              {formatTime(`2000-01-01T${shift.start}:00`)}–
+              {formatTime(`2000-01-01T${shift.end}:00`)}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label="Reason">
+        <textarea
+          name="reason"
+          required
+          maxLength={1000}
+          disabled={!myShifts.length}
+          placeholder="Help your manager understand the change."
+        />
+      </Field>
+
+      <button
+        className="primary-button form-action"
+        type="submit"
+        disabled={!myShifts.length}
+      >
+        Request shift change <ArrowRight size={15} />
+      </button>
+    </form>
+  </Card>
+)}
         {!isManager && <Card title="My shift-change requests" subtitle="Requests are not applied until your manager approves them.">{relevantShiftRequests.length ? <div className="request-list">{relevantShiftRequests.map(request => <RequestRow key={request.id} title={formatDate(request.shift?.starts_at)} details={`${formatTime(request.requested_starts_at)} requested · ${request.reason}`} status={request.status} />)}</div> : <EmptyState icon={Clock3} title="No change requests" text="Your shift-change requests will appear here." />}</Card>}
         {isManager && <Card title="Shift-change requests" subtitle="Requests that need a decision.">{shiftRequests.length ? <div className="request-list">{shiftRequests.map(request => <RequestRow key={request.id} title={`${request.employee?.display_name || "Employee"} · ${formatDate(request.shift?.starts_at)}`} details={`${formatTime(request.requested_starts_at)} requested · ${request.reason}`} status={request.status} isManager={isManager} onReview={status => onReview("shift", request.id, status)} />)}</div> : <EmptyState icon={Clock3} title="No shift requests" text="Employee requests for shift changes will appear here." />}</Card>}
       </div>
@@ -764,9 +1019,9 @@ function PayslipsView({ isManager, payslips, employees, employeeId, onDownload, 
   }, {}), [payslips]);
   return <>
     <PageHeading eyebrow="PAY & BENEFITS" title={isManager ? "Payroll statements" : "Payslips"} description={isManager ? "Publish pay statements to employees’ private accounts." : "Your pay statements, available when you need them."} />
-    {isManager && <Card title="Publish a payslip" subtitle="The employer supplies the pay values. Legion does not calculate payroll or tax."><form className="form-grid" onSubmit={onCreate}><Field label="Employee"><select name="employee" required defaultValue=""><option value="" disabled>Select an employee</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.display_name}</option>)}</select></Field><Field label="Period starts"><input name="period_start" type="date" required /></Field><Field label="Period ends"><input name="period_end" type="date" required /></Field><Field label="Gross pay (USD)"><input name="gross" type="number" min="0" step="0.01" required /></Field><Field label="Deductions (USD)"><input name="deductions" type="number" min="0" step="0.01" defaultValue="0" required /></Field><button className="primary-button form-action" type="submit"><Plus size={15} /> Publish payslip</button></form></Card>}
+    {isManager && <Card title="Publish a payslip" subtitle="The employer supplies the pay values. Legion does not calculate payroll or tax."><form className="form-grid" onSubmit={onCreate}><Field label="Employee"><select name="employee" required defaultValue=""><option value="" disabled>Select an employee</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.display_name}</option>)}</select></Field><Field label="Period starts"><input name="period_start" type="date" required /></Field><Field label="Period ends"><input name="period_end" type="date" required /></Field><Field label="Gross pay (R)"><input name="gross" type="number" min="0" step="0.01" required /></Field><Field label="Deductions (R)"><input name="deductions" type="number" min="0" step="0.01" defaultValue="0" required /></Field><button className="primary-button form-action" type="submit"><Plus size={15} /> Publish payslip</button></form></Card>}
     {Object.keys(grouped).length ? Object.entries(grouped).sort(([a], [b]) => Number(b) - Number(a)).map(([year, yearSlips]) => <Card key={year} className="spaced-card" title={year} subtitle={`${yearSlips.length} pay ${yearSlips.length === 1 ? "statement" : "statements"}`}>
-      <div className="slip-list">{yearSlips.map(slip => { const person = employees.find(employee => employee.id === slip.employee_id); return <div className="slip-row" key={slip.id}><span className="slip-icon"><FileText size={17} /></span><span className="slip-description"><strong>{formatDate(slip.period_start, { month: "long", year: "numeric" })}</strong><small>{formatDateRange(slip.period_start, slip.period_end)}{isManager ? ` · ${person?.display_name || "Employee"}` : ""}</small></span><span className="slip-net">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(slip.gross_pay - slip.deductions)}</span><button className="outline-button small-outline" onClick={() => onDownload(slip)}><ArrowDownToLine size={14} /> PDF</button></div>; })}</div>
+      <div className="slip-list">{yearSlips.map(slip => { const person = employees.find(employee => employee.id === slip.employee_id); return <div className="slip-row" key={slip.id}><span className="slip-icon"><FileText size={17} /></span><span className="slip-description"><strong>{formatDate(slip.period_start, { month: "long", year: "numeric" })}</strong><small>{formatDateRange(slip.period_start, slip.period_end)}{isManager ? ` · ${person?.display_name || "Employee"}` : ""}</small></span><span className="slip-net">{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(slip.gross_pay - slip.deductions)}</span><button className="outline-button small-outline" onClick={() => onDownload(slip)}><ArrowDownToLine size={14} /> PDF</button></div>; })}</div>
     </Card>) : <Card className="spaced-card">{<EmptyState icon={FileText} title="No pay statements yet" text={isManager ? "Publish a statement above when payroll is ready." : "Your company has not published a pay statement."} />}</Card>}
   </>;
 }

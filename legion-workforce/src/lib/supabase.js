@@ -31,7 +31,20 @@ async function boundedFetch(input, init) {
   try { return await fetch(input, { ...init, signal: controller.signal }); }
   finally { clearTimeout(timer); inherited?.removeEventListener("abort", abort); }
 }
-export const supabase = supabaseConfigured ? createClient(url, key, {
-  auth: { autoRefreshToken: true, detectSessionInUrl: true, persistSession: true },
-  global: { fetch: boundedFetch },
-}) : null;
+const clientCache = globalThis.__legionSupabaseClients ??= new Map();
+const clientCacheKey = JSON.stringify([url, key]);
+
+if (supabaseConfigured && !clientCache.has(clientCacheKey)) {
+  clientCache.set(clientCacheKey, createClient(url, key, {
+    auth: {
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+      persistSession: true,
+    },
+    global: { fetch: boundedFetch },
+  }));
+}
+
+export const supabase = supabaseConfigured
+  ? clientCache.get(clientCacheKey)
+  : null;

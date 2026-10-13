@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Search, X, ArrowRight, LogOut } from "lucide-react";
-import { workplaceGroups } from "../lib/workplaceModules.js";
+import {workplaceModules,getWorkplaceGroupsForRole,canAccessWorkplaceModule} from "../lib/workplaceModules.js";
 
-export default function NavigationDrawer({ open, items, activeView, onNavigate, onClose, onSignOut, name, role }) {
+export default function NavigationDrawer({ open, items, activeView, onNavigate, onClose, onSignOut, name, role, avatarSrc }) {
   const panel = useRef(null);
   const [query, setQuery] = useState("");
   useEffect(() => {
@@ -26,7 +26,16 @@ export default function NavigationDrawer({ open, items, activeView, onNavigate, 
   if (!open) return null;
   const search = query.trim().toLowerCase();
   const matches = items.filter(item => item.label.toLowerCase().includes(search));
-  const groups = workplaceGroups.map(group => ({ ...group, modules: group.modules.filter(module => `${module.title} ${group.label}`.toLowerCase().includes(search)) })).filter(group => group.modules.length);
+  const pageIds = new Set(items.map(item => item.id));
+
+const groups = getWorkplaceGroupsForRole(role)
+  .map(group => ({
+    ...group,
+    modules: group.modules.filter(module =>
+      `${module.title} ${group.label}`.toLowerCase().includes(search)
+    )
+  }))
+  .filter(group => group.modules.length);
   return <div className="drawer-layer">
     <button className="drawer-backdrop" aria-label="Close menu" tabIndex={-1} onClick={onClose} />
     <section ref={panel} id="workspace-menu" className="navigation-drawer" role="dialog" aria-modal="true" aria-labelledby="menu-title">
@@ -38,7 +47,35 @@ export default function NavigationDrawer({ open, items, activeView, onNavigate, 
         {groups.map(group => <details className="drawer-group" key={`${group.id}-${Boolean(search)}`} open={search ? true : undefined}><summary>{group.label}<span>{group.modules.length}</span></summary><div>{group.modules.map(module => <button key={module.id} onClick={() => module.nativeView && !["directory", "search"].includes(module.nativeView) ? onNavigate(module.nativeView) : onNavigate("suite", module.id)}>{module.title}<ArrowRight size={14} /></button>)}</div></details>)}
         {!matches.length && !groups.length && <p className="drawer-empty">No matching tools. Try another name.</p>}
       </div>
-      <footer className="drawer-profile"><div><strong>{name}</strong><span>{role || "Employee"}</span></div><button className="icon-button" aria-label="Sign out" onClick={onSignOut}><LogOut size={18} /></button></footer>
+      <footer className="drawer-profile">
+  <span className="drawer-avatar" aria-hidden="true">
+    <span>
+      {(name || "Employee")
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part[0])
+        .join("")
+        .toUpperCase()}
+    </span>
+
+    {avatarSrc && (
+      <img
+        key={avatarSrc}
+        src={avatarSrc}
+        alt=""
+        onError={event => {
+          event.currentTarget.style.display = "none";
+        }}
+      />
+    )}
+  </span>
+
+  <div>
+    <strong>{name}</strong>
+    <span>{role || "Employee"}</span>
+  </div>
+</footer>
     </section>
   </div>;
 }

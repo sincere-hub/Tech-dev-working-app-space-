@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownToLine,
   ArrowRight,
+  ArrowLeft,
   Bell,
   Boxes,
   CalendarDays,
@@ -27,6 +28,11 @@ import WorkplaceSuite from "./components/WorkplaceSuite.jsx";
 import NavigationDrawer from "./components/NavigationDrawer.jsx";
 import InsightsView from "./components/InsightsView.jsx";
 import { safeExternalUrl } from "./lib/reporting.js";
+import {workplaceModules,canAccessWorkplaceModule,} from "./lib/workplaceModules.js";
+import NotificationSettings from "./components/NotificationSettings.jsx";
+import { disableDeviceNotifications } from "./lib/pushNotifications.js";
+import usePushNavigation from "./lib/usePushNavigation.js";
+import EmployeeAvatar, {EmployeeProfilesProvider} from "./components/EmployeeAvatar.jsx";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -199,6 +205,7 @@ function WorkspaceContentLoading({ isOnline }) {
           </div>
         </div>
         <div className="page-content">
+        
           <div className="workspace-skeleton-heading">
             <div className="workspace-skeleton skeleton-heading-kicker" />
             <div className="workspace-skeleton skeleton-heading-title" />
@@ -263,6 +270,19 @@ function AuthScreen() {
     setMessage("");
     try {
       if (mode === "signup") {
+        const strongPassword =
+  password.length >= 12 &&
+  /[a-z]/.test(password) &&
+  /[A-Z]/.test(password) &&
+  /[0-9]/.test(password) &&
+  /[!@#$%^&*()_+\-=\[\]{};':"\\|<>?,./`~]/.test(password);
+
+if (!strongPassword) {
+  setError(
+    "Use at least 12 characters, including uppercase and lowercase letters, a number and a symbol."
+  );
+  return;
+}
         const { data, error: authError } = await withTimeout(() => supabase.auth.signUp({
           email: normalizedEmail,
           password,
@@ -314,7 +334,13 @@ function AuthScreen() {
   return (
     <main className="auth-screen">
       <section className="auth-card">
-        <header className="auth-card-header"><Brand /><span>SECURE EMPLOYEE ACCESS</span></header>
+       <header className="auth-card-header">
+  <Brand />
+  <span className="auth-security-label">
+    <ShieldCheck size={15} aria-hidden="true" />
+    <span>SECURE EMPLOYEE ACCESS</span>
+  </span>
+</header>
         <p className="eyebrow">{mode === "signup" ? "Welcome to Legion" : "Your work, in good company"}</p>
         <h1>{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
         <p className="body-copy">{mode === "signup" ? "Use an email address you can access to create your employee account." : "Sign in to your secure employee workspace."}</p>
@@ -322,8 +348,22 @@ function AuthScreen() {
           {mode === "signup" && <AuthField label="Full name"><input required maxLength={100} autoComplete="name" value={name} onChange={event => setName(event.target.value)} placeholder=" " /></AuthField>}
           <AuthField label="Work email"><input required type="email" maxLength={254} autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} placeholder=" " /></AuthField>
           <AuthField label="Password" action={<button className="password-visibility" type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button>}>
-            <input required type={showPassword ? "text" : "password"} minLength={mode === "signup" ? 8 : undefined} maxLength={128} autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={event => setPassword(event.target.value)} placeholder=" " />
+            <input required type={showPassword ? "text" : "password"} minLength={mode === "signup" ? 12 : undefined}aria-describedby={mode === "signup" ? "signup-password-help" : undefined} maxLength={128} autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={event => setPassword(event.target.value)} placeholder=" " />
           </AuthField>
+          {mode === "signup" && (
+  <p
+    id="signup-password-help"
+    style={{
+      margin: 0,
+      fontSize: 12,
+      lineHeight: 1.5,
+      color: "#b8c8de",
+    }}
+  >
+    Use 12 or more characters with uppercase and lowercase
+    letters, a number and a symbol, such as !, @ or #.
+  </p>
+)}
           {mode === "signin" && <button className="text-link forgot-link" type="button" onClick={resetPassword} disabled={busy}>Forgot your password?</button>}
           {error && <p className="form-error" role="alert">{error}</p>}
           {message && <p className="form-success" role="status">{message}</p>}
@@ -368,7 +408,13 @@ function PasswordRecovery({ onComplete }) {
   return (
     <main className="auth-screen">
       <section className="auth-card">
-        <header className="auth-card-header"><Brand /><span>SECURE EMPLOYEE ACCESS</span></header>
+<header className="auth-card-header">
+  <Brand />
+  <span className="auth-security-label">
+    <ShieldCheck size={15} aria-hidden="true" />
+    <span>SECURE EMPLOYEE ACCESS</span>
+  </span>
+</header>
         <p className="eyebrow">ACCOUNT SECURITY</p>
         <h1>Choose a new password</h1>
         <p className="body-copy">Set a new password for your Legion account.</p>
@@ -387,6 +433,99 @@ function PasswordRecovery({ onComplete }) {
 
 function App() {
   const [session, setSession] = useState(null);
+  const [avatarUploadsEnabled, setAvatarUploadsEnabled] = useState(false);
+const [featureSaving, setFeatureSaving] = useState(false);
+
+useEffect(() => {
+  let live = true;
+  let request = 0;
+  setAvatarUploadsEnabled(false);
+
+  if (!session?.user?.id) return;
+
+  async function refreshFeature() {
+    const current = ++request;
+
+    try {
+      const { data: feature, error } = await supabase
+        .from("app_features")
+        .select("enabled")
+        .eq("name", "avatar_uploads")
+        .single();
+
+      if (live && current === request) {
+        setAvatarUploadsEnabled(!error && feature?.enabled === true);
+      }
+    } catch {
+      if (live && current === request) {
+        setAvatarUploadsEnabled(false);
+      }
+    }
+  }
+
+  refreshFeature();
+
+  const channel = supabase
+    .channel(`avatar-feature-${session.user.id}`)
+    .on("postgres_changes", {
+      event: "UPDATE",
+      schema: "public",
+      table: "app_features"
+    }, refreshFeature)
+    .subscribe(status => {
+      if (status === "SUBSCRIBED") refreshFeature();
+
+      if (
+        live &&
+        ["CHANNEL_ERROR", "TIMED_OUT", "CLOSED"].includes(status)
+      ) {
+        request++;
+        setAvatarUploadsEnabled(false);
+      }
+    });
+
+  window.addEventListener("focus", refreshFeature);
+
+  return () => {
+    live = false;
+    window.removeEventListener("focus", refreshFeature);
+    supabase.removeChannel(channel);
+  };
+}, [session?.user?.id]);
+  const [avatarSrc, setAvatarSrc] = useState("");
+
+useEffect(() => {
+  let live = true;
+  setAvatarSrc("");
+
+  const owner = session?.user?.id;
+  const path = session?.user?.user_metadata?.avatar_path;
+
+  if (
+    !owner || typeof path !== "string" ||
+    !path.startsWith(`${owner}/`)
+  ) return;
+
+  async function refreshPhoto() {
+    try {
+      const { data: image, error } = await supabase.storage
+        .from("employee-avatars")
+        .createSignedUrl(path, 3600);
+
+      if (live && !error) setAvatarSrc(image.signedUrl);
+    } catch {
+      // Show initials if the photo cannot load.
+    }
+  }
+
+  refreshPhoto();
+  const timer = window.setInterval(refreshPhoto, 45 * 60 * 1000);
+
+  return () => {
+    live = false;
+    window.clearInterval(timer);
+  };
+}, [session?.user?.id, session?.user?.user_metadata?.avatar_path]);
   const [profile, setProfile] = useState(null);
   const [data, setData] = useState({ employees: [], tasks: [], announcements: [], timeEntries: [], shifts: [], leaveRequests: [], shiftRequests: [], payslips: [], workplaceRecords: [], interactions: [] });
   const [activeView, setActiveView] = useState("overview");
@@ -397,6 +536,63 @@ function App() {
   const [now, setNow] = useState(Date.now());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [suiteModule, setSuiteModule] = useState("");
+  const pageHistory = useRef([]);
+const currentPage = useRef({ view: "overview", moduleId: "" });
+const returningToPage = useRef(false);
+
+useEffect(() => {
+  pageHistory.current = [];
+  currentPage.current = { view: "overview", moduleId: "" };
+  returningToPage.current = false;
+  setActiveView("overview");
+  setSuiteModule("");
+  setMobileMenuOpen(false);
+}, [session?.user?.id]);
+
+function recordNavigation(view, moduleId) {
+  if (
+  !visibleNavigation.some(item => item.id === view) ||
+  (
+    view === "suite" &&
+    moduleId &&
+    !canAccessWorkplaceModule(moduleId, profile?.role)
+  )
+) {
+  returningToPage.current = false;
+  setToast("This tool is not available for your role.");
+  setMobileMenuOpen(false);
+  return;
+}
+  const previous = currentPage.current;
+
+  if (
+    !returningToPage.current &&
+    (previous.view !== view || previous.moduleId !== moduleId)
+  ) {
+    pageHistory.current.push({
+      ...previous,
+      scrollY: window.scrollY
+    });
+  }
+
+  returningToPage.current = false;
+  currentPage.current = { view, moduleId };
+}
+
+function goBack() {
+  const previous = pageHistory.current.pop();
+  if (!previous) return;
+
+  returningToPage.current = true;
+  navigate(previous.view, previous.moduleId);
+
+  window.requestAnimationFrame(() => {
+    window.scrollTo({
+      top: previous.scrollY || 0,
+      behavior: "instant"
+    });
+  });
+}
   const [mutating, setMutating] = useState(false);
   const mutationInFlight = useRef(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
@@ -405,17 +601,115 @@ function App() {
   const authUserIdRef = useRef(null);
   const workspaceGeneration = useRef(0);
   const isManager = profile && ["manager", "admin"].includes(profile.role);
-  const visibleNavigation = isManager ? [...navigation, managerNavigation] : navigation;
+ const visibleNavigation = (isManager ? [...navigation, managerNavigation] : navigation).filter(item => item.id !== "insights" || isManager);
   const today = dateKey(new Date(now));
   const userId = session?.user?.id;
 
   const closeMenu = useCallback(() => setMobileMenuOpen(false), []);
   function toggleNavigation() { setMobileMenuOpen(value => !value); }
   function navigate(view, moduleId = "") {
-    setActiveView(view); setSuiteModule(moduleId); setMobileMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: "instant" });
+  if (
+    !visibleNavigation.some(item => item.id === view) ||
+    (
+      view === "suite" &&
+      moduleId &&
+      !canAccessWorkplaceModule(moduleId, profile?.role)
+    )
+  ) {
+    returningToPage.current = false;
+    setToast("This tool is not available for your role.");
+    setMobileMenuOpen(false);
+    return false;
   }
 
+  recordNavigation(view, moduleId);
+  setActiveView(view);
+  setSuiteModule(moduleId);
+  setMobileMenuOpen(false);
+  window.scrollTo({ top: 0, behavior: "instant" });
+  return true;
+}
+
+usePushNavigation({
+  ready: Boolean(
+    userId &&
+    profile?.id === userId &&
+    !loading &&
+    !passwordRecovery
+  ),
+  userId,
+  onNavigate: navigate,
+});
+
+function openActivityItem(activity) {
+  const metadata = activity.metadata || {};
+
+  if (metadata.operation === "DELETE") {
+    setToast("This item has been removed.");
+    return;
+  }
+
+  let target;
+
+  if (metadata.source_table === "workplace_records") {
+    target = data.workplaceRecords.find(
+      item => item.id === metadata.source_id
+    );
+  }
+
+  if (metadata.source_table === "workplace_interactions") {
+    const reply = data.interactions.find(
+      item => item.id === metadata.source_id
+    );
+
+    target = data.workplaceRecords.find(
+      item => item.id === reply?.record_id
+    );
+  }
+
+  if (target) {
+    navigate("suite", target.module_id);
+
+    window.setTimeout(() => {
+      const row = document.getElementById(`workplace-${target.id}`);
+      if (!row) return;
+
+      const discussion = row.querySelector(".discussion-toggle");
+      if (discussion?.getAttribute("aria-expanded") === "false") {
+        discussion.click();
+      }
+
+      row.setAttribute("data-activity-target", "true");
+      row.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      window.setTimeout(() => {
+        row.removeAttribute("data-activity-target");
+      }, 5000);
+    }, 120);
+
+    return;
+  }
+
+  const screens = {
+    tasks: "tasks",
+    announcements: "notices",
+    time_entries: "attendance",
+    shifts: "leave",
+    leave_requests: "leave",
+    shift_change_requests: "leave",
+    payslips: "payslips",
+  };
+
+  const screen = screens[metadata.source_table];
+
+  if (screen) {
+    navigate(screen);
+  } else if (metadata.source_table === "employees") {
+    navigate("suite", "people.directory");
+  } else {
+    setToast("This item is not available in the loaded workspace.");
+  }
+}
   const loadWorkspace = useCallback(async user => {
     if (!user) return;
     const generation = ++workspaceGeneration.current;
@@ -590,7 +884,7 @@ function App() {
   const todaySeconds = data.timeEntries
     .filter(entry => entry.employee_id === userId && entry.clocked_out_at && dateKey(new Date(entry.clocked_in_at)) === today)
     .reduce((sum, entry) => sum + Math.max(0, Math.floor((new Date(entry.clocked_out_at).getTime() - new Date(entry.clocked_in_at).getTime()) / 1000)), 0);
-  const employeeShifts = data.shifts.filter(shift => shift.employee_id === userId && new Date(shift.ends_at) >= new Date(today));
+  const employeeShifts = data.shifts.filter(shift =>shift.employee_id === userId &&new Date(shift.ends_at) > new Date());
   const myLeaveRequests = data.leaveRequests.filter(request => request.employee_id === userId);
   const myShiftRequests = data.shiftRequests.filter(request => request.employee_id === userId);
   const pendingCount = myLeaveRequests.filter(request => request.status === "pending").length;
@@ -656,6 +950,43 @@ function App() {
     if (result) { form.reset(); setToast("Your update has been shared with the team."); }
   }
 
+  async function editAnnouncement(announcement, values) {
+  const title = values.title.trim();
+  const body = values.body.trim();
+
+  if (!title || !body) {
+    setError("Enter a headline and message.");
+    return null;
+  }
+
+  const result = await mutate(() => supabase
+    .from("announcements")
+    .update({ title, body })
+    .eq("id", announcement.id)
+    .eq("title", announcement.title)
+    .eq("body", announcement.body)
+    .select("id")
+    .single());
+
+  if (result) setToast("Notice updated.");
+  return result;
+}
+
+async function deleteAnnouncement(announcement) {
+  if (!window.confirm("Delete this company notice?")) return null;
+
+  const result = await mutate(() => supabase
+    .from("announcements")
+    .delete()
+    .eq("id", announcement.id)
+    .eq("title", announcement.title)
+    .eq("body", announcement.body)
+    .select("id")
+    .single());
+
+  if (result) setToast("Notice deleted.");
+  return result;
+}
   async function submitLeave(event) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -774,49 +1105,377 @@ function App() {
     const result = await mutate(() => supabase.from("workplace_records").delete().eq("id", record.id).select("id").single());
     if (result) setToast("Workspace record deleted.");
   }
-
-  async function downloadPayslip(payslip) {
+async function downloadPayslip(payslip) {
+  try {
+    setError("");
     const { jsPDF } = await import("jspdf");
-    const employee = data.employees.find(item => item.id === payslip.employee_id);
-    const pdf = new jsPDF();
-    pdf.setTextColor(29, 59, 45);
-    pdf.setFontSize(22);
-    pdf.text("LEGION", 20, 25);
-    pdf.setTextColor(30, 40, 34);
-    pdf.setFontSize(15);
-    pdf.text("PAY STATEMENT", 20, 40);
-    pdf.setFontSize(10);
-    pdf.setTextColor(112, 124, 115);
-    pdf.text("Confidential employee payroll statement", 20, 48);
-    pdf.setDrawColor(222, 229, 222);
-    pdf.line(20, 56, 190, 56);
-    pdf.setTextColor(30, 40, 34);
-    pdf.text(`Employee: ${employee?.display_name || "Employee"}`, 20, 69);
-    pdf.text(`Pay period: ${formatDateRange(payslip.period_start, payslip.period_end)}`, 20, 78);
-    pdf.line(20, 87, 190, 87);
-    const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-    pdf.text("Gross pay", 20, 102);
-    pdf.text(currency.format(payslip.gross_pay), 190, 102, { align: "right" });
-    pdf.text("Deductions", 20, 112);
-    pdf.text(`−${currency.format(payslip.deductions)}`, 190, 112, { align: "right" });
-    pdf.setDrawColor(222, 229, 222);
-    pdf.line(20, 120, 190, 120);
-    pdf.setFont("helvetica", "bold");
-    pdf.text("Take-home pay", 20, 132);
-    pdf.text(currency.format(Number(payslip.gross_pay) - Number(payslip.deductions)), 190, 132, { align: "right" });
-    pdf.setFont("helvetica", "normal");
-    pdf.setTextColor(112, 124, 115);
-    pdf.text("Issued by your employer through Legion.", 20, 154);
-    pdf.save(`legion-payslip-${payslip.period_start}.pdf`);
+    const employee = data.employees.find(
+      item => item.id === payslip.employee_id
+    );
+    const gross = Number(payslip.gross_pay);
+    const deductions = Number(payslip.deductions);
+
+    if (!Number.isFinite(gross) || !Number.isFinite(deductions)) {
+      throw new Error("This payslip has invalid pay amounts.");
+    }
+
+    const money = value => new Intl.NumberFormat("en-ZA", {
+      style: "currency",
+      currency: "ZAR"
+    }).format(value).replace(/[\u00a0\u202f]/g, " ");
+
+    const loadLogo = path => new Promise((resolve, reject) => {
+      const img = new Image();
+      const timer = setTimeout(() => {
+        reject(new Error("Logo loading timed out. Please retry."));
+      }, 10000);
+
+      img.onload = () => {
+        clearTimeout(timer);
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = 1200;
+          canvas.height = Math.round(
+            1200 * img.naturalHeight / img.naturalWidth
+          );
+
+          const context = canvas.getContext("2d");
+          if (!context) {
+            throw new Error("Your browser could not prepare the payslip logo.");
+          }
+
+          context.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL("image/png"));
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      img.onerror = () => {
+        clearTimeout(timer);
+        reject(new Error(
+          `Could not load ${path}. Check the logo file in public.`
+        ));
+      };
+
+      img.src = path;
+    });
+
+    const [mark, wordmark] = await Promise.all([
+      loadLogo("/legion-mark.svg"),
+      loadLogo("/legion-wordmark.svg")
+    ]);
+
+    const pdf = new jsPDF({ unit: "mm", format: "a4" });
+pdf.setProperties({
+  title: "Legion employee payslip",
+  author: "Legion"
+});
+
+const ink = [239, 244, 250];
+const muted = [165, 182, 204];
+const gold = [222, 193, 137];
+
+const write = (
+  text, x, y, size = 10, bold = false,
+  color = ink, align = "left"
+) => {
+  pdf.setFont("helvetica", bold ? "bold" : "normal");
+  pdf.setFontSize(size);
+  pdf.setTextColor(...color);
+  pdf.text(text, x, y, { align });
+};
+
+const rule = (y, x1 = 18, x2 = 192) => {
+  pdf.setDrawColor(47, 64, 85);
+  pdf.setLineWidth(0.2);
+  pdf.line(x1, y, x2, y);
+};
+
+// Navy page and formal branded header.
+pdf.setFillColor(11, 20, 35);
+pdf.rect(0, 0, 210, 297, "F");
+
+pdf.addImage(mark, "PNG", 18, 17, 32, 32 * 304 / 1024);
+pdf.addImage(wordmark, "PNG", 56, 19, 40, 40 * 92 / 560);
+
+write("EMPLOYEE PAYSLIP", 192, 23, 15, true, ink, "right");
+write(
+  "CONFIDENTIAL PAYROLL STATEMENT",
+  192, 32, 8, false, muted, "right"
+);
+
+pdf.setDrawColor(...gold);
+pdf.setLineWidth(0.5);
+pdf.line(18, 43, 192, 43);
+
+// Pay period.
+write("PAY PERIOD", 18, 57, 8, true, muted);
+pdf.setFont("helvetica", "bold");
+pdf.setFontSize(13);
+
+const periodLines = pdf.splitTextToSize(
+  formatDateRange(
+    payslip.period_start, payslip.period_end
+  ).replace(/\u2013/g, "-"),
+  174
+);
+write(periodLines, 18, 68, 13, true);
+
+// Employee information and statement details.
+const infoY = 81 + (periodLines.length - 1) * 6;
+
+pdf.setFont("helvetica", "bold");
+pdf.setFontSize(13);
+const nameLines = pdf.splitTextToSize(
+  employee?.display_name || "Employee", 86
+);
+
+pdf.setFont("helvetica", "normal");
+pdf.setFontSize(9);
+const jobLines = employee?.job_title
+  ? pdf.splitTextToSize(employee.job_title, 86)
+  : [];
+
+const jobY = infoY + 24 + nameLines.length * 6;
+const infoBottom = Math.max(
+  infoY + 59,
+  jobY + jobLines.length * 5 + 11
+);
+
+pdf.setFillColor(17, 30, 49);
+pdf.rect(18, infoY, 174, infoBottom - infoY, "F");
+
+write("EMPLOYEE", 26, infoY + 13, 8, true, muted);
+write(nameLines, 26, infoY + 24, 13, true);
+
+if (jobLines.length) {
+  write(jobLines, 26, jobY, 9, false, muted);
+}
+
+pdf.setDrawColor(47, 64, 85);
+pdf.setLineWidth(0.2);
+pdf.line(120, infoY + 10, 120, infoBottom - 10);
+
+write("ISSUE DATE", 130, infoY + 13, 8, true, muted);
+write(
+  payslip.published_at
+    ? formatDate(payslip.published_at, {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      })
+    : "Not recorded",
+  130, infoY + 24, 10
+);
+
+write(
+  "STATEMENT REFERENCE",
+  130, infoY + 40, 8, true, muted
+);
+write(
+  String(payslip.id || "").slice(0, 13).toUpperCase(),
+  130, infoY + 50, 10
+);
+
+// Structured earnings table.
+write("EARNINGS & DEDUCTIONS", 18, infoBottom + 17, 9, true);
+
+const tableY = infoBottom + 24;
+pdf.setFillColor(22, 38, 60);
+pdf.rect(18, tableY, 174, 11, "F");
+
+write("ITEM", 26, tableY + 7, 8, true, muted);
+write("PAY COMPONENT", 43, tableY + 7, 8, true, muted);
+write(
+  "AMOUNT (ZAR)", 184, tableY + 7,
+  8, true, muted, "right"
+);
+
+write("01", 26, tableY + 24, 9, false, muted);
+write("Gross earnings", 43, tableY + 24, 11);
+write(
+  money(gross), 184, tableY + 24,
+  12, true, ink, "right"
+);
+rule(tableY + 31);
+
+write("02", 26, tableY + 44, 9, false, muted);
+write("Total deductions", 43, tableY + 44, 11);
+write(
+  money(deductions), 184, tableY + 44,
+  12, true, ink, "right"
+);
+rule(tableY + 51);
+
+// Net pay with a gold accent.
+const netY = tableY + 61;
+
+pdf.setFillColor(21, 39, 63);
+pdf.rect(18, netY, 174, 27, "F");
+pdf.setFillColor(...gold);
+pdf.rect(18, netY, 1.2, 27, "F");
+
+write("NET PAY", 26, netY + 11, 10, true);
+write(
+  "Gross earnings less deductions",
+  26, netY + 20, 8, false, muted
+);
+write(
+  money(gross - deductions), 184, netY + 17,
+  21, true, gold, "right"
+);
+
+write(
+  "Currency: South African rand (ZAR).",
+  18, netY + 38, 8, false, muted
+);
+
+// Document footer.
+rule(274);
+write("LEGION WORKFORCE", 18, 282, 8, true, muted);
+write(
+  "Confidential | Keep for your records",
+  105, 282, 8, false, muted, "center"
+);
+write("01 / 01", 192, 282, 8, false, muted, "right");
+
+pdf.save(`legion-payslip-${payslip.period_start}.pdf`);
+  } catch (error) {
+    setError(getErrorMessage(error));
+  }
+}
+ async function toggleAvatarUploads(enabled) {
+  if (profile?.role !== "admin" || featureSaving) return;
+
+  const actor = session?.user?.id;
+  setFeatureSaving(true);
+  setError("");
+
+  try {
+    const { data: feature, error } = await supabase
+      .from("app_features")
+      .update({ enabled })
+      .eq("name", "avatar_uploads")
+      .select("enabled")
+      .single();
+
+    if (error) throw error;
+    if (authUserIdRef.current !== actor) return;
+
+    setAvatarUploadsEnabled(feature.enabled);
+    setToast(
+      `Profile photo uploads ${feature.enabled ? "enabled" : "disabled"}.`
+    );
+  } catch (error) {
+    if (authUserIdRef.current === actor) {
+      setError(getErrorMessage(error));
+    }
+  } finally {
+    setFeatureSaving(false);
+  }
+}
+async function uploadAvatar(file) {
+  if (!avatarUploadsEnabled) {
+  throw new Error("Profile photo uploads are disabled by your administrator.");
+}
+  const account = session;
+  const owner = account?.user?.id;
+
+  if (!owner) throw new Error("Please sign in again.");
+
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    throw new Error("Choose a JPG, PNG or WebP photo.");
   }
 
-  async function signOut() {
-    try {
-      const { error: signOutError } = await withTimeout(() => supabase.auth.signOut({ scope: "local" }));
-      if (signOutError) throw signOutError;
-    } catch (signOutError) { setError(getErrorMessage(signOutError)); }
+  if (file.size > 5 * 1024 * 1024) {
+    throw new Error("Choose a photo smaller than 5 MB.");
   }
 
+  const bitmap = await createImageBitmap(file);
+  let image;
+
+  try {
+    if (bitmap.width * bitmap.height > 24000000) {
+      throw new Error("Choose a smaller-resolution photo.");
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 512;
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) throw new Error("Could not prepare this photo.");
+
+    ctx.fillStyle = "#f2f5f9";
+    ctx.fillRect(0, 0, 512, 512);
+
+    const side = Math.min(bitmap.width, bitmap.height);
+    ctx.drawImage(
+      bitmap,
+      (bitmap.width - side) / 2,
+      (bitmap.height - side) / 2,
+      side, side,
+      0, 0, 512, 512
+    );
+
+    image = canvas.toDataURL("image/jpeg", 0.86);
+  } finally {
+    bitmap.close();
+  }
+
+  if (authUserIdRef.current !== owner) {
+    throw new Error("Your account changed. Please retry.");
+  }
+
+  const { data: result, error } = await supabase.functions.invoke(
+    "upload-avatar",
+    {
+      headers: { Authorization: `Bearer ${account.access_token}` },
+      body: { image }
+    }
+  );
+
+  if (error) {
+    let message = "Could not upload the photo. Please retry.";
+    if (error.context?.json) {
+      const response = await error.context.json().catch(() => null);
+      message = response?.error || message;
+    }
+    throw new Error(message);
+  }
+
+  if (!result?.path?.startsWith(`${owner}/`)) {
+    throw new Error("Invalid upload response. Please refresh.");
+  }
+
+  if (authUserIdRef.current !== owner) return;
+
+  const { data: refreshed, error: refreshError } =
+    await supabase.auth.refreshSession();
+
+  if (refreshError) {
+    throw new Error("Photo saved. Refresh the app to see it.");
+  }
+
+  setSession(refreshed.session);
+}
+async function signOut() {
+  try {
+    await disableDeviceNotifications(userId);
+  } catch {
+    console.warn("Device notification cleanup could not be completed.");
+  }
+
+  try {
+    const { error: signOutError } = await withTimeout(() =>
+      supabase.auth.signOut({ scope: "local" })
+    );
+
+    if (signOutError) throw signOutError;
+  } catch (signOutError) {
+    setError(getErrorMessage(signOutError));
+  }
+}
   if (!supabaseConfigured) return <ConfigScreen />;
   if (session && loading) return <WorkspaceContentLoading isOnline={isOnline} />;
   if (!session && (loading || !startupComplete)) return <StartupScreen isOnline={isOnline} />;
@@ -835,14 +1494,34 @@ function App() {
 
   return (
     <div className="app-shell organised-shell">
-      <NavigationDrawer open={mobileMenuOpen} items={visibleNavigation} activeView={activeView} onNavigate={navigate} onClose={closeMenu} onSignOut={signOut} name={displayName} role={profile?.role} />
+  <EmployeeProfilesProvider
+    userId={userId}
+    employees={data.employees}
+  >
+      <NavigationDrawer open={mobileMenuOpen} items={visibleNavigation} activeView={activeView} onNavigate={navigate} onClose={closeMenu} onSignOut={signOut} name={displayName} role={profile?.role}avatarSrc={avatarSrc} />
       <main className="main-area" inert={mobileMenuOpen ? true : undefined}>
         <header className="topbar">
           <div className="topbar-left"><button className="icon-button menu-trigger" aria-label="Open menu" aria-expanded={mobileMenuOpen} aria-controls="workspace-menu" onClick={toggleNavigation}><Menu size={21} /></button><Brand compact /><span className="desktop-page-name">{heading}</span></div>
           <nav className="desktop-primary-nav" aria-label="Primary navigation">{navigation.filter(item => ["overview", "tasks", "attendance"].includes(item.id)).map(item => <NavItem key={item.id} item={item} active={activeView === item.id} onClick={() => navigate(item.id)} />)}</nav>
-          <div className="topbar-right"><button className="icon-button" aria-label="Company notices" onClick={() => navigate("notices")}><Bell size={18} /></button><button className="top-avatar account-trigger" aria-label="Open account menu" onClick={toggleNavigation}>{initials(displayName)}</button></div>
-        </header>
-        <div className="page-content">
+          <div className="topbar-right"><button className="icon-button" aria-label="Company notices" onClick={() => navigate("notices")}><Bell size={18} /></button><AccountMenu userId={userId}
+          avatarUploadsEnabled={avatarUploadsEnabled}featureSaving={featureSaving}onTogglePhotoUploads={toggleAvatarUploads}
+          avatarSrc={avatarSrc}onUpload={uploadAvatar}
+           name={displayName}email={session?.user?.email || ""}role={profile?.role}onSignOut={signOut}closeSignal={`${activeView}:${mobileMenuOpen}`}/></div>
+        </header><div className="page-content">
+{activeView !== "overview" && (
+  <div className="page-navigation">
+    <button
+      type="button"
+      className="page-back-button"
+      onClick={goBack}
+      disabled={pageHistory.current.length === 0}
+      aria-label="Go back to the previous page"
+    >
+      <ArrowLeft size={18} />
+      <span>Back</span>
+    </button>
+  </div>
+)}
           {error && <div className="error-banner" role="alert"><span>{error}</span>{session && <button className="retry-action" onClick={() => loadWorkspace(session.user)}>Retry</button>}<button onClick={() => setError("")} aria-label="Dismiss error"><X size={16} /></button></div>}
           {dataLoading && <div className="sync-banner"><LoaderCircle className="spin" size={14} /> Syncing the latest workspace data…</div>}
           <fieldset className="workspace-controls" disabled={mutating}>
@@ -867,10 +1546,35 @@ function App() {
           {activeView === "leave" && <LeaveView isManager={isManager} employeeId={userId} requests={employeeRequests} shiftRequests={employeeShiftRequests} shifts={upcomingShifts} employees={data.employees} onLeave={submitLeave} onShiftRequest={submitShiftRequest} onReview={reviewRequest} onShift={submitShift} />}
           {activeView === "payslips" && <PayslipsView isManager={isManager} payslips={data.payslips.filter(slip => isManager || slip.employee_id === userId)} employees={data.employees} employeeId={userId} onDownload={downloadPayslip} onCreate={submitPayslip} />}
           {activeView === "manager" && isManager && <ManagerView tasks={data.tasks} announcements={announcements} employees={data.employees} requests={data.leaveRequests} shiftRequests={data.shiftRequests} shifts={data.shifts} onTask={submitTask} onUpdateTask={updateTask} onAnnouncement={submitAnnouncement} onReview={reviewRequest} onShift={submitShift} onView={navigate} />}
-          {activeView === "suite" && <WorkplaceSuite key={suiteModule || "all"} initialModuleId={suiteModule} interactions={data.interactions} onInteract={recordInteraction} records={data.workplaceRecords} employees={data.employees} tasks={data.tasks} announcements={announcements} isManager={isManager} userId={userId} onCreate={submitWorkplaceRecord} onStatus={updateWorkplaceRecord} onDelete={deleteWorkplaceRecord} onNavigate={navigate} />}
-          {activeView === "notices" && <><PageHeading eyebrow="KEEP UP TO DATE" title="Company notices" description="Announcements shared by your company." /><Card title="Latest updates">{announcements.length ? announcements.map(item => <AnnouncementRow key={item.id} announcement={item} />) : <EmptyState icon={Megaphone} title="No notices yet" text="Company updates will appear here." />}</Card><button className="outline-button spaced-card" onClick={() => navigate("activity")}>View company activity <ArrowRight size={15} /></button></>}
-          {activeView === "insights" && <InsightsView data={isManager ? data : { ...data, tasks: personalTasks, timeEntries: data.timeEntries.filter(entry => entry.employee_id === userId) }} isManager={isManager} />}
-          {activeView === "activity" && <ActivityFeedView records={data.workplaceRecords.filter(record => record.module_id === "collaboration.activity")} />}
+          {activeView === "suite" && <WorkplaceSuite key={suiteModule || "all"} initialModuleId={suiteModule} interactions={data.interactions} onInteract={recordInteraction} records={data.workplaceRecords} employees={data.employees} tasks={data.tasks} announcements={announcements} isManager={isManager} userId={userId} onCreate={submitWorkplaceRecord} onStatus={updateWorkplaceRecord} onDelete={deleteWorkplaceRecord} onNavigate={navigate}role={profile?.role || "employee"} />}
+          {activeView === "notices" && (
+  <>
+    <PageHeading
+      eyebrow="KEEP UP TO DATE"
+      title="Company notices"
+      description="Announcements shared by your company."
+    />
+
+    <Card title="Latest updates">
+      {announcements.length ? announcements.map(item => (
+        <AnnouncementRow
+          key={item.id}
+          announcement={item}
+          onEdit={isManager ? editAnnouncement : undefined}
+          onDelete={isManager ? deleteAnnouncement : undefined}
+        />
+      )) : (
+        <EmptyState
+          icon={Megaphone}
+          title="No notices yet"
+          text="Company updates will appear here."
+        />
+      )}
+    </Card>
+  </>
+)}
+          {activeView === "insights" && isManager && <InsightsView data={isManager ? data : { ...data, tasks: personalTasks, timeEntries: data.timeEntries.filter(entry => entry.employee_id === userId) }} isManager={isManager} />}
+          {activeView === "activity" && <ActivityFeedView records={data.workplaceRecords.filter(record => record.module_id === "collaboration.activity")} onOpen={openActivityItem} />}
           </fieldset>
         </div>
       </main>
@@ -878,11 +1582,161 @@ function App() {
         {navigation.filter(item => ["overview", "tasks", "attendance"].includes(item.id)).map(item => <NavItem key={item.id} item={item} active={activeView === item.id} onClick={() => navigate(item.id)} mobile />)}
         <button className={`mobile-nav-item${mobileMenuOpen ? " active" : ""}`} onClick={toggleNavigation} aria-label="More tools" aria-expanded={mobileMenuOpen}><Menu size={20} /><span>More</span></button>
       </nav>
-      {toast && <div className="toast" role="status"><Check size={16} />{toast}</div>}
+          {toast && <div className="toast" role="status"><Check size={16} />{toast}</div>}
+      </EmployeeProfilesProvider>
     </div>
   );
 }
+function AccountMenu({
+   userId, name, email, role, onSignOut, closeSignal, avatarSrc, onUpload, avatarUploadsEnabled, featureSaving, onTogglePhotoUploads
+}) {
+  const menuRef = useRef(null);
+  const photoInput = useRef(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+  const [failedAvatarSrc, setFailedAvatarSrc] = useState("");
+async function choosePhoto(event) {
+  const file = event.target.files?.[0];
+  event.target.value = "";
 
+  if (!file || photoBusy) return;
+
+  setPhotoBusy(true);
+  setPhotoError("");
+
+  try {
+    await onUpload(file);
+  } catch (error) {
+    setPhotoError(getErrorMessage(error));
+  } finally {
+    setPhotoBusy(false);
+  }
+}
+
+  useEffect(() => {
+    if (menuRef.current) menuRef.current.open = false;
+  }, [closeSignal]);
+
+  useEffect(() => {
+    function closeOutside(event) {
+      const menu = menuRef.current;
+      if (menu?.open && !menu.contains(event.target)) {
+        menu.open = false;
+      }
+    }
+
+    function closeWithEscape(event) {
+      const menu = menuRef.current;
+      if (event.key === "Escape" && menu?.open) {
+        event.preventDefault();
+        menu.open = false;
+        menu.querySelector("summary")?.focus();
+      }
+    }
+
+    document.addEventListener("pointerdown", closeOutside);
+    document.addEventListener("keydown", closeWithEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside);
+      document.removeEventListener("keydown", closeWithEscape);
+    };
+  }, []);
+
+  return (
+    <details
+      ref={menuRef}
+      className="account-menu"
+      onBlur={event => {
+        if (
+          event.relatedTarget &&
+          !event.currentTarget.contains(event.relatedTarget)
+        ) {
+          event.currentTarget.open = false;
+        }
+      }}
+    >
+      <summary
+  className="top-avatar account-trigger"
+  aria-label="My account"
+>
+  {avatarSrc && failedAvatarSrc !== avatarSrc ? (
+    <img
+      key={avatarSrc}
+      src={avatarSrc}
+      alt=""
+      draggable={false}
+      onError={() => setFailedAvatarSrc(avatarSrc)}
+    />
+  ) : (
+    initials(name)
+  )}
+</summary>
+
+      <section className="account-panel" aria-label="Account details">
+        <p className="account-label">MY ACCOUNT</p>
+        <strong className="account-name">{name}</strong>
+        <span className="account-email">{email}</span>
+        <span className="account-role">{role || "employee"}</span>
+
+{role === "admin" && (
+  <label className="account-feature-toggle">
+    <span>Employee photo uploads</span>
+    <input
+      type="checkbox"
+      checked={avatarUploadsEnabled}
+      disabled={featureSaving || photoBusy}
+      onChange={event =>
+        onTogglePhotoUploads(event.target.checked)
+      }
+    />
+  </label>
+)}
+
+{avatarUploadsEnabled && (
+  
+  <>
+    <input
+      ref={photoInput}
+      hidden
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      disabled={photoBusy}
+      onChange={choosePhoto}
+    />
+
+    <button
+      type="button"
+      className="account-photo-button"
+      disabled={photoBusy}
+      onClick={() => photoInput.current?.click()}
+    >
+      {photoBusy
+        ? "Checking photo..."
+        : avatarSrc
+          ? "Change profile photo"
+          : "Upload profile photo"}
+    </button>
+
+    {photoError && (
+      <p className="account-photo-error" role="alert">
+        {photoError}
+      </p>
+    )}
+  </>
+)}    
+   <NotificationSettings
+         userId={userId}
+         disabled={photoBusy}
+         onSignOut={async () => {
+         menuRef.current.open = false;
+         await onSignOut();
+  }}
+/>
+      </section>
+    </details>
+  );
+}
 function initials(name) {
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join("").toUpperCase();
 }
@@ -922,6 +1776,9 @@ function TaskRow({ task, employee, onChange, onClaim, managerMode = false }) {
   const canClaim = !managerMode && !task.assignee_id;
   return <div className={`task-row${task.status === "done" ? " task-done" : ""}`}>
     <button className={`task-status-icon status-${task.status}`} aria-label={`Set ${task.title} status`} disabled={canClaim} onClick={() => onChange(task, task.status === "done" ? "todo" : "done")}>{task.status === "done" ? <Check size={13} /> : task.status === "in_progress" ? <span className="status-dot" /> : null}</button>
+    {task.assignee_id && (
+  <EmployeeAvatar employeeId={task.assignee_id} />
+)}
     <div className="task-copy"><strong>{task.title}</strong><span>{task.due_date ? `Due ${formatDate(task.due_date)}` : "No due date"}{managerMode ? ` · ${employee?.display_name || "Open task pool"}` : ""}</span></div>
     {managerMode && <span className={`priority-pill${task.priority === "high" ? " priority-high" : ""}`}>{task.priority}</span>}
     {canClaim && <button className="outline-button task-claim" onClick={() => onClaim(task)}>Claim task <ArrowRight size={13} /></button>}
@@ -946,20 +1803,118 @@ function WeeklyHours({ entries = [] }) {
   return <div className="week-chart">{dayEntries.map(day => <div className={`week-day${dateKey(day.date) === today ? " today" : ""}`} key={dateKey(day.date)}><span>{new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(day.date).toUpperCase()}</span><div className="week-day-track"><i style={{ height: `${Math.min(100, day.seconds / max * 100)}%` }} /></div><strong>{day.seconds ? `${Math.floor(day.seconds / 3600)}h ${Math.floor(day.seconds % 3600 / 60)}m` : "—"}</strong></div>)}</div>;
 }
 
-function AnnouncementRow({ announcement }) {
-  return <article className="announcement-row"><span className="announcement-icon"><Megaphone size={15} /></span><div><strong>{announcement.title}</strong><p>{announcement.body}</p><time>{announcement.author?.display_name || "Company team"} · {formatDate(announcement.created_at, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time></div></article>;
+function AnnouncementRow({ announcement, onEdit, onDelete }) {
+  const [editing, setEditing] = useState(false);
+
+  async function save(event) {
+    event.preventDefault();
+    const values = new FormData(event.currentTarget);
+
+    const result = await onEdit(announcement, {
+      title: String(values.get("title") || ""),
+      body: String(values.get("body") || ""),
+    });
+
+    if (result) setEditing(false);
+  }
+
+  return (
+    <article className="announcement-row">
+<EmployeeAvatar
+  employeeId={announcement.author_id}
+  name="Company team"
+/>
+
+      <div style={{ flex: 1 }}>
+        {editing ? (
+          <form className="form-stack" onSubmit={save}>
+            <label className="field">
+              <span>Headline</span>
+              <input
+                name="title"
+                required
+                maxLength={120}
+                defaultValue={announcement.title}
+              />
+            </label>
+
+            <label className="field">
+              <span>Message</span>
+              <textarea
+                name="body"
+                required
+                maxLength={2000}
+                defaultValue={announcement.body}
+              />
+            </label>
+
+            <div className="request-actions">
+              <button type="submit" className="primary-button">
+                Save changes
+              </button>
+              <button
+                type="button"
+                className="outline-button"
+                onClick={() => setEditing(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        ) : (
+          <>
+            <strong>{announcement.title}</strong>
+            <p>{announcement.body}</p>
+            <time>
+              {announcement.author?.display_name || "Company team"} ·{" "}
+              {formatDate(announcement.created_at, {
+                month: "short",
+                day: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </time>
+
+            {(onEdit || onDelete) && (
+              <div className="request-actions" style={{ marginTop: 12 }}>
+                {onEdit && (
+                  <button
+                    type="button"
+                    className="outline-button small-outline"
+                    onClick={() => setEditing(true)}
+                  >
+                    Edit
+                  </button>
+                )}
+
+                {onDelete && (
+                  <button
+                    type="button"
+                    className="decline-button"
+                    onClick={() => onDelete(announcement)}
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </article>
+  );
 }
 
 function PayslipPreview({ payslip, onDownload }) {
   const net = Number(payslip.gross_pay) - Number(payslip.deductions);
-  return <div className="payslip-preview"><span className="muted-label">TAKE-HOME PAY</span><strong className="pay-total">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(net)}</strong><span className="pay-period">{formatDateRange(payslip.period_start, payslip.period_end)}</span><div className="payslip-breakdown"><span>Gross pay <strong>{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(payslip.gross_pay)}</strong></span><span>Deductions <strong>−{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(payslip.deductions)}</strong></span></div><button className="outline-button full-button" onClick={() => onDownload(payslip)}><ArrowDownToLine size={15} /> Download statement</button></div>;
+  return <div className="payslip-preview"><span className="muted-label">TAKE-HOME PAY</span><strong className="pay-total">{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(net)}</strong><span className="pay-period">{formatDateRange(payslip.period_start, payslip.period_end)}</span><div className="payslip-breakdown"><span>Gross pay <strong>{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(payslip.gross_pay)}</strong></span><span>Deductions <strong>−{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(payslip.deductions)}</strong></span></div><button className="outline-button full-button" onClick={() => onDownload(payslip)}><ArrowDownToLine size={15} /> Download statement</button></div>;
 }
 
 function EmptyState({ icon: Icon, title, text }) {
   return <div className="empty-state"><span><Icon size={18} /></span><strong>{title}</strong><p>{text}</p></div>;
 }
 
-function ActivityFeedView({ records }) {
+function ActivityFeedView({ records, onOpen }) {
   return (
     <>
       <PageHeading eyebrow="WORKSPACE ACTIVITY" title="Company activity" description="A shared, database-recorded history of employee, task, time, schedule, leave, announcement, and payslip changes." />
@@ -967,8 +1922,19 @@ function ActivityFeedView({ records }) {
         {records.length ? (
           <div className="suite-record-list">
             {records.map(record => <article className="suite-record-row" key={record.id}>
-              <span className="suite-record-icon"><Bell size={16} /></span>
+              {record.metadata?.actor_id ? (<EmployeeAvatar employeeId={record.metadata.actor_id} />) : (<span className="suite-record-icon"><Bell size={16} /></span>)}
               <div className="suite-record-copy"><strong>{record.title}</strong><p>{record.description}</p><small>{record.metadata?.source_table?.replaceAll("_", " ") || "Workspace"} · {new Date(record.created_at).toLocaleString()}</small></div>
+              {record.metadata?.source_id &&
+  record.metadata?.operation !== "DELETE" && (
+    <button
+      className="outline-button activity-open-button"
+      onClick={() => onOpen(record)}
+    >
+      <ArrowRight size={14} />
+      View item
+    </button>
+  )}
+            
             </article>)}
           </div>
         ) : <EmptyState icon={Bell} title="No activity recorded yet" text="As employees use the workspace, activity will appear here." />}
@@ -1020,10 +1986,76 @@ function LeaveView({ isManager, employeeId, requests, shiftRequests, shifts, emp
         </Card>
       </div>
       <div className="stack-column">
-        {!isManager && <Card title="Request a shift change" subtitle="Ask your manager to review a different shift time."><form className="form-grid" onSubmit={onShiftRequest}><Field label="Scheduled shift"><select name="shift" required defaultValue="">{myShifts.map(shift => <option key={shift.id} value={shift.id}>{formatDate(shift.starts_at)} · {formatTime(shift.starts_at)}–{formatTime(shift.ends_at)}</option>)}</select></Field><Field label="Requested shift"><select name="template">{shiftTemplates.map(shift => <option key={shift.label} value={shift.label}>{shift.label} · {new Date(`2000-01-01T${shift.start}:00`).toLocaleTimeString("en-US", { hour: "numeric" })}–{new Date(`2000-01-01T${shift.end}:00`).toLocaleTimeString("en-US", { hour: "numeric" })}</option>)}</select></Field><Field label="Reason"><textarea className="wide-field" name="reason" required maxLength={1000} placeholder="Help your manager understand the change." /></Field><button className="primary-button form-action" type="submit">Request shift change <ArrowRight size={15} /></button></form></Card>}
-        <Card title={isManager ? "Team shift schedule" : "Upcoming shifts"} subtitle={isManager ? "Published shifts across the team." : "Your published work schedule."} action={<span className="metric-chip">{shifts.length}</span>}>
-          {shifts.length ? <div className="shift-list">{shifts.map(shift => <ShiftRow key={shift.id} shift={shift} showEmployee={isManager} />)}</div> : <EmptyState icon={Clock3} title="No shifts scheduled" text={isManager ? "Publish a shift to get a schedule started." : "Your manager has not published shifts yet."} />}
-        </Card>
+        {!isManager && (
+  <Card
+    title="Request a shift change"
+    subtitle="Ask your manager to review a different shift time."
+  >
+    {!myShifts.length && (
+      <p className="muted-copy" role="status">
+        No current or upcoming shift is assigned to you.
+        Ask your manager to publish your shift first.
+      </p>
+    )}
+
+    <form className="form-grid" onSubmit={onShiftRequest}>
+      <Field label="Scheduled shift">
+        <select
+          name="shift"
+          required
+          defaultValue=""
+          disabled={!myShifts.length}
+        >
+          <option value="" disabled>
+            {myShifts.length
+              ? "Select your scheduled shift"
+              : "No assigned shifts"}
+          </option>
+
+          {myShifts.map(shift => (
+            <option key={shift.id} value={shift.id}>
+              {formatDate(shift.starts_at, {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })} · {formatTime(shift.starts_at)}–{formatTime(shift.ends_at)}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label="Requested shift">
+        <select name="template" disabled={!myShifts.length}>
+          {shiftTemplates.map(shift => (
+            <option key={shift.label} value={shift.label}>
+              {shift.label} ·{" "}
+              {formatTime(`2000-01-01T${shift.start}:00`)}–
+              {formatTime(`2000-01-01T${shift.end}:00`)}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      <Field label="Reason">
+        <textarea
+          name="reason"
+          required
+          maxLength={1000}
+          disabled={!myShifts.length}
+          placeholder="Help your manager understand the change."
+        />
+      </Field>
+
+      <button
+        className="primary-button form-action"
+        type="submit"
+        disabled={!myShifts.length}
+      >
+        Request shift change <ArrowRight size={15} />
+      </button>
+    </form>
+  </Card>
+)}
         {!isManager && <Card title="My shift-change requests" subtitle="Requests are not applied until your manager approves them.">{relevantShiftRequests.length ? <div className="request-list">{relevantShiftRequests.map(request => <RequestRow key={request.id} title={formatDate(request.shift?.starts_at)} details={`${formatTime(request.requested_starts_at)} requested · ${request.reason}`} status={request.status} />)}</div> : <EmptyState icon={Clock3} title="No change requests" text="Your shift-change requests will appear here." />}</Card>}
         {isManager && <Card title="Shift-change requests" subtitle="Requests that need a decision.">{shiftRequests.length ? <div className="request-list">{shiftRequests.map(request => <RequestRow key={request.id} title={`${request.employee?.display_name || "Employee"} · ${formatDate(request.shift?.starts_at)}`} details={`${formatTime(request.requested_starts_at)} requested · ${request.reason}`} status={request.status} isManager={isManager} onReview={status => onReview("shift", request.id, status)} />)}</div> : <EmptyState icon={Clock3} title="No shift requests" text="Employee requests for shift changes will appear here." />}</Card>}
       </div>
@@ -1053,9 +2085,9 @@ function PayslipsView({ isManager, payslips, employees, employeeId, onDownload, 
   }, {}), [payslips]);
   return <>
     <PageHeading eyebrow="PAY & BENEFITS" title={isManager ? "Payroll statements" : "Payslips"} description={isManager ? "Publish pay statements to employees’ private accounts." : "Your pay statements, available when you need them."} />
-    {isManager && <Card title="Publish a payslip" subtitle="The employer supplies the pay values. Legion does not calculate payroll or tax."><form className="form-grid" onSubmit={onCreate}><Field label="Employee"><select name="employee" required defaultValue=""><option value="" disabled>Select an employee</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.display_name}</option>)}</select></Field><Field label="Period starts"><input name="period_start" type="date" required /></Field><Field label="Period ends"><input name="period_end" type="date" required /></Field><Field label="Gross pay (USD)"><input name="gross" type="number" min="0" step="0.01" required /></Field><Field label="Deductions (USD)"><input name="deductions" type="number" min="0" step="0.01" defaultValue="0" required /></Field><button className="primary-button form-action" type="submit"><Plus size={15} /> Publish payslip</button></form></Card>}
+    {isManager && <Card title="Publish a payslip" subtitle="The employer supplies the pay values. Legion does not calculate payroll or tax."><form className="form-grid" onSubmit={onCreate}><Field label="Employee"><select name="employee" required defaultValue=""><option value="" disabled>Select an employee</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.display_name}</option>)}</select></Field><Field label="Period starts"><input name="period_start" type="date" required /></Field><Field label="Period ends"><input name="period_end" type="date" required /></Field><Field label="Gross pay (R)"><input name="gross" type="number" min="0" step="0.01" required /></Field><Field label="Deductions (R)"><input name="deductions" type="number" min="0" step="0.01" defaultValue="0" required /></Field><button className="primary-button form-action" type="submit"><Plus size={15} /> Publish payslip</button></form></Card>}
     {Object.keys(grouped).length ? Object.entries(grouped).sort(([a], [b]) => Number(b) - Number(a)).map(([year, yearSlips]) => <Card key={year} className="spaced-card" title={year} subtitle={`${yearSlips.length} pay ${yearSlips.length === 1 ? "statement" : "statements"}`}>
-      <div className="slip-list">{yearSlips.map(slip => { const person = employees.find(employee => employee.id === slip.employee_id); return <div className="slip-row" key={slip.id}><span className="slip-icon"><FileText size={17} /></span><span className="slip-description"><strong>{formatDate(slip.period_start, { month: "long", year: "numeric" })}</strong><small>{formatDateRange(slip.period_start, slip.period_end)}{isManager ? ` · ${person?.display_name || "Employee"}` : ""}</small></span><span className="slip-net">{new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(slip.gross_pay - slip.deductions)}</span><button className="outline-button small-outline" onClick={() => onDownload(slip)}><ArrowDownToLine size={14} /> PDF</button></div>; })}</div>
+      <div className="slip-list">{yearSlips.map(slip => { const person = employees.find(employee => employee.id === slip.employee_id); return <div className="slip-row" key={slip.id}><span className="slip-icon"><FileText size={17} /></span><span className="slip-description"><strong>{formatDate(slip.period_start, { month: "long", year: "numeric" })}</strong><small>{formatDateRange(slip.period_start, slip.period_end)}{isManager ? ` · ${person?.display_name || "Employee"}` : ""}</small></span><span className="slip-net">{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(slip.gross_pay - slip.deductions)}</span><button className="outline-button small-outline" onClick={() => onDownload(slip)}><ArrowDownToLine size={14} /> PDF</button></div>; })}</div>
     </Card>) : <Card className="spaced-card">{<EmptyState icon={FileText} title="No pay statements yet" text={isManager ? "Publish a statement above when payroll is ready." : "Your company has not published a pay statement."} />}</Card>}
   </>;
 }

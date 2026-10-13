@@ -22,7 +22,8 @@ import {
 } from "lucide-react";
 import RecordInteraction from "./RecordInteraction.jsx";
 import { safeExternalUrl } from "../lib/reporting.js";
-import { workplaceGroups, workplaceModules } from "../lib/workplaceModules.js";
+import {workplaceModules,canAccessWorkplaceModule,getWorkplaceGroupsForRole,} from "../lib/workplaceModules.js";
+import EmployeeAvatar from "./EmployeeAvatar.jsx";
 
 const groupIcons = {
   platform: Code2,
@@ -48,15 +49,17 @@ export default function WorkplaceSuite({
   tasks,
   announcements,
   isManager,
+  role = "employee",
   userId,
   onCreate,
   onStatus,
   onDelete,
   onNavigate,
 }) {
-  const [moduleId, setModuleId] = useState(initialModuleId);
+  const moduleId = initialModuleId;
   const [query, setQuery] = useState("");
   const selectedModule = workplaceModules.find(module => module.id === moduleId);
+  const visibleGroups = getWorkplaceGroupsForRole(role);
 
   function openModule(module) {
     if (module.nativeView && !["directory", "search"].includes(module.nativeView)) {
@@ -64,9 +67,19 @@ export default function WorkplaceSuite({
       return;
     }
     setQuery("");
-    setModuleId(module.id);
+   onNavigate("suite", module.id);
   }
-
+if (
+  selectedModule &&
+  !canAccessWorkplaceModule(selectedModule.id, role)
+) {
+  return (
+    <section className="card panel-card">
+      <h2>Tool unavailable</h2>
+      <p>This tool is not available for your role.</p>
+    </section>
+  );
+}
   if (!selectedModule) {
     return (
       <>
@@ -80,7 +93,7 @@ export default function WorkplaceSuite({
           </div>
         </div>
         <div className="suite-groups">
-          {workplaceGroups.map(group => {
+          {visibleGroups.map(group => {
             const Icon = groupIcons[group.id] || Boxes;
             return (
               <details className="suite-group card" key={group.id}>
@@ -121,13 +134,12 @@ export default function WorkplaceSuite({
     );
     return (
       <section className="suite-detail">
-        <button className="suite-back" onClick={() => setModuleId("")}><ArrowLeft size={15} /> All workplace tools</button>
         <SuiteModuleHeading module={selectedModule} />
         <label className="suite-search"><Search size={16} /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search employees" /></label>
         <div className="suite-directory-grid">
           {matches.map(employee => (
             <article className="suite-directory-card card" key={employee.id}>
-              <span className="suite-person-avatar">{employee.display_name.split(/\s+/).map(part => part[0]).slice(0, 2).join("").toUpperCase()}</span>
+              <EmployeeAvatar employeeId={employee.id} />
               <strong>{employee.display_name}</strong>
               <span>{employee.job_title}</span>
               <small>{displayStatus(employee.role)}</small>
@@ -149,7 +161,6 @@ export default function WorkplaceSuite({
     const matches = searchable.filter(item => `${item.type} ${item.title} ${item.description}`.toLowerCase().includes(query.toLowerCase()));
     return (
       <section className="suite-detail">
-        <button className="suite-back" onClick={() => setModuleId("")}><ArrowLeft size={15} /> All workplace tools</button>
         <SuiteModuleHeading module={selectedModule} />
         <label className="suite-search"><Search size={16} /><input autoFocus value={query} onChange={event => setQuery(event.target.value)} placeholder="Search workspace records" /></label>
         <div className="suite-search-results">
@@ -172,7 +183,6 @@ export default function WorkplaceSuite({
 
   return (
     <section className="suite-detail">
-      <button className="suite-back" onClick={() => setModuleId("")}><ArrowLeft size={15} /> All workplace tools</button>
       <SuiteModuleHeading module={selectedModule} />
       {selectedModule.provider && (
         <div className="suite-provider-note"><ExternalLink size={16} /><span><strong>External provider not connected</strong>{selectedModule.provider} This module stores internal tracking records only; it does not control or sync the external service.</span></div>
@@ -203,7 +213,7 @@ export default function WorkplaceSuite({
             {moduleRecords.map(record => {
               const canUpdate = isManager || record.created_by === userId;
               return (
-                <div className="suite-entry" key={record.id}><article className="suite-record-row">
+                <div id={`workplace-${record.id}`}className="suite-entry"key={record.id}><article className="suite-record-row">
                   <span className="suite-record-icon">{selectedModule.id.startsWith("collaboration.docs") ? <BookOpen size={16} /> : selectedModule.id.startsWith("collaboration") ? <MessageSquare size={16} /> : selectedModule.id.startsWith("people") ? <BriefcaseBusiness size={16} /> : selectedModule.id.startsWith("platform") ? <Code2 size={16} /> : selectedModule.id.startsWith("security") ? <Shield size={16} /> : selectedModule.id.startsWith("data") ? <LayoutDashboard size={16} /> : <HeartHandshake size={16} />}</span>
                   <div className="suite-record-copy"><strong>{record.title}</strong>{record.description && <p>{record.description}</p>}{record.metadata?.field_value && <p><strong>{selectedModule.valueLabel || "Reference"}:</strong> {safeExternalUrl(record.metadata.field_value) ? <a href={safeExternalUrl(record.metadata.field_value)} target="_blank" rel="noopener noreferrer">Open resource <ExternalLink size={12} /></a> : record.metadata.field_value}</p>}{safeExternalUrl(record.metadata?.resource_url) && <p><a href={safeExternalUrl(record.metadata.resource_url)} target="_blank" rel="noopener noreferrer">Open linked resource <ExternalLink size={12} /></a></p>}<small>{record.visibility === "private" ? "Private · " : ""}{record.due_date ? `Due ${record.due_date} · ` : ""}{new Date(record.created_at).toLocaleDateString()}</small></div>
                   <select aria-label={`Status for ${record.title}`} value={record.status} disabled={!canUpdate || (selectedModule.reviewRequired && !isManager)} onChange={event => onStatus(record, event.target.value)}>{recordStatusOptions.map(status => <option value={status} key={status}>{displayStatus(status)}</option>)}</select>

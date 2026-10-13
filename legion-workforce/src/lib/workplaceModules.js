@@ -94,3 +94,42 @@ export const workplaceModules = workplaceGroups.flatMap(group =>
 export const employeeCreatableModuleIds = workplaceModules
   .filter(module => module.employeeCreate)
   .map(module => module.id);
+
+  const employeeVisibleModules = new Set([
+  "collaboration.chat", "collaboration.docs", "collaboration.activity",
+  "collaboration.search", "collaboration.projects", "collaboration.meetings",
+  "people.onboarding", "people.directory", "people.payroll",
+  "people.benefits", "people.expenses", "people.time-off",
+  "people.feedback", "people.learning",
+  "security.access", "security.training",
+  "culture.recognition", "culture.feedback", "culture.surveys",
+  "culture.wellness", "culture.social", "culture.perks"
+]);
+
+const managerExtraModules = new Set([
+  "collaboration.okrs", "collaboration.dashboards",
+  "people.performance", "people.recruiting", "data.bi"
+]);
+
+export function canAccessWorkplaceModule(moduleId, role = "employee") {
+  if (!workplaceModules.some(module => module.id === moduleId)) return false;
+  if (role === "admin") return true;
+  if (role !== "employee" && role !== "manager") return false;
+
+  return employeeVisibleModules.has(moduleId) ||
+    (role === "manager" && managerExtraModules.has(moduleId));
+}
+
+export function getWorkplaceGroupsForRole(role = "employee") {
+  const mainPages = new Set([
+    "tasks", "leave", "payslips", "activity", "insights"
+  ]);
+
+  return workplaceGroups.map(group => ({
+    ...group,
+    modules: group.modules.filter(module =>
+      canAccessWorkplaceModule(module.id, role) &&
+      !mainPages.has(module.nativeView)
+    )
+  })).filter(group => group.modules.length);
+}
