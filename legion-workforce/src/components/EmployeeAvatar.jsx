@@ -5,6 +5,8 @@ import {
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { supabase } from "../lib/supabase.js";
+import EmployeeReport from "./EmployeeReport.jsx";
+import EmployeeWorkGraph from "./EmployeeWorkGraph.jsx";
 
 const ProfilesContext = createContext(null);
 
@@ -130,7 +132,10 @@ function useEmployeePhotos(userId) {
 }
 
 export function EmployeeProfilesProvider({
-  userId, employees = [], children
+  userId,
+  role = "employee",
+  employees = [],
+  children
 }) {
   const photos = useEmployeePhotos(userId);
   const [selection, setSelection] = useState(null);
@@ -159,6 +164,10 @@ export function EmployeeProfilesProvider({
           key={`${userId}:${person.id}`}
           employee={person}
           src={photos[person.id] || ""}
+          isAdmin={role === "admin"}
+          isManager={role === "manager"}
+          viewerId={userId}
+          employees={employees}
           onClose={() => setSelection(null)}
         />,
         document.body
@@ -209,9 +218,14 @@ export default function EmployeeAvatar({
   );
 }
 
-function EmployeePhotoDialog({ employee, src, onClose }) {
+function EmployeePhotoDialog({
+  employee, src, onClose, isAdmin, viewerId, employees,
+  isManager = false
+}) {
   const dialog = useRef(null);
   const [failed, setFailed] = useState("");
+  const [showReport, setShowReport] = useState(false);
+  const reportOpen = showReport && isAdmin;
 
   useEffect(() => {
     const element = dialog.current;
@@ -222,11 +236,24 @@ function EmployeePhotoDialog({ employee, src, onClose }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isAdmin) setShowReport(false);
+  }, [isAdmin]);
+
+  function backToPhoto() {
+    setShowReport(false);
+    window.requestAnimationFrame(() => {
+      dialog.current
+        ?.querySelector(".employee-report-launch")
+        ?.focus();
+    });
+  }
+
   return (
     <dialog
       ref={dialog}
-      className="employee-photo-dialog"
-      aria-label={`${employee.display_name}'s profile photo`}
+      className={`employee-photo-dialog${reportOpen ? " employee-report-dialog" : ""}`}
+      aria-label={`${employee.display_name}'s ${reportOpen ? "employee report" : "profile photo"}`}
       onCancel={event => {
         event.preventDefault();
         onClose();
@@ -240,35 +267,58 @@ function EmployeePhotoDialog({ employee, src, onClose }) {
         <button
           type="button"
           className="employee-photo-close"
-          aria-label="Close profile photo"
+          aria-label="Close employee profile"
           onClick={onClose}
         >
           <X size={20} />
         </button>
       </header>
 
-      {src && failed !== src ? (
-        <img
-          className="employee-photo-large"
-          key={src}
-          src={src}
-          alt={`${employee.display_name}'s profile photo`}
-          onError={() => setFailed(src)}
+      {reportOpen ? (
+        <EmployeeReport
+          employee={employee}
+          viewerId={viewerId}
+          employees={employees}
+          onBack={backToPhoto}
         />
       ) : (
-        <div
-          className="employee-photo-placeholder"
-          role="img"
-          aria-label="No profile photo available"
-        >
-          {initials(employee.display_name)}
-        </div>
-      )}
+        <>
+          {src && failed !== src ? (
+            <img
+              className="employee-photo-large"
+              key={src}
+              src={src}
+              alt={`${employee.display_name}'s profile photo`}
+              onError={() => setFailed(src)}
+            />
+          ) : (
+            <div
+              className="employee-photo-placeholder"
+              role="img"
+              aria-label="No profile photo available"
+            >
+              {initials(employee.display_name)}
+            </div>
+          )}
 
-      <footer className="employee-photo-footer">
-        <strong>{employee.display_name}</strong>
-        <span>{employee.job_title || "Employee"}</span>
-      </footer>
+          <footer className="employee-photo-footer">
+            <strong>{employee.display_name}</strong>
+            <span>{employee.job_title || "Employee"}</span>
+
+            {isAdmin && (
+              <button
+                type="button"
+                className="employee-report-launch"
+                onClick={() => setShowReport(true)}
+              >
+                EMPLOYEE REPORT
+              </button>
+            )}
+          </footer>
+          {isManager && (<EmployeeWorkGraph employeeId={employee.id}viewerId={viewerId}/>
+   )}
+        </>
+      )}
     </dialog>
   );
 }

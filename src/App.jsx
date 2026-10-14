@@ -288,33 +288,257 @@ function App() {
   const userId = session?.user?.id;
 
   const loadWorkspace = useCallback(async user => {
-    if (!user) return;
-    setDataLoading(true);
-    setError("");
-    try {
-      const results = await Promise.all([
-        supabase.from("employees").select("id,display_name,job_title,role").order("display_name"),
-        supabase.from("tasks").select("*").order("due_date", { ascending: true, nullsFirst: false }).order("created_at", { ascending: false }),
-        supabase.from("announcements").select("*, author:employees!announcements_author_id_fkey(display_name)").order("created_at", { ascending: false }).limit(40),
-        supabase.from("time_entries").select("*").order("clocked_in_at", { ascending: false }).limit(300),
-        supabase.from("shifts").select("*, employee:employees!shifts_employee_id_fkey(display_name)").order("starts_at"),
-        supabase.from("leave_requests").select("*, employee:employees!leave_requests_employee_id_fkey(display_name)").order("created_at", { ascending: false }),
-        supabase.from("shift_change_requests").select("*, employee:employees!shift_change_requests_employee_id_fkey(display_name), shift:shifts!shift_change_requests_shift_id_fkey(starts_at,ends_at,location)").order("created_at", { ascending: false }),
-        supabase.from("payslips").select("*").order("period_start", { ascending: false }),
-      ]);
-      const failure = results.find(result => result.error)?.error;
-      if (failure) throw failure;
-      const [employees, tasks, announcements, timeEntries, shifts, leaveRequests, shiftRequests, payslips] = results.map(result => result.data);
-      const employeeProfile = employees.find(employee => employee.id === user.id);
-      if (!employeeProfile) throw new Error("Your employee profile is still being created. Refresh in a moment, or ask your administrator for help.");
-      setProfile(employeeProfile);
-      setData({ employees, tasks, announcements, timeEntries, shifts, leaveRequests, shiftRequests, payslips });
-    } catch (loadError) {
-      setError(getErrorMessage(loadError));
-    } finally {
-      setDataLoading(false);
+  if (!user) return false;
+
+  if (!navigator.onLine) {
+    setLoading(false);
+    setDataLoading(false);
+    return false;
+  }
+
+  const generation = ++workspaceGeneration.current;
+
+  setDataLoading(true);
+  setError("");
+
+  try {
+    const [
+      results,
+      workplaceRecordsResult,
+      interactionsResult,
+      activityResult,
+    ] = await Promise.all([
+      Promise.all([
+        withTimeout(() =>
+          supabase
+            .from("employees")
+            .select("id,display_name,job_title,role")
+            .order("display_name")
+        ),
+
+        withTimeout(() =>
+          supabase
+            .from("tasks")
+            .select("*")
+            .order("due_date", {
+              ascending: true,
+              nullsFirst: false,
+            })
+            .order("created_at", {
+              ascending: false,
+            })
+        ),
+
+        withTimeout(() =>
+          supabase
+            .from("announcements")
+            .select(
+              "*, author:employees!announcements_author_id_fkey(display_name)"
+            )
+            .order("created_at", {
+              ascending: false,
+            })
+            .limit(40)
+        ),
+
+        withTimeout(() =>
+          supabase
+            .from("time_entries")
+            .select("*")
+            .order("clocked_in_at", {
+              ascending: false,
+            })
+            .limit(300)
+        ),
+
+        withTimeout(() =>
+          supabase
+            .from("shifts")
+            .select(
+              "*, employee:employees!shifts_employee_id_fkey(display_name)"
+            )
+            .order("starts_at")
+        ),
+
+        withTimeout(() =>
+          supabase
+            .from("leave_requests")
+            .select(
+              "*, employee:employees!leave_requests_employee_id_fkey(display_name)"
+            )
+            .order("created_at", {
+              ascending: false,
+            })
+        ),
+
+        withTimeout(() =>
+          supabase
+            .from("shift_change_requests")
+            .select(
+              "*, employee:employees!shift_change_requests_employee_id_fkey(display_name), shift:shifts!shift_change_requests_shift_id_fkey(starts_at,ends_at,location)"
+            )
+            .order("created_at", {
+              ascending: false,
+            })
+        ),
+
+        withTimeout(() =>
+          supabase
+            .from("payslips")
+            .select("*")
+            .order("period_start", {
+              ascending: false,
+            })
+        ),
+      ]),
+
+      withTimeout(() =>
+        supabase
+          .from("workplace_records")
+          .select("*")
+          .neq(
+            "module_id",
+            "collaboration.activity"
+          )
+          .order("created_at", {
+            ascending: false,
+          })
+          .limit(500)
+      ),
+
+      withTimeout(() =>
+        supabase
+          .from("workplace_interactions")
+          .select("*")
+          .order("created_at", {
+            ascending: false,
+          })
+          .limit(1000)
+      ),
+
+      withTimeout(() =>
+        supabase
+          .from("workplace_records")
+          .select("*")
+          .eq(
+            "module_id",
+            "collaboration.activity"
+          )
+          .order("created_at", {
+            ascending: false,
+          })
+          .limit(100)
+      ),
+    ]);
+
+    if (
+      generation !== workspaceGeneration.current
+    ) {
+      return false;
     }
-  }, []);
+
+    const failure = results.find(
+      result => result?.error
+    )?.error;
+
+    if (failure) throw failure;
+
+    const [
+      employees,
+      tasks,
+      announcements,
+      timeEntries,
+      shifts,
+      leaveRequests,
+      shiftRequests,
+      payslips,
+    ] = results.map(result => result.data);
+
+    const employeeProfile = employees.find(
+      employee => employee.id === user.id
+    );
+
+    if (!employeeProfile) {
+      throw new Error(
+        "Your employee profile is still being created. Refresh in a moment, or ask your administrator for help."
+      );
+    }
+
+    const loadedWorkspace = {
+      employees,
+      tasks,
+      announcements,
+      timeEntries,
+      shifts,
+      leaveRequests,
+      shiftRequests,
+      payslips,
+
+      workplaceRecords: [
+        ...(workplaceRecordsResult.data || []),
+        ...(activityResult.data || []),
+      ],
+
+      interactions:
+        interactionsResult.data || [],
+    };
+
+    setProfile(employeeProfile);
+    setData(loadedWorkspace);
+
+    saveOfflineWorkspace(
+      user.id,
+      employeeProfile,
+      loadedWorkspace
+    );
+
+    const toolsError =
+      workplaceRecordsResult.error ||
+      interactionsResult.error ||
+      activityResult.error;
+
+    setError(
+      toolsError
+        ? `Some workplace tools could not load. Ask your administrator to apply the latest database update. Details: ${getErrorMessage(toolsError)}`
+        : ""
+    );
+
+    return true;
+  } catch (loadError) {
+    if (
+      generation !== workspaceGeneration.current
+    ) {
+      return false;
+    }
+
+    if (isMissingSchemaError(loadError)) {
+      setError(
+        "The company workspace is not ready yet. Ask your administrator to finish database setup, then retry."
+      );
+    } else {
+      const message = getErrorMessage(loadError);
+
+      if (
+        !navigator.onLine ||
+        /failed to fetch|fetch failed|networkerror|network request failed|taking too long|timed out|aborted|aborterror/i
+          .test(message)
+      ) {
+        setIsOnline(false);
+      }
+
+      setError(message);
+    }
+
+    return false;
+  } finally {
+    if (
+      generation === workspaceGeneration.current
+    ) {
+      setDataLoading(false);
+      setLoading(false);
+    }
+  }
+}, []);
 
   useEffect(() => {
     if (!supabaseConfigured) return undefined;
@@ -328,6 +552,9 @@ function App() {
       if (live) { setError(getErrorMessage(sessionError)); setLoading(false); }
     });
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === "SIGNED_OUT") {
+  clearOfflineWorkspace();
+}
       if (event === "PASSWORD_RECOVERY") setPasswordRecovery(true);
       setSession(nextSession);
       if (!nextSession) {
@@ -368,6 +595,12 @@ function App() {
   }, [toast]);
 
   const mutate = useCallback(async operation => {
+    if (!navigator.onLine) {
+  setError(
+    "Connect to the internet to save this action. Nothing was sent."
+  );
+  return null;
+}
     setError("");
     try {
       const result = await operation();
@@ -590,6 +823,7 @@ async function deleteAnnouncement(announcement) {
   }
 
   async function signOut() {
+    clearOfflineWorkspace();
   try {
     await disableDeviceNotifications(userId);
   } catch {
@@ -608,6 +842,13 @@ async function deleteAnnouncement(announcement) {
 }
 
   if (!supabaseConfigured) return <ConfigScreen />;
+  if (!isOnline) {
+  return (
+    <OfflineWorkspace
+      viewerId={session?.user?.id}
+    />
+  );
+}
   if (loading) return <div className="full-loader"><Brand /><LoaderCircle className="spin" size={23} /><span>Connecting to your workspace…</span></div>;
   if (!session) return <AuthScreen />;
   if (passwordRecovery) return <PasswordRecovery onComplete={() => { setPasswordRecovery(false); setToast("Your password has been updated."); }} />;

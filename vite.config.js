@@ -1,8 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import offlineBuild from "./offlineBuild.js";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), offlineBuild()],
   build: {
     rollupOptions: {
       output: {

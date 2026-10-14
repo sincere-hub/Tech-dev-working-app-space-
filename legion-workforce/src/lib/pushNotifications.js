@@ -85,7 +85,7 @@ function publicKey() {
 
   if (!/^[A-Za-z0-9_-]{87}$/.test(value)) {
     throw new Error(
-      "Check VITE_VAPID_PUBLIC_KEY in .env.local, then restart Vite.",
+      "Notifications are not configured yet. Please contact your administrator.",
     );
   }
 
