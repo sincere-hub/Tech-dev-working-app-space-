@@ -38,6 +38,8 @@ import {
   saveOfflineWorkspace,
   clearOfflineWorkspace,
 } from "./lib/offlineWorkspace.js";
+import { clockMessage } from "./lib/clockMessage.js";
+import DevAppTest from "./components/DevAppTest.jsx";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -534,6 +536,11 @@ useEffect(() => {
   const [profile, setProfile] = useState(null);
   const [data, setData] = useState({ employees: [], tasks: [], announcements: [], timeEntries: [], shifts: [], leaveRequests: [], shiftRequests: [], payslips: [], workplaceRecords: [], interactions: [] });
   const [activeView, setActiveView] = useState("overview");
+  const [devTestsOpen, setDevTestsOpen] = useState(false);
+
+useEffect(() => {
+  setDevTestsOpen(false);
+}, [session?.user?.id]);
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState("");
@@ -1171,7 +1178,7 @@ function openActivityItem(activity) {
 
   async function toggleClock() {
     const result = await mutate(() => supabase.rpc(openEntry ? "clock_out" : "clock_in"));
-    if (result) setToast(openEntry ? "You’re clocked out. Have a restful evening." : "You’re clocked in. Have a productive day.");
+   if (result) setToast(clockMessage(Boolean(openEntry)));
   }
 
   async function updateTask(task, status) {
@@ -1791,7 +1798,7 @@ async function signOut() {
   role={profile?.role || "employee"}
   employees={data.employees}
 >
-      <NavigationDrawer open={mobileMenuOpen} items={visibleNavigation} activeView={activeView} onNavigate={navigate} onClose={closeMenu} onSignOut={signOut} name={displayName} role={profile?.role}avatarSrc={avatarSrc} />
+      <NavigationDrawer open={mobileMenuOpen} items={visibleNavigation} activeView={activeView} onNavigate={navigate} onClose={closeMenu} onSignOut={signOut} name={displayName} role={profile?.role}avatarSrc={avatarSrc} onOpenDevTests={() => setDevTestsOpen(true)}/>
       <main className="main-area" inert={mobileMenuOpen ? true : undefined}>
         <header className="topbar">
           <div className="topbar-left"><button className="icon-button menu-trigger" aria-label="Open menu" aria-expanded={mobileMenuOpen} aria-controls="workspace-menu" onClick={toggleNavigation}><Menu size={21} /></button><Brand compact /><span className="desktop-page-name">{heading}</span></div>
@@ -1875,6 +1882,15 @@ async function signOut() {
         {navigation.filter(item => ["overview", "tasks", "attendance"].includes(item.id)).map(item => <NavItem key={item.id} item={item} active={activeView === item.id} onClick={() => navigate(item.id)} mobile />)}
         <button className={`mobile-nav-item${mobileMenuOpen ? " active" : ""}`} onClick={toggleNavigation} aria-label="More tools" aria-expanded={mobileMenuOpen}><Menu size={20} /><span>More</span></button>
       </nav>
+      {devTestsOpen &&
+  profile?.id === userId &&
+  profile?.role === "admin" && (
+    <DevAppTest
+      key={userId}
+      userId={userId}
+      onClose={() => setDevTestsOpen(false)}
+    />
+  )}
           {toast && <div className="toast" role="status"><Check size={16} />{toast}</div>}
       </EmployeeProfilesProvider>
     </div>

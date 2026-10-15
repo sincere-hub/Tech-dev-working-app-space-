@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Search, X, ArrowRight, LogOut } from "lucide-react";
 import {workplaceModules,getWorkplaceGroupsForRole,canAccessWorkplaceModule} from "../lib/workplaceModules.js";
+import AdminBuildButton from "./AdminBuildButton.jsx";
 
-export default function NavigationDrawer({ open, items, activeView, onNavigate, onClose, onSignOut, name, role, avatarSrc }) {
+export default function NavigationDrawer({ open, items, activeView, onNavigate, onClose, onSignOut, name, role, avatarSrc, onOpenDevTests }) {
   const panel = useRef(null);
   const [query, setQuery] = useState("");
   useEffect(() => {
@@ -44,6 +45,13 @@ const groups = getWorkplaceGroupsForRole(role)
       <div className="drawer-scroll">
         <nav aria-label="Workspace pages" className="drawer-pages">{matches.map(item => { const Icon = item.icon; return <button key={item.id} aria-current={activeView === item.id ? "page" : undefined} onClick={() => onNavigate(item.id)}><Icon size={19} /><span>{item.label}</span><ArrowRight size={15} /></button>; })}</nav>
         <p className="drawer-section-label">WORKPLACE TOOLS</p>
+        <AdminBuildButton
+  role={role}
+  onOpen={() => {
+    onOpenDevTests();
+    onClose();
+  }}
+/>
         {groups.map(group => <details className="drawer-group" key={`${group.id}-${Boolean(search)}`} open={search ? true : undefined}><summary>{group.label}<span>{group.modules.length}</span></summary><div>{group.modules.map(module => <button key={module.id} onClick={() => module.nativeView && !["directory", "search"].includes(module.nativeView) ? onNavigate(module.nativeView) : onNavigate("suite", module.id)}>{module.title}<ArrowRight size={14} /></button>)}</div></details>)}
         {!matches.length && !groups.length && <p className="drawer-empty">No matching tools. Try another name.</p>}
       </div>

@@ -5338,3 +5338,488 @@ main.app-crash-screen {
     height: 23px;
   }
 }
+.drawer-build-number {
+  display: block;
+  margin: 8px 14px 16px;
+  padding: 10px 12px;
+  border: 1px solid #43617d;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #203d58, #142b41);
+  color: #bfd0e2;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dev-test-dialog {
+  width: min(720px, calc(100% - 24px));
+  max-height: calc(100dvh - 32px);
+  box-sizing: border-box;
+  overflow: auto;
+  padding: clamp(20px, 4vw, 32px);
+  border: 1px solid #486781;
+  border-radius: 22px;
+  background:
+    linear-gradient(145deg, #203c56, #102237 70%, #0b1828);
+  color: #edf5ff;
+  box-shadow: 0 24px 90px #0009;
+}
+
+.dev-test-dialog::backdrop {
+  background: #030c18d9;
+}
+
+.dev-test-dialog header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.dev-test-dialog h1 {
+  color: #f4f8ff;
+  font-size: clamp(22px, 5vw, 30px);
+  overflow-wrap: anywhere;
+}
+
+.dev-test-dialog p,
+.dev-test-dialog label {
+  color: #c7d7e8;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.dev-test-dialog button {
+  min-height: 44px;
+  padding: 11px 16px;
+  border: 1px solid #6d91b1;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #355f87, #234462);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dev-test-dialog button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.dev-test-dialog .dev-test-danger {
+  width: 100%;
+  margin-top: 18px;
+  border-color: #da8794;
+  background: linear-gradient(135deg, #9c3545, #6d2334);
+}
+
+.dev-test-dialog .dev-test-error {
+  color: #ffc2cb;
+}
+
+.dev-test-dialog .dev-test-status {
+  padding: 12px;
+  border-radius: 10px;
+  background: #153e58;
+  color: #def3ff;
+}
+
+.dev-test-counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.dev-test-counts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #ffffff09;
+}
+
+.dev-test-counts dt {
+  color: #c6d8e9;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  text-transform: capitalize;
+}
+
+.dev-test-counts dd {
+  margin: 0;
+  color: #fff;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dev-test-dialog .dev-test-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.dev-test-check input {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  margin: 3px 0 0;
+}
+
+.dev-test-confirm {
+  display: grid;
+  gap: 8px;
+}
+
+.dev-test-dialog .dev-test-confirm input {
+  width: 100%;
+  min-height: 46px;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #718ba5;
+  border-radius: 10px;
+  background: #0d2034;
+  color: #fff;
+  font: inherit;
+}
+
+.dev-test-dialog :is(button, input):focus-visible,
+.drawer-build-number:focus-visible {
+  outline: 2px solid #8dcaff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .dev-test-counts {
+    grid-template-columns: 1fr;
+  }
+}
+.drawer-build-number {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: calc(100% - 28px);
+  min-height: 66px;
+  margin: 10px 14px 18px;
+  padding: 12px 14px;
+  border: 1px solid #567ca080;
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      ellipse at 0 0,
+      #4688ae45,
+      transparent 65%
+    ),
+    linear-gradient(
+      125deg,
+      #203e5b,
+      #13283f 70%,
+      #132a38
+    );
+  color: #e8f3ff;
+  box-shadow:
+    inset 0 1px #ffffff15,
+    0 6px 18px #03101c35;
+  text-align: left;
+  transition:
+    border-color .2s,
+    box-shadow .2s;
+}
+
+.drawer-build-number:hover {
+  border-color: #83bce8;
+  box-shadow:
+    inset 0 1px #ffffff20,
+    0 8px 22px #03101c55;
+}
+
+.drawer-build-symbol {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  height: 36px;
+  border: 1px solid #78adcb45;
+  border-radius: 11px;
+  background: #a4d9ff0d;
+  color: #a9d9ff;
+}
+
+.drawer-build-copy {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+}
+
+.drawer-build-copy small {
+  color: #b4cce1;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+}
+
+.drawer-build-copy strong {
+  color: #eef7ff;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.dev-test-dialog {
+  color-scheme: dark;
+  background:
+    radial-gradient(
+      ellipse at 0 0,
+      #326d8a45,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 100% 100%,
+      #44387328,
+      transparent 55%
+    ),
+    linear-gradient(
+      145deg,
+      #182f47,
+      #0d1c2e 75%
+    );
+  border-color: #5d819e80;
+  box-shadow:
+    inset 0 1px #ffffff15,
+    0 30px 100px #000b;
+}
+
+.dev-test-dialog > header {
+  padding-bottom: 18px;
+  border-bottom: 1px solid #9cbad326;
+}
+
+.dev-test-dialog > header .eyebrow {
+  margin: 0 0 8px;
+  color: #aac9e2;
+  font-size: 10px;
+  letter-spacing: .12em;
+}
+
+.dev-test-dialog h1 {
+  margin: 0;
+  letter-spacing: -.03em;
+}
+
+.dev-only-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin: 22px 0;
+  padding: 16px;
+  border: 1px solid #c49b4c75;
+  border-radius: 15px;
+  background:
+    linear-gradient(
+      125deg,
+      #503b235c,
+      #2c29334d
+    );
+}
+
+.dev-only-badge {
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  height: 28px;
+  border: 1px solid #ebbb6390;
+  border-radius: 9px;
+  background: #eab95c12;
+  color: #ffd994;
+  font-weight: 800;
+}
+
+.dev-only-warning strong {
+  display: block;
+  color: #ffe1a7;
+  font-size: 15px;
+}
+
+.dev-test-dialog .dev-only-warning p {
+  margin: 5px 0 0;
+  color: #eddac0;
+  font-size: 13px;
+}
+
+.dev-test-counts {
+  padding: 12px;
+  border: 1px solid #829fb82b;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      145deg,
+      #1c354559,
+      #101e3066
+    );
+}
+
+.dev-test-counts > div {
+  background: #d8ebff06;
+  border: 1px solid #cce7ff0c;
+}
+
+.dev-reset-zone {
+  margin-top: 24px;
+  padding: clamp(16px, 4vw, 24px);
+  border: 1px solid #d47b8966;
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0,
+      #98385030,
+      transparent 70%
+    ),
+    linear-gradient(
+      145deg,
+      #302332,
+      #191e30
+    );
+}
+
+.dev-test-dialog .dev-reset-kicker {
+  margin: 0 0 8px;
+  color: #ffb5c0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+
+.dev-reset-zone h2 {
+  margin: 0;
+  color: #fff0f2;
+  font-size: 22px;
+  letter-spacing: -.02em;
+}
+
+.dev-test-dialog
+.dev-reset-zone > p:not(.dev-reset-kicker) {
+  color: #e0c7d0;
+}
+
+.dev-test-dialog .dev-reset-agreement,
+.dev-test-dialog .dev-test-danger {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid #f39da780;
+  border-radius: 12px;
+  background:
+    linear-gradient(
+      125deg,
+      #b23e54,
+      #86273c 65%,
+      #6c2339
+    );
+  color: #fff5f6;
+  box-shadow:
+    inset 0 1px #ffffff20,
+    0 6px 16px #08071035;
+}
+
+.dev-test-dialog .dev-reset-agreement {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  text-align: left;
+}
+
+.dev-test-dialog .dev-reset-agreement:disabled {
+  opacity: .75;
+}
+
+.dev-test-dialog .dev-reset-help {
+  color: #d4bbc7;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.dev-reset-confirmation {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #cf839838;
+}
+
+.dev-test-dialog .dev-test-confirm {
+  gap: 10px;
+  color: #f0dfe6;
+}
+
+.dev-test-confirm code {
+  display: block;
+  padding: 12px;
+  border: 1px solid #c18ea43d;
+  border-radius: 10px;
+  background: #090f1c99;
+  color: #ffc1cf;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  font-size: 13px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.dev-test-dialog .dev-reset-phrase {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #a47b9399;
+  border-radius: 11px;
+  background: #0c1423;
+  color: #fff1f5;
+  font:
+    14px ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+}
+
+.dev-test-dialog .dev-reset-cancel {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  border: 1px solid #8d78904d;
+  background:
+    linear-gradient(
+      135deg,
+      #352c40,
+      #222739
+    );
+  color: #eadfe9;
+  box-shadow: none;
+}
+
+@media (max-width: 480px) {
+  .dev-test-dialog {
+    padding: 20px 16px;
+  }
+
+  .dev-reset-zone {
+    padding: 16px;
+  }
+
+  .dev-only-warning {
+    padding: 14px;
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer-build-number {
+    transition: none;
+  }
+}

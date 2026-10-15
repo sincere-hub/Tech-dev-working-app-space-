@@ -275,6 +275,11 @@ function App() {
   const [profile, setProfile] = useState(null);
   const [data, setData] = useState({ employees: [], tasks: [], announcements: [], timeEntries: [], shifts: [], leaveRequests: [], shiftRequests: [], payslips: [] });
   const [activeView, setActiveView] = useState("overview");
+  const [devTestsOpen, setDevTestsOpen] = useState(false);
+
+useEffect(() => {
+  setDevTestsOpen(false);
+}, [session?.user?.id]);
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState("");
@@ -634,7 +639,7 @@ function App() {
 
   async function toggleClock() {
     const result = await mutate(() => supabase.rpc(openEntry ? "clock_out" : "clock_in"));
-    if (result) setToast(openEntry ? "You’re clocked out. Have a restful evening." : "You’re clocked in. Have a productive day.");
+    if (result) setToast(clockMessage(Boolean(openEntry)));
   }
 
   async function updateTask(task, status) {
@@ -923,6 +928,15 @@ async function deleteAnnouncement(announcement) {
         {visibleNavigation.slice(0, 5).map(item => <NavItem key={item.id} item={item} active={activeView === item.id} onClick={() => setActiveView(item.id)} mobile />)}
         {isManager && <NavItem item={managerNavigation} active={activeView === "manager"} onClick={() => setActiveView("manager")} mobile />}
       </nav>
+      {devTestsOpen &&
+  profile?.id === userId &&
+  profile?.role === "admin" && (
+    <DevAppTest
+      key={userId}
+      userId={userId}
+      onClose={() => setDevTestsOpen(false)}
+    />
+  )}
       {toast && <div className="toast" role="status"><Check size={16} />{toast}</div>}
     </div>
   );
