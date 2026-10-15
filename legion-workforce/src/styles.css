@@ -568,9 +568,16 @@ code { padding: 2px 4px; border-radius: 4px; color: #3a6548; background: #eff4ef
   background: conic-gradient(from var(--auth-beam-angle),transparent 0deg 292deg,#2878e8 324deg,#a6e6ff 345deg,transparent 360deg);
   content: "";
   pointer-events: none;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
+  -webkit-mask:
+  linear-gradient(#fff 0 0) content-box,
+  linear-gradient(#fff 0 0);
+
+mask:
+  linear-gradient(#fff 0 0) content-box,
+  linear-gradient(#fff 0 0);
+
+-webkit-mask-composite: xor;
+mask-composite: exclude;
   filter: drop-shadow(0 0 3px rgba(67,151,255,.75)) drop-shadow(0 0 9px rgba(32,113,232,.36));
   animation: auth-border-beam 5.5s linear infinite;
 }
@@ -3331,6 +3338,7 @@ button.employee-avatar { cursor: pointer; }
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   overflow: hidden;
   color: #d8e5f5;
   font-size: 13px;
