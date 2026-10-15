@@ -81,7 +81,11 @@ async function database(query) {
 }
 
 function publicKey() {
-  const value = (import.meta.env.VITE_VAPID_PUBLIC_KEY || "").trim();
+  const value =
+  String(
+    import.meta.env.VITE_VAPID_PUBLIC_KEY || ""
+  ).trim() ||
+  "BOmcpObwRAKfa8vOwYkv_obtcxn7oHnreOqWxEM5S5BLS3hVpTYY-Dg0L8abZf2BCRpqFGY4rtoUN6sb1mzOE0k".trim();
 
   if (!/^[A-Za-z0-9_-]{87}$/.test(value)) {
     throw new Error(
