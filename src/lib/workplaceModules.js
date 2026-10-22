@@ -38,7 +38,7 @@ export const workplaceGroups = [
       { id: "people.directory", title: "Employee directory", description: "Browse employee profiles and roles in this workspace.", nativeView: "directory" },
       { id: "people.payroll", title: "Payroll & payslips", description: "Publish employer-provided statements and review pay records.", nativeView: "payslips", provider: "Payroll calculation and tax filing are not connected." },
       { id: "people.benefits", title: "Benefits", description: "Publish benefits information and track employee questions or requests.", action: "Add benefits item", employeeCreate: true },
-      { id: "people.expenses", title: "Expenses", description: "Submit private expense claims with an amount and track manager review.", action: "Submit expense", employeeCreate: true, reviewRequired: true, privateByDefault: true, valueLabel: "Amount requested (USD)", valueType: "number" },
+      { id: "people.expenses", title: "Expenses", description: "Submit private expense claims with an amount and track manager review.", action: "Submit expense", employeeCreate: true, reviewRequired: true, privateByDefault: true, valueLabel: "Amount requested (ZAR)", valueType: "number" },
       { id: "people.time-off", title: "Time off & scheduling", description: "Request leave or a shift change and review schedules.", nativeView: "leave" },
       { id: "people.performance", title: "Performance reviews", description: "Track private review cycles, preparation, and manager follow-up.", action: "Add review cycle", privateByDefault: true },
       { id: "people.feedback", title: "Feedback", description: "Share feedback privately or with the company.", action: "Share feedback", employeeCreate: true, privateByDefault: true },

@@ -1377,7 +1377,16 @@ async function deleteAnnouncement(announcement) {
       metadata: { field_value: String(values.get("module_value") || "").trim(), resource_url: resourceUrl },
       created_by: session.user.id,
     }));
-    if (result) { form.reset(); setToast("Workspace record saved."); }
+   if (result) {
+  form.reset();
+  setToast(
+    module.id === "collaboration.chat"
+      ? "Message sent."
+      : "Workspace record saved."
+  );
+}
+
+return result;
   }
 
   async function updateWorkplaceRecord(record, status) {

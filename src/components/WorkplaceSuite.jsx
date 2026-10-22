@@ -24,6 +24,7 @@ import RecordInteraction from "./RecordInteraction.jsx";
 import { safeExternalUrl } from "../lib/reporting.js";
 import {workplaceModules,canAccessWorkplaceModule,getWorkplaceGroupsForRole,} from "../lib/workplaceModules.js";
 import EmployeeAvatar from "./EmployeeAvatar.jsx";
+import InternalChat from "./InternalChat.jsx";
 
 const groupIcons = {
   platform: Code2,
@@ -171,6 +172,22 @@ if (
       </section>
     );
   }
+if (selectedModule.id === "collaboration.chat") {
+  return (
+    <InternalChat
+      key={userId}
+      module={selectedModule}
+      records={records}
+      interactions={interactions}
+      employees={employees}
+      userId={userId}
+      isManager={isManager}
+      onCreate={onCreate}
+      onInteract={onInteract}
+      onDelete={onDelete}
+    />
+  );
+}
 
   const canCreate = isManager || selectedModule.employeeCreate;
   const recordStatusOptions = selectedModule.reviewRequired

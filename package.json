@@ -10,6 +10,7 @@
     "test": "node --test"
   },
   "dependencies": {
+    "@emoji-mart/data": "^1.2.1",
     "@supabase/supabase-js": "^2.58.0",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.468.0",
