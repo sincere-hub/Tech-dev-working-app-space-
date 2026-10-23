@@ -7344,3 +7344,11 @@ main.app-crash-screen {
   color: #eac6a5;
   background: linear-gradient(145deg, #a46b4855, #5b3c2d33);
 }
+/* Keep the attendance grid stationary inside its rows. */
+.work-history-card .work-week-track {
+  position: relative;
+  background-attachment: scroll !important;
+  background-position: 0 0 !important;
+  animation: none !important;
+  transition: none !important;
+}
