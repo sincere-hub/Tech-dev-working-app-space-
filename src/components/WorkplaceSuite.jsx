@@ -25,6 +25,7 @@ import { safeExternalUrl } from "../lib/reporting.js";
 import {workplaceModules,canAccessWorkplaceModule,getWorkplaceGroupsForRole,} from "../lib/workplaceModules.js";
 import EmployeeAvatar from "./EmployeeAvatar.jsx";
 import InternalChat from "./InternalChat.jsx";
+import DocsWorkspace from "./DocsWorkspace.jsx";
 
 const groupIcons = {
   platform: Code2,
@@ -185,6 +186,24 @@ if (selectedModule.id === "collaboration.chat") {
       onCreate={onCreate}
       onInteract={onInteract}
       onDelete={onDelete}
+    />
+  );
+}
+
+if (selectedModule.id === "collaboration.docs") {
+  return (
+    <DocsWorkspace
+      key={userId}
+      module={selectedModule}
+      records={records}
+      employees={employees}
+      interactions={interactions}
+      userId={userId}
+      isManager={isManager}
+      onCreate={onCreate}
+      onStatus={onStatus}
+      onDelete={onDelete}
+      onInteract={onInteract}
     />
   );
 }

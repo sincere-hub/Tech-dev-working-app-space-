@@ -6548,3 +6548,799 @@ main.app-crash-screen {
   color: #a9d9ff;
   font-weight: 700;
 }
+.legion-docs {
+  color: #eaf2fa;
+  min-width: 0;
+}
+
+.legion-docs h1,
+.legion-docs h2,
+.legion-docs h3 {
+  color: #f2f6fc;
+  overflow-wrap: anywhere;
+}
+
+.legion-docs button,
+.legion-docs input,
+.legion-docs select,
+.legion-docs textarea {
+  font: inherit;
+}
+
+.legion-docs button {
+  cursor: pointer;
+}
+
+.legion-docs button:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.legion-docs :is(button, input, select, textarea):focus-visible {
+  outline: 2px solid #acd4ed;
+  outline-offset: 3px;
+}
+
+.ld-hero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 26px;
+  border: 1px solid #7594ae40;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at top right, #507c9b33, transparent 65%),
+    linear-gradient(135deg, #213b53, #102336);
+}
+
+.ld-hero > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.ld-hero-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 58px;
+  height: 58px;
+  border-radius: 17px;
+  color: #e4c993;
+  background: linear-gradient(135deg, #a18b4e33, #d9c78d0a);
+  border: 1px solid #dac18a40;
+}
+
+.legion-docs .ld-eyebrow {
+  color: #cbb885;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+
+.legion-docs .ld-hero h1 {
+  margin: 7px 0 9px;
+  font-size: clamp(25px, 4vw, 34px);
+  letter-spacing: -.04em;
+}
+
+.legion-docs .ld-hero p {
+  margin: 0;
+  color: #bdcede;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.ld-primary,
+.ld-secondary,
+.ld-delete,
+.ld-resource {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #8cadc852;
+  border-radius: 11px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ld-primary {
+  background: linear-gradient(135deg, #437796, #28506e);
+  color: #f5fbff;
+  box-shadow: inset 0 1px #ffffff26, 0 5px 14px #0002;
+}
+
+.ld-secondary {
+  background: #ffffff08;
+  color: #d9e8f4;
+}
+
+.ld-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 30px;
+  padding: 18px 6px 24px;
+  color: #b9ccdd;
+  font-size: 12px;
+}
+
+.ld-stats strong {
+  margin-right: 5px;
+  color: #ecf4fc;
+  font-size: 18px;
+}
+
+.ld-editor,
+.ld-reader,
+.ld-library {
+  min-width: 0;
+  margin-bottom: 22px;
+  padding: 24px;
+  border: 1px solid #7d9ab042;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #1b334b, #112438);
+}
+
+.ld-editor > header,
+.ld-library-heading,
+.ld-reader-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.legion-docs .ld-editor h2,
+.legion-docs .ld-library h2 {
+  margin: 6px 0 16px;
+  font-size: 21px;
+}
+
+.ld-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid #8babc33b;
+  border-radius: 10px;
+  background: #ffffff08;
+  color: #e3eef8;
+}
+
+.legion-docs .ld-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  min-width: 0;
+  margin: 0;
+  padding: 8px 0 0;
+  border: 0;
+}
+
+.ld-fields label,
+.ld-management label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  color: #d5e2ee;
+  font-size: 13px;
+}
+
+.ld-wide {
+  grid-column: 1 / -1;
+}
+
+.legion-docs :is(input, textarea, select) {
+  min-width: 0;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1px solid #80a0ba55;
+  border-radius: 10px;
+  background: #0d2134;
+  color: #f0f6fc;
+  font-size: 16px;
+}
+
+.ld-fields :is(input, textarea, select) {
+  width: 100%;
+}
+
+.legion-docs textarea {
+  resize: vertical;
+  line-height: 1.75;
+}
+
+.legion-docs :is(input, textarea)::placeholder {
+  color: #9fb6cb;
+  opacity: 1;
+}
+
+.legion-docs option {
+  background: #10283d;
+  color: #eff7ff;
+}
+
+.ld-fields small,
+.ld-library-heading > small {
+  color: #b8cbdd;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ld-save {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.legion-docs .ld-error {
+  color: #ffd0d3;
+  padding: 12px;
+  border: 1px solid #d2838852;
+  border-radius: 10px;
+  background: #78394833;
+  font-size: 13px;
+}
+
+.ld-reader {
+  scroll-margin-top: 100px;
+  padding: 18px;
+  background: linear-gradient(145deg, #203b54, #102335);
+}
+
+.ld-reader-toolbar {
+  padding-bottom: 16px;
+  border-bottom: 1px solid #8cabc32b;
+}
+
+.ld-paper {
+  max-width: 760px;
+  margin: auto;
+  padding: 32px 16px 10px;
+}
+
+.legion-docs .ld-paper > h2 {
+  margin: 12px 0 22px;
+  font-size: clamp(25px, 4vw, 36px);
+  line-height: 1.25;
+  letter-spacing: -.035em;
+}
+
+.ld-byline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  color: #dae7f2;
+  font-size: 13px;
+}
+
+.legion-docs .ld-byline .employee-avatar {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 50%;
+}
+
+.ld-byline > span > small {
+  display: block;
+  margin-top: 5px;
+  color: #a8bfd3;
+  font-size: 11px;
+}
+
+.ld-reading {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  color: #bdd0df;
+  font-size: 12px;
+}
+
+.ld-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 30px;
+}
+
+.ld-state > span:not(.ld-tag) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #d6c39d;
+  font-size: 12px;
+}
+
+.ld-tag {
+  display: inline-block;
+  max-width: 100%;
+  padding: 5px 9px;
+  border: 1px solid #8eabc338;
+  border-radius: 7px;
+  background: #9ab5cc0d;
+  color: #c7dbea;
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.legion-docs .ld-article-body :is(p, li) {
+  color: #dce7f1;
+  font-size: 16px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+
+.ld-article-body p {
+  white-space: pre-wrap;
+  margin: 0 0 22px;
+}
+
+.legion-docs .ld-article-body h3 {
+  margin: 30px 0 12px;
+  font-size: 21px;
+}
+
+.ld-article-body ul {
+  padding-left: 24px;
+  margin-bottom: 24px;
+}
+
+.ld-resource {
+  margin: 8px 0 20px;
+  color: #c3e1fa;
+  background: #466f9130;
+  overflow-wrap: anywhere;
+}
+
+.ld-management {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px 0;
+  border-top: 1px solid #8cabc32b;
+}
+
+.ld-delete {
+  margin-left: auto;
+  border-color: #cc8f9659;
+  background: #8c3b482b;
+  color: #ffcbd1;
+}
+
+.ld-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 7px 0 22px;
+}
+
+.ld-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex: 1 1 250px;
+  min-width: 0;
+  padding-left: 12px;
+  border: 1px solid #80a0ba55;
+  border-radius: 10px;
+  background: #0d2134;
+  color: #b9cfe1;
+}
+
+.legion-docs .ld-search input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+}
+
+.ld-filters > select {
+  flex: 0 1 190px;
+}
+
+.ld-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 16px;
+}
+
+.ld-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #7695b044;
+  border-top: 3px solid #baab7e;
+  border-radius: 14px;
+  background: linear-gradient(150deg, #264159, #172d42);
+  box-shadow: 0 5px 16px #030c161a;
+  scroll-margin-top: 100px;
+}
+
+.ld-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #ddc995;
+}
+
+.ld-document-icon {
+  margin-top: 20px;
+  color: #adcae2;
+}
+
+.legion-docs .ld-card h3 {
+  margin: 12px 0 10px;
+}
+
+.ld-card h3 button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #f0f6fc;
+  text-align: left;
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.ld-card h3 button:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.legion-docs .ld-card > p {
+  flex: 1;
+  margin: 0 0 20px;
+  color: #bfd0df;
+  font-size: 13px;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.ld-card-bottom {
+  display: grid;
+  gap: 6px;
+  color: #d2e1ed;
+  font-size: 12px;
+}
+
+.ld-card-bottom small {
+  color: #aabfd2;
+  font-size: 11px;
+}
+
+.ld-card footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #88a7bf29;
+}
+
+.ld-status {
+  color: #b7d9cb;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.ld-open {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 44px;
+  padding: 7px 10px;
+  border: 1px solid #85adc050;
+  border-radius: 9px;
+  background: #6e9bb41a;
+  color: #dceefc;
+  font-size: 12px;
+}
+
+.ld-card[data-activity-target="true"] {
+  outline: 2px solid #e5c78b;
+  outline-offset: 3px;
+}
+
+.ld-empty {
+  padding: 45px 15px;
+  text-align: center;
+  color: #c3d9e9;
+}
+
+.legion-docs .ld-empty p {
+  color: #b9cede;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.legion-docs .record-interaction {
+  margin-top: 12px;
+  background: transparent;
+  color: #dce8f2;
+}
+
+.legion-docs .record-discussion,
+.legion-docs .comment-list article {
+  background: #10273b;
+  color: #dce8f2;
+  border-color: #7596b144;
+}
+
+.legion-docs .comment-list :is(p, strong),
+.legion-docs .discussion-toggle {
+  color: #dce8f2;
+}
+
+.legion-docs .comment-list time {
+  color: #afc5d9;
+}
+
+@media (max-width: 640px) {
+  .ld-hero {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 17px;
+  }
+
+  .ld-hero-icon {
+    flex-basis: 46px;
+    height: 46px;
+    border-radius: 13px;
+  }
+
+  .ld-hero > .ld-primary {
+    width: 100%;
+  }
+
+  .ld-stats {
+    gap: 10px 18px;
+    padding: 16px 2px;
+  }
+
+  .ld-editor,
+  .ld-library {
+    padding: 16px;
+    border-radius: 16px;
+  }
+
+  .legion-docs .ld-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ld-save .ld-primary {
+    width: 100%;
+  }
+
+  .ld-reader {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .ld-reader-toolbar,
+  .ld-library-heading {
+    flex-wrap: wrap;
+  }
+
+  .ld-paper {
+    padding: 24px 4px 8px;
+  }
+
+  .ld-reading {
+    width: 100%;
+    margin: 6px 0 0 44px;
+  }
+
+  .ld-filters > select {
+    flex: 1 1 140px;
+  }
+
+  .ld-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ld-management label,
+  .ld-delete {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+.legion-knowledge > [hidden] {
+  display: none;
+}
+
+.lk-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 6px;
+  border: 1px solid #7594ae40;
+  border-radius: 15px;
+  background: #102538;
+}
+
+.lk-tabs button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  flex: 1;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #c0d3e4;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lk-tabs button[aria-pressed="true"] {
+  border-color: #8fb2cb55;
+  background: linear-gradient(135deg, #396481, #25465f);
+  color: #f4f9ff;
+  box-shadow: 0 3px 12px #0002;
+}
+
+.lk-tabs button:focus-visible {
+  outline: 2px solid #acd4ed;
+  outline-offset: 2px;
+}
+
+.legion-files .lf-summary {
+  color: #c0d2e2;
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 16px 0 22px;
+}
+
+.legion-files .lf-success {
+  padding: 12px 16px;
+  border: 1px solid #82bda555;
+  border-radius: 11px;
+  background: #295b4838;
+  color: #c8f4e0;
+  font-size: 13px;
+}
+
+.lf-filename {
+  overflow-wrap: anywhere;
+  color: #e2edf6;
+  font-size: 12px;
+}
+
+.legion-files .lf-access {
+  margin: 14px 0 0;
+  color: #b9d8df;
+  font-size: 11px;
+}
+
+.legion-files .lf-actions {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.lf-actions .ld-delete {
+  min-height: 44px;
+  margin-left: 0;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.lf-load {
+  margin: 22px auto 0;
+  display: flex;
+}
+
+.lf-preview {
+  width: min(850px, calc(100vw - 32px));
+  max-height: 85dvh;
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid #89adc866;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #203e56, #102438);
+  color: #eaf4ff;
+  box-shadow: 0 25px 100px #0008;
+}
+
+.lf-preview::backdrop {
+  background: #030b15cc;
+  backdrop-filter: blur(4px);
+}
+
+.lf-preview header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.lf-preview h2 {
+  margin: 8px 0 0;
+  color: #f0f7ff;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+.lf-preview .ld-icon {
+  flex: 0 0 44px;
+}
+
+.lf-preview img {
+  display: block;
+  max-width: 100%;
+  max-height: 65dvh;
+  margin: auto;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.lf-preview pre {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #e4eff8;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.lf-preview p {
+  color: #c1d4e5;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.lf-filetype {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 56px;
+  margin: 20px 0 14px;
+  border: 1px solid #9ab5ce55;
+  border-radius: 6px 15px 6px 6px;
+  background: linear-gradient(145deg, #477b9e3b, #233e5733);
+  color: #bed9ed;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.lf-filetype[data-type="pdf"] {
+  color: #e8b7c5;
+  background: linear-gradient(145deg, #98586c44, #57394f33);
+}
+
+.lf-filetype[data-type="docx"] {
+  color: #b1d3fc;
+  background: linear-gradient(145deg, #416eac55, #263f6833);
+}
+
+.lf-filetype[data-type="xlsx"] {
+  color: #afe2cc;
+  background: linear-gradient(145deg, #3c8d7755, #244e4333);
+}
+
+.lf-filetype[data-type="pptx"] {
+  color: #eac6a5;
+  background: linear-gradient(145deg, #a46b4855, #5b3c2d33);
+}
