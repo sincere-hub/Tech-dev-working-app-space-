@@ -80,14 +80,14 @@ export default function OfflineWorkspace({ viewerId }) {
       <section className="offline-workspace">
         <header className="offline-header">
           <img
-            src={`${import.meta.env.BASE_URL}legion-mark.svg`}
+            src={`${import.meta.env.BASE_URL}techdev-mark.png`}
             width="42"
             height="42"
-            alt="Legion"
+            alt="TechDev"
           />
 
           <div>
-            <strong>LEGION</strong>
+            <strong>TECHDEV</strong>
             <span>Saved workspace</span>
           </div>
 

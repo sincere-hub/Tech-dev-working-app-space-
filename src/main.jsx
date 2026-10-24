@@ -8,7 +8,7 @@ class AppBoundary extends React.Component {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
   render() {
-    if (this.state.failed) return <main className="setup-screen app-crash-screen"><section className="setup-card app-crash-card"><img src="/legion-mark.svg" width="96" height="96" alt="Legion"/><h1>Let’s reopen your workspace.</h1><p>Legion could not open this screen. Reload and try again, or contact your administrator if the problem continues.</p><button className="primary-button" onClick={() => window.location.reload()}>Reload workspace</button></section></main>;
+    if (this.state.failed) return <main className="setup-screen app-crash-screen"><section className="setup-card app-crash-card"><img src="/techdev-mark.png" width="96" height="96" alt="TechDev"/><h1>Let’s reopen your workspace.</h1><p>TechDev could not open this screen. Reload and try again, or contact your administrator if the problem continues.</p><button className="primary-button" onClick={() => window.location.reload()}>Reload workspace</button></section></main>;
     return this.props.children;
   }
 }

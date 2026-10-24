@@ -40,6 +40,7 @@ import {
 } from "./lib/offlineWorkspace.js";
 import { clockMessage } from "./lib/clockMessage.js";
 import DevAppTest from "./components/DevAppTest.jsx";
+import TechDevGlobe from "./components/TechDevGlobe.jsx";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -155,15 +156,22 @@ function getWeekRange(date = new Date()) {
 
 function Brand({ compact = false }) {
   return (
-    <a className={`brand${compact ? " brand-compact" : ""}`} href="/" aria-label="Legion home">
+    <a className={`brand${compact ? " brand-compact" : ""}`} href="/" aria-label="TechDev home">
       <BrandMark />
-      <img className="brand-wordmark-image" src="/legion-wordmark.svg" alt="LEGION" width="380" height="74" draggable="false" />
+      <img className="brand-wordmark-image" src="/techdev-wordmark.png" alt="TECHDEV" width="380" height="74" draggable="false" />
     </a>
   );
 }
 
 function BrandMark({ animated = false }) {
-  return <span className={`brand-mark${animated ? " is-animated" : ""}`} aria-hidden="true"><img src="/legion-mark.svg" alt="" width="512" height="512" draggable="false" /></span>;
+  return (
+    <span
+      className={`brand-mark${animated ? " is-animated" : ""}`}
+      aria-hidden="true"
+    >
+      <TechDevGlobe animated={animated} />
+    </span>
+  );
 }
 
 function ConfigScreen() {
@@ -242,8 +250,8 @@ function StartupScreen({ isOnline }) {
     <main className={`startup-screen${isOnline ? "" : " startup-offline"}`} role="status" aria-live="polite">
       <div className="startup-emblem"><BrandMark animated /></div>
       <div className="startup-brand">
-        <strong>LEGION</strong>
-        <span>ONE TEAM. ONE LEGION.</span>
+        <strong>TECH DEV</strong>
+        <span>EMPOWER YOUR DIGITAL JOURNEY.</span>
       </div>
       <p>{isOnline ? "Preparing your workspace" : "Waiting for your connection"}</p>
       {!isOnline && <span className="startup-network-note">Your workspace will reconnect automatically.</span>}
@@ -348,7 +356,7 @@ if (!strongPassword) {
     <span>SECURE EMPLOYEE ACCESS</span>
   </span>
 </header>
-        <p className="eyebrow">{mode === "signup" ? "Welcome to Legion" : "Your work, in good company"}</p>
+        <p className="eyebrow">{mode === "signup" ? "Welcome to Tech Dev" : "Your work, in good company"}</p>
         <h1>{mode === "signup" ? "Create your account" : "Welcome back"}</h1>
         <p className="body-copy">{mode === "signup" ? "Use an email address you can access to create your employee account." : "Sign in to your secure employee workspace."}</p>
         <form className="form-stack" onSubmit={submit}>
@@ -387,7 +395,7 @@ if (!strongPassword) {
           </button>
         </p>}
         <p className="auth-footnote">Employees receive access from their company administrator.</p>
-        <footer className="auth-footer">LEGION <span>·</span> PEOPLE OPERATIONS, IN SYNC</footer>
+        <footer className="auth-footer">TECH DEV <span>·</span> PEOPLE OPERATIONS, IN SYNC</footer>
       </section>
     </main>
   );
@@ -424,7 +432,7 @@ function PasswordRecovery({ onComplete }) {
 </header>
         <p className="eyebrow">ACCOUNT SECURITY</p>
         <h1>Choose a new password</h1>
-        <p className="body-copy">Set a new password for your Legion account.</p>
+        <p className="body-copy">Set a new password for your Tech Dev account.</p>
         <form className="form-stack" onSubmit={submit}>
           <AuthField label="New password" action={<button className="password-visibility" type="button" aria-label={showPassword ? "Hide password" : "Show password"} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button>}>
             <input required minLength={8} autoComplete="new-password" type={showPassword ? "text" : "password"} value={password} onChange={event => setPassword(event.target.value)} placeholder=" " />
@@ -432,7 +440,7 @@ function PasswordRecovery({ onComplete }) {
           {error && <p className="form-error" role="alert">{error}</p>}
           <button className="primary-button full-button" disabled={busy}>{busy ? <LoaderCircle className="spin" size={16} /> : null}Update password</button>
         </form>
-        <footer className="auth-footer">LEGION <span>·</span> PEOPLE OPERATIONS, IN SYNC</footer>
+        <footer className="auth-footer">TECH DEV <span>·</span> PEOPLE OPERATIONS, IN SYNC</footer>
       </section>
     </main>
   );
@@ -611,7 +619,7 @@ function goBack() {
  const [isOnline, setIsOnline] = useState(
   () =>
     navigator.onLine &&
-    document.documentElement.dataset.legionOffline !== "true"
+    document.documentElement.dataset.techdevOffline !== "true"
 );
   const [startupComplete, setStartupComplete] = useState(false);
   const authUserIdRef = useRef(null);
@@ -1020,9 +1028,12 @@ function openActivityItem(activity) {
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setStartupComplete(true), 350);
-    return () => window.clearTimeout(timer);
-  }, []);
+  const timer = window.setTimeout(() => {
+    setStartupComplete(true);
+  }, 1400);
+
+  return () => window.clearTimeout(timer);
+}, []);
 
  useEffect(() => {
   function handleOffline() {
@@ -1462,14 +1473,14 @@ async function downloadPayslip(payslip) {
     });
 
     const [mark, wordmark] = await Promise.all([
-      loadLogo("/legion-mark.svg"),
-      loadLogo("/legion-wordmark.svg")
+      loadLogo("/techdev-mark.png"),
+      loadLogo("/techdev-wordmark.png")
     ]);
 
     const pdf = new jsPDF({ unit: "mm", format: "a4" });
 pdf.setProperties({
-  title: "Legion employee payslip",
-  author: "Legion"
+  title: "Tech Dev employee payslip",
+  author: "Tech Dev"
 });
 
 const ink = [239, 244, 250];
@@ -1496,8 +1507,33 @@ const rule = (y, x1 = 18, x2 = 192) => {
 pdf.setFillColor(11, 20, 35);
 pdf.rect(0, 0, 210, 297, "F");
 
-pdf.addImage(mark, "PNG", 18, 17, 32, 32 * 304 / 1024);
-pdf.addImage(wordmark, "PNG", 56, 19, 40, 40 * 92 / 560);
+const fitBrandImage = (image, maxWidth, maxHeight) => {
+  const properties = pdf.getImageProperties(image);
+  const scale = Math.min(
+    maxWidth / properties.width,
+    maxHeight / properties.height,
+  );
+
+  return {
+    width: properties.width * scale,
+    height: properties.height * scale,
+  };
+};
+
+const markSize = fitBrandImage(mark, 22, 22);
+const wordmarkSize = fitBrandImage(wordmark, 42, 12);
+
+pdf.addImage(
+  mark, "PNG",
+  18, 15,
+  markSize.width, markSize.height,
+);
+
+pdf.addImage(
+  wordmark, "PNG",
+  48, 20,
+  wordmarkSize.width, wordmarkSize.height,
+);
 
 write("EMPLOYEE PAYSLIP", 192, 23, 15, true, ink, "right");
 write(
@@ -1633,14 +1669,14 @@ write(
 
 // Document footer.
 rule(274);
-write("LEGION WORKFORCE", 18, 282, 8, true, muted);
+write("TECHDEV WORKFORCE", 18, 282, 8, true, muted);
 write(
   "Confidential | Keep for your records",
   105, 282, 8, false, muted, "center"
 );
 write("01 / 01", 192, 282, 8, false, muted, "right");
 
-pdf.save(`legion-payslip-${payslip.period_start}.pdf`);
+pdf.save(`techdev-payslip-${payslip.period_start}.pdf`);
   } catch (error) {
     setError(getErrorMessage(error));
   }
@@ -1778,6 +1814,9 @@ async function signOut() {
   }
 }
   if (!supabaseConfigured) return <ConfigScreen />;
+  if (!startupComplete) {
+  return <StartupScreen isOnline={isOnline} />;
+}
   if (!isOnline) {
   return (
     <OfflineWorkspace
@@ -2403,7 +2442,7 @@ function PayslipsView({ isManager, payslips, employees, employeeId, onDownload, 
   }, {}), [payslips]);
   return <>
     <PageHeading eyebrow="PAY & BENEFITS" title={isManager ? "Payroll statements" : "Payslips"} description={isManager ? "Publish pay statements to employees’ private accounts." : "Your pay statements, available when you need them."} />
-    {isManager && <Card title="Publish a payslip" subtitle="The employer supplies the pay values. Legion does not calculate payroll or tax."><form className="form-grid" onSubmit={onCreate}><Field label="Employee"><select name="employee" required defaultValue=""><option value="" disabled>Select an employee</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.display_name}</option>)}</select></Field><Field label="Period starts"><input name="period_start" type="date" required /></Field><Field label="Period ends"><input name="period_end" type="date" required /></Field><Field label="Gross pay (R)"><input name="gross" type="number" min="0" step="0.01" required /></Field><Field label="Deductions (R)"><input name="deductions" type="number" min="0" step="0.01" defaultValue="0" required /></Field><button className="primary-button form-action" type="submit"><Plus size={15} /> Publish payslip</button></form></Card>}
+    {isManager && <Card title="Publish a payslip" subtitle="The employer supplies the pay values. Techdev does not calculate payroll or tax."><form className="form-grid" onSubmit={onCreate}><Field label="Employee"><select name="employee" required defaultValue=""><option value="" disabled>Select an employee</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.display_name}</option>)}</select></Field><Field label="Period starts"><input name="period_start" type="date" required /></Field><Field label="Period ends"><input name="period_end" type="date" required /></Field><Field label="Gross pay (R)"><input name="gross" type="number" min="0" step="0.01" required /></Field><Field label="Deductions (R)"><input name="deductions" type="number" min="0" step="0.01" defaultValue="0" required /></Field><button className="primary-button form-action" type="submit"><Plus size={15} /> Publish payslip</button></form></Card>}
     {Object.keys(grouped).length ? Object.entries(grouped).sort(([a], [b]) => Number(b) - Number(a)).map(([year, yearSlips]) => <Card key={year} className="spaced-card" title={year} subtitle={`${yearSlips.length} pay ${yearSlips.length === 1 ? "statement" : "statements"}`}>
       <div className="slip-list">{yearSlips.map(slip => { const person = employees.find(employee => employee.id === slip.employee_id); return <div className="slip-row" key={slip.id}><span className="slip-icon"><FileText size={17} /></span><span className="slip-description"><strong>{formatDate(slip.period_start, { month: "long", year: "numeric" })}</strong><small>{formatDateRange(slip.period_start, slip.period_end)}{isManager ? ` · ${person?.display_name || "Employee"}` : ""}</small></span><span className="slip-net">{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(slip.gross_pay - slip.deductions)}</span><button className="outline-button small-outline" onClick={() => onDownload(slip)}><ArrowDownToLine size={14} /> PDF</button></div>; })}</div>
     </Card>) : <Card className="spaced-card">{<EmptyState icon={FileText} title="No pay statements yet" text={isManager ? "Publish a statement above when payroll is ready." : "Your company has not published a pay statement."} />}</Card>}

@@ -36,7 +36,7 @@ const SHELL_FILES = [];
 const SHELL_VERSION = "dev";
 
 const scope = new URL(self.registration.scope);
-const prefix = `legion-shell:${scope.pathname}:`;
+const prefix = `techdev-shell:${scope.pathname}:`;
 const cacheName = prefix + SHELL_VERSION;
 
 const shellURLs = new Set(
@@ -124,7 +124,7 @@ self.addEventListener("fetch", event => {
 
           const html = (await saved.text()).replace(
             /<html(?=\s|>)/i,
-            '<html data-legion-offline="true"'
+            '<html data-techdev-offline="true"'
           );
 
           return new Response(html, {
@@ -134,7 +134,7 @@ self.addEventListener("fetch", event => {
         }
 
         return new Response(
-          "Connect once to prepare Legion for offline use.",
+          "Connect once to prepare Tech Dev for offline use.",
           {
             status: 503,
             headers: {
@@ -177,17 +177,17 @@ self.addEventListener("push", event => {
     typeof data.title === "string" &&
     data.title.trim()
       ? data.title.slice(0, 120)
-      : "Legion · Workspace update";
+      : "Tech Dev · Workspace update";
 
   const tag =
     typeof data.tag === "string" &&
-    /^legion-[a-z0-9-]+$/i.test(data.tag)
+    /^techdev-[a-z0-9-]+$/i.test(data.tag)
       ? data.tag.slice(0, 100)
-      : "legion-update";
+      : "techdev-update";
 
   event.waitUntil(
     self.registration.showNotification(title, {
-      body: "Open Legion to view this update.",
+      body: "Open Tech Dev to view this update.",
       tag,
       data: notificationTarget(data),
     })
@@ -232,7 +232,7 @@ self.addEventListener("notificationclick", event => {
           await client.focus();
 
           client.postMessage({
-            type: "LEGION_NOTIFICATION_OPEN",
+            type: "TECHDEV_NOTIFICATION_OPEN",
             ...target,
           });
 

@@ -726,13 +726,13 @@ mask-composite: exclude;
   .workspace-skeleton-panels .skeleton-panel-secondary { display: none; }
 }
 
-/* Original Legion vector assets; preserve their proportions in every layout. */
+/* Original Techdev vector assets; preserve their proportions in every layout. */
 .brand-mark img { display:block; width:100%; height:100%; object-fit:contain; }
 .brand-wordmark-image { display:block; width:118px; height:auto; max-width:100%; object-fit:contain; }
 .brand-compact .brand-wordmark-image { width:96px; }
 .app-shell.nav-collapsed .brand-wordmark-image { display:none; }
-.brand-mark.is-animated img { animation:legion-breathe 1.6s ease-in-out infinite; }
-@keyframes legion-breathe { 50% { opacity:.65; } }
+.brand-mark.is-animated img { animation:techdev-breathe 1.6s ease-in-out infinite; }
+@keyframes techdev-breathe { 50% { opacity:.65; } }
 @media (prefers-reduced-motion:reduce) { .brand-mark.is-animated img { animation:none; } }
 
 /* Focused workspace: primary work stays visible; tools open in the menu. */
@@ -4297,14 +4297,14 @@ button.employee-avatar { cursor: pointer; }
   border: 1px solid rgba(85, 181, 255, .8);
   border-radius: 50%;
   pointer-events: none;
-  animation: legion-clock-radiate 2s ease-out infinite;
+  animation: techdev-clock-radiate 2s ease-out infinite;
 }
 
 .work-history-card.work-session-active .work-session-status i::after {
   animation-delay: -1s;
 }
 
-@keyframes legion-clock-radiate {
+@keyframes techdev-clock-radiate {
   0% {
     transform: scale(.8);
     opacity: .85;
@@ -4332,7 +4332,7 @@ button.employee-avatar { cursor: pointer; }
     #50b5ff,
     #a3e4ff
   );
-  animation: legion-live-bar-glow 2s ease-in-out infinite;
+  animation: techdev-live-bar-glow 2s ease-in-out infinite;
 }
 
 /* Pulsing dot at the live end */
@@ -4348,7 +4348,7 @@ button.employee-avatar { cursor: pointer; }
   transform: translateY(-50%);
   pointer-events: none;
   z-index: 3;
-  animation: legion-live-end-pulse 1.6s ease-out infinite;
+  animation: techdev-live-end-pulse 1.6s ease-out infinite;
 }
 
 /* More visible shine travelling across the bar */
@@ -4367,10 +4367,10 @@ button.employee-avatar { cursor: pointer; }
     transparent 70%
   );
   background-size: 220% 100%;
-  animation: legion-live-bar-shine 1.8s linear infinite;
+  animation: techdev-live-bar-shine 1.8s linear infinite;
 }
 
-@keyframes legion-live-bar-glow {
+@keyframes techdev-live-bar-glow {
   0%, 100% {
     box-shadow:
       0 0 7px rgba(60, 164, 255, .45),
@@ -4384,7 +4384,7 @@ button.employee-avatar { cursor: pointer; }
   }
 }
 
-@keyframes legion-live-end-pulse {
+@keyframes techdev-live-end-pulse {
   0% {
     box-shadow:
       0 0 0 0 rgba(80, 187, 255, .8),
@@ -4398,7 +4398,7 @@ button.employee-avatar { cursor: pointer; }
   }
 }
 
-@keyframes legion-live-bar-shine {
+@keyframes techdev-live-bar-shine {
   from {
     background-position: 220% 0;
   }
@@ -7351,4 +7351,119 @@ main.app-crash-screen {
   background-position: 0 0 !important;
   animation: none !important;
   transition: none !important;
+}
+/* Tech Dev branding */
+.brand {
+  min-width: 0;
+  gap: 8px;
+}
+
+.brand > .brand-mark {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+}
+
+.brand > .brand-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.brand > .brand-wordmark-image {
+  display: block;
+  width: 126px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.brand.brand-compact > .brand-wordmark-image {
+  width: 104px;
+}
+
+@media (max-width: 480px) {
+  .brand {
+    gap: 6px;
+  }
+
+  .brand > .brand-mark {
+    width: 28px;
+    height: 28px;
+    flex-basis: 28px;
+  }
+
+  .brand > .brand-wordmark-image {
+    width: 90px;
+  }
+}
+/* Position the animated dots over the company globe. */
+.brand-mark {
+  position: relative;
+}
+
+.brand-mark.is-animated > img {
+  animation: none !important;
+  transform: none !important;
+}
+
+.brand-mark > .brand-node-orbits {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.brand-node-orbits circle {
+  fill: #3285ff;
+  stroke: #a4dcff;
+  stroke-width: 0.65;
+  filter: drop-shadow(0 0 3px #268cff);
+}
+
+/* Reveal the intro without rotating the company lettering. */
+.startup-screen .startup-emblem {
+  animation: techdev-intro-reveal 450ms ease-out both;
+}
+
+@keyframes techdev-intro-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark > .brand-node-orbits {
+    display: none;
+  }
+
+  .startup-screen .startup-emblem {
+    animation: none !important;
+  }
+}
+.techdev-globe {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.techdev-globe > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+
+  /* Keep the globe and lettering stationary. */
+  animation: none !important;
+  transform: none !important;
 }
