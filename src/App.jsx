@@ -250,9 +250,20 @@ function StartupScreen({ isOnline }) {
     <main className={`startup-screen${isOnline ? "" : " startup-offline"}`} role="status" aria-live="polite">
       <div className="startup-emblem"><BrandMark animated /></div>
       <div className="startup-brand">
-        <strong>TECH DEV</strong>
-        <span>EMPOWER YOUR DIGITAL JOURNEY.</span>
-      </div>
+  <img
+    className="startup-wordmark"
+    src={`${import.meta.env.BASE_URL}techdev-wordmark.svg`}
+    alt="Tech Dev"
+    draggable="false"
+  />
+
+  <img
+    className="startup-slogan"
+    src={`${import.meta.env.BASE_URL}techdev-slogan.svg`}
+    alt="Empower your digital journey"
+    draggable="false"
+  />
+</div>
       <p>{isOnline ? "Preparing your workspace" : "Waiting for your connection"}</p>
       {!isOnline && <span className="startup-network-note">Your workspace will reconnect automatically.</span>}
     </main>

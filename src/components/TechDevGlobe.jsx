@@ -5,12 +5,12 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 
 // Original nodes: top, bottom, right, lower-left, inner, left.
 const ROUTES = [
-  { track: 1, seconds: 7.2, phase: 0.748948 },
-  { track: 1, seconds: 7.2, phase: 0.248984 },
-  { track: 2, seconds: 6.4, phase: 0.975338 },
-  { track: 3, seconds: 7.8, phase: 0.434182 },
-  { track: 1, seconds: 7.2, phase: 0.849373 },
-  { track: 0, seconds: 8.8, phase: 0.535835 },
+  { track: 1, seconds: 3.6, phase: 0.748948 },
+  { track: 1, seconds: 3.6, phase: 0.248984 },
+  { track: 2, seconds: 3.2, phase: 0.975338 },
+  { track: 3, seconds: 3.9, phase: 0.434182 },
+  { track: 1, seconds: 3.6, phase: 0.849373 },
+  { track: 0, seconds: 4.4, phase: 0.535835 },
 ];
 
 export default function TechDevGlobe({ animated = false }) {
@@ -38,6 +38,25 @@ export default function TechDevGlobe({ animated = false }) {
     });
 
     // Frame the globe without the large empty margins.
+    // Remove the glow surrounding TD and its code symbol.
+const tdPath = svg.querySelector('path[stroke-width="8"]');
+
+if (tdPath) {
+  let tdGroup = tdPath.parentElement;
+
+  while (
+    tdGroup.parentElement &&
+    tdGroup.parentElement !== svg
+  ) {
+    tdGroup = tdGroup.parentElement;
+  }
+
+  tdGroup.removeAttribute("filter");
+
+  tdGroup.querySelectorAll("[filter]").forEach(element => {
+    element.removeAttribute("filter");
+  });
+}
     svg.setAttribute("viewBox", "254 152 480 480");
     svg.setAttribute("width", "100%");
     svg.setAttribute("height", "100%");
@@ -72,6 +91,42 @@ export default function TechDevGlobe({ animated = false }) {
     const nodes = Array.from(svg.querySelectorAll("circle"));
 
     if (animated && tracks.length === 4 && nodes.length === 6) {
+      // Keep the globe lines and their nodes in one rotating group.
+const wireGroup = tracks[0].parentElement;
+
+const rotatingGroup = document.createElementNS(
+  SVG_NS,
+  "g",
+);
+
+wireGroup.parentNode.insertBefore(
+  rotatingGroup,
+  wireGroup,
+);
+
+rotatingGroup.appendChild(wireGroup);
+
+const nodeGroups = new Set(
+  nodes.map(node => node.parentElement),
+);
+
+nodeGroups.forEach(group => {
+  rotatingGroup.appendChild(group);
+});
+
+const rotation = document.createElementNS(
+  SVG_NS,
+  "animateTransform",
+);
+
+rotation.setAttribute("attributeName", "transform");
+rotation.setAttribute("type", "rotate");
+rotation.setAttribute("from", "0 494 392");
+rotation.setAttribute("to", "360 494 392");
+rotation.setAttribute("dur", "12s");
+rotation.setAttribute("repeatCount", "indefinite");
+
+rotatingGroup.appendChild(rotation);
       tracks.forEach((path, index) => {
         path.id = `${scope}track-${index}`;
       });
