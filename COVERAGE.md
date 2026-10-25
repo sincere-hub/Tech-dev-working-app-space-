@@ -1,6 +1,6 @@
 # Coverage of the CEO brief
 
-This is the full Legion source project. It is not a complete implementation of every enterprise product in the brief. Native means implemented in this project; it still requires the Supabase schema, environment configuration and live acceptance testing.
+This is the full TechDev source project. It is not a complete implementation of every enterprise product in the brief. Native means implemented in this project; it still requires the Supabase schema, environment configuration and live acceptance testing.
 
 | Requirement | Delivered scope | Remaining external/full-system work |
 | --- | --- | --- |

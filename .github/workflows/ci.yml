@@ -1,4 +1,4 @@
-name: Legion checks
+name: techdev checks
 on:
   push:
     branches: [main, master]

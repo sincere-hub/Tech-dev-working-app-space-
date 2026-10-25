@@ -1,6 +1,6 @@
-# Legion updated handover — 12 October 2026
+# TechDev updated handover — 12 October 2026
 
-This package includes the full existing Legion Vite/React application and original Legion SVG branding.
+This package includes the full existing TechDev Vite/React application and original TechDev JPEG branding.
 
 ## Updated in this handover
 

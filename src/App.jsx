@@ -41,6 +41,7 @@ import {
 import { clockMessage } from "./lib/clockMessage.js";
 import DevAppTest from "./components/DevAppTest.jsx";
 import TechDevGlobe from "./components/TechDevGlobe.jsx";
+import { ChatDelivery } from "./lib/companyChat.js";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -1411,6 +1412,192 @@ async function deleteAnnouncement(announcement) {
 return result;
   }
 
+  async function saveOkr(record, payload) {
+  if (!isManager || !session?.user?.id) {
+    setError("Only managers and admins can maintain objectives.");
+    return null;
+  }
+
+  if (
+    record &&
+    record.module_id !== "collaboration.okrs"
+  ) {
+    setError("This record is not an objective.");
+    return null;
+  }
+
+  const changes = {
+    title: payload.title,
+    description: payload.description,
+    status: payload.status,
+    visibility: payload.visibility,
+    due_date: payload.due_date,
+    metadata: payload.metadata,
+    updated_at: new Date().toISOString(),
+  };
+
+  const result = await mutate(() => {
+    if (record) {
+      return supabase
+        .from("workplace_records")
+        .update(changes)
+        .eq("id", record.id)
+        .eq("module_id", "collaboration.okrs")
+        .eq("updated_at", record.updated_at)
+        .eq(
+          "metadata",
+          JSON.stringify(record.metadata || {}),
+        )
+        .select("id")
+        .single();
+    }
+
+    return supabase
+      .from("workplace_records")
+      .insert({
+        ...changes,
+        module_id: "collaboration.okrs",
+        created_by: session.user.id,
+      })
+      .select("id")
+      .single();
+  });
+
+  if (result) {
+    setToast(
+      record
+        ? "Objective updated."
+        : "Objective created.",
+    );
+  }
+
+  return result;
+}
+async function saveMeeting(record, payload) {
+  if (!isManager || !session?.user?.id) {
+    setError(
+      "Only managers and admins can maintain meetings.",
+    );
+    return null;
+  }
+
+  if (
+    record &&
+    record.module_id !== "collaboration.meetings"
+  ) {
+    setError("This record is not a meeting.");
+    return null;
+  }
+
+  const changes = {
+    title: payload.title,
+    description: payload.description,
+    status: payload.status,
+    visibility: payload.visibility,
+    due_date: payload.due_date,
+    metadata: payload.metadata,
+    updated_at: new Date().toISOString(),
+  };
+
+  const result = await mutate(() => {
+    if (record) {
+      return supabase
+        .from("workplace_records")
+        .update(changes)
+        .eq("id", record.id)
+        .eq("module_id", "collaboration.meetings")
+        .eq("updated_at", record.updated_at)
+        .eq(
+          "metadata",
+          JSON.stringify(record.metadata || {}),
+        )
+        .select("id")
+        .single();
+    }
+
+    return supabase
+      .from("workplace_records")
+      .insert({
+        ...changes,
+        module_id: "collaboration.meetings",
+        created_by: session.user.id,
+      })
+      .select("id")
+      .single();
+  });
+
+  if (result) {
+    setToast(
+      record
+        ? "Meeting updated."
+        : "Meeting scheduled.",
+    );
+  }
+
+  return result;
+}
+async function saveDesignReference(record, payload) {
+  if (!isManager || !session?.user?.id) {
+    setError(
+      "Only managers and admins can maintain design references.",
+    );
+    return null;
+  }
+
+  if (
+    record &&
+    record.module_id !== "collaboration.design-system"
+  ) {
+    setError("This record is not a design reference.");
+    return null;
+  }
+
+  const changes = {
+    title: payload.title,
+    description: payload.description,
+    status: payload.status,
+    visibility: payload.visibility,
+    metadata: payload.metadata,
+    updated_at: new Date().toISOString(),
+  };
+
+  const result = await mutate(() => {
+    if (record) {
+      return supabase
+        .from("workplace_records")
+        .update(changes)
+        .eq("id", record.id)
+        .eq("module_id", "collaboration.design-system")
+        .eq("updated_at", record.updated_at)
+        .eq(
+          "metadata",
+          JSON.stringify(record.metadata || {}),
+        )
+        .select("id")
+        .single();
+    }
+
+    return supabase
+      .from("workplace_records")
+      .insert({
+        ...changes,
+        module_id: "collaboration.design-system",
+        created_by: session.user.id,
+      })
+      .select("id")
+      .single();
+  });
+
+  if (result) {
+    setToast(
+      record
+        ? "Design reference updated."
+        : "Design reference created.",
+    );
+  }
+
+  return result;
+}
   async function updateWorkplaceRecord(record, status) {
     const result = await mutate(() => supabase.from("workplace_records").update({ status }).eq("id", record.id).eq("status", record.status).select("id").single());
     if (result) setToast("Workspace record updated.");
@@ -1905,7 +2092,7 @@ async function signOut() {
           {activeView === "leave" && <LeaveView isManager={isManager} employeeId={userId} requests={employeeRequests} shiftRequests={employeeShiftRequests} shifts={upcomingShifts} employees={data.employees} onLeave={submitLeave} onShiftRequest={submitShiftRequest} onReview={reviewRequest} onShift={submitShift} />}
           {activeView === "payslips" && <PayslipsView isManager={isManager} payslips={data.payslips.filter(slip => isManager || slip.employee_id === userId)} employees={data.employees} employeeId={userId} onDownload={downloadPayslip} onCreate={submitPayslip} />}
           {activeView === "manager" && isManager && <ManagerView tasks={data.tasks} announcements={announcements} employees={data.employees} requests={data.leaveRequests} shiftRequests={data.shiftRequests} shifts={data.shifts} onTask={submitTask} onUpdateTask={updateTask} onAnnouncement={submitAnnouncement} onReview={reviewRequest} onShift={submitShift} onView={navigate} />}
-          {activeView === "suite" && <WorkplaceSuite key={suiteModule || "all"} initialModuleId={suiteModule} interactions={data.interactions} onInteract={recordInteraction} records={data.workplaceRecords} employees={data.employees} tasks={data.tasks} announcements={announcements} isManager={isManager} userId={userId} onCreate={submitWorkplaceRecord} onStatus={updateWorkplaceRecord} onDelete={deleteWorkplaceRecord} onNavigate={navigate}role={profile?.role || "employee"} />}
+          {activeView === "suite" && <WorkplaceSuite key={suiteModule || "all"} initialModuleId={suiteModule} interactions={data.interactions} onInteract={recordInteraction} records={data.workplaceRecords} employees={data.employees} tasks={data.tasks} announcements={announcements} isManager={isManager} userId={userId} onCreate={submitWorkplaceRecord} onSaveOkr={saveOkr} onSaveMeeting={saveMeeting} onSaveDesignReference={saveDesignReference} onStatus={updateWorkplaceRecord} onDelete={deleteWorkplaceRecord} onNavigate={navigate}role={profile?.role || "employee"} />}
           {activeView === "notices" && (
   <>
     <PageHeading
@@ -1950,6 +2137,7 @@ async function signOut() {
       onClose={() => setDevTestsOpen(false)}
     />
   )}
+  <ChatDelivery userId={userId} />
           {toast && <div className="toast" role="status"><Check size={16} />{toast}</div>}
       </EmployeeProfilesProvider>
     </div>

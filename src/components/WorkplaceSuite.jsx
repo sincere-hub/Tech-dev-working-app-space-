@@ -26,6 +26,9 @@ import {workplaceModules,canAccessWorkplaceModule,getWorkplaceGroupsForRole,} fr
 import EmployeeAvatar from "./EmployeeAvatar.jsx";
 import InternalChat from "./InternalChat.jsx";
 import DocsWorkspace from "./DocsWorkspace.jsx";
+import OkrWorkspace from "./OkrWorkspace.jsx";
+import MeetingWorkspace from "./MeetingWorkspace.jsx";
+import DesignSystemWorkspace from "./DesignSystemWorkspace.jsx";
 
 const groupIcons = {
   platform: Code2,
@@ -54,6 +57,9 @@ export default function WorkplaceSuite({
   role = "employee",
   userId,
   onCreate,
+  onSaveOkr,
+  onSaveMeeting,
+  onSaveDesignReference,
   onStatus,
   onDelete,
   onNavigate,
@@ -208,6 +214,46 @@ if (selectedModule.id === "collaboration.docs") {
   );
 }
 
+if (selectedModule.id === "collaboration.okrs") {
+  return (
+    <OkrWorkspace
+      key={userId}
+      records={records}
+      employees={employees}
+      interactions={interactions}
+      userId={userId}
+      isManager={isManager}
+      onSave={onSaveOkr}
+      onInteract={onInteract}
+    />
+  );
+}
+if (selectedModule.id === "collaboration.meetings") {
+  return (
+    <MeetingWorkspace
+      key={userId}
+      records={records}
+      employees={employees}
+      interactions={interactions}
+      userId={userId}
+      isManager={isManager}
+      onSave={onSaveMeeting}
+      onInteract={onInteract}
+    />
+  );
+}
+if (
+  selectedModule.id === "collaboration.design-system"
+) {
+  return (
+    <DesignSystemWorkspace
+      key={userId}
+      records={records}
+      isManager={isManager}
+      onSave={onSaveDesignReference}
+    />
+  );
+}
   const canCreate = isManager || selectedModule.employeeCreate;
   const recordStatusOptions = selectedModule.reviewRequired
     ? statusOptions

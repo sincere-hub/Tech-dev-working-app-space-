@@ -15,7 +15,7 @@ export default function offlineBuild() {
   let config;
 
   return {
-    name: "legion-offline-shell",
+    name: "techdev-offline-shell",
     apply: "build",
     enforce: "post",
 

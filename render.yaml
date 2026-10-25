@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: legion-workforce
+    name: techdev-workforce
     runtime: static
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist

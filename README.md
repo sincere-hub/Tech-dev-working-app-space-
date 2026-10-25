@@ -1,13 +1,13 @@
-# Legion Workforce
+# TechDev Workforce
 
-A responsive employee workspace built from the supplied Vite/React app. Supabase provides authentication, Postgres and row-level security. Legion retains its original separate icon and wordmark.
+A responsive employee workspace built from the supplied Vite/React app. Supabase provides authentication, Postgres and row-level security. Techdev retains its original separate icon and wordmark.
 
 ## Start here
 
 1. Extract this ZIP into a **new folder**. Keep the previous project as a backup.
-2. Copy your existing `.env.local` into the extracted `legion-workforce` folder. Working credentials are not included in this ZIP.
+2. Copy your existing `.env.local` into the extracted `techdev-workforce` folder. Working credentials are not included in this ZIP.
 3. In your Supabase project's SQL Editor, run **all of `supabase/schema.sql`**. It includes the original app and the new discussion, survey, training and activity workflows. It is designed to be safe to reapply. It does not erase employee or workforce records.
-4. Open a terminal in `legion-workforce` and run:
+4. Open a terminal in `techdev-workforce` and run:
 
 ```sh
 npm ci
@@ -45,7 +45,7 @@ Replace the example with the authorized person's real email. Use `role = 'manage
 - Desktop has the same three primary pages across the header.
 - The hamburger/More menu holds payslips, leave/schedules, notices, activity, reports, manager tools and the six groups of workplace tools.
 - Tool groups and record-creation forms expand when opened. The drawer supports keyboard focus containment, Escape dismissal, background scroll locking and menu search.
-- The layout uses a banking-app navigation pattern while keeping Legion branding. It is not affiliated with Standard Bank.
+- The layout uses a banking-app navigation pattern while keeping Techdev branding. It is not affiliated with Standard Bank.
 
 ## New native workflows
 
@@ -71,7 +71,7 @@ Official reference: https://supabase.com/docs/reference/javascript/auth-signinwi
 
 Read `COVERAGE.md` before presenting this app as complete against the broader enterprise brief. The core employee workflows and added native responses/reports are implemented in code. Other workplace sections provide records, approvals, search, resource links and status tracking.
 
-The app does not provision cloud environments, run remote CI jobs, index repositories, ingest monitoring telemetry, control external release flags, provide VPN/endpoint agents, send phishing emails, connect benefit/payment providers, query data warehouses or train/serve ML models. Those services require separately implemented provider integrations and infrastructure. Payroll values are employer-entered; Legion calculates take-home as gross minus supplied deductions, but does not calculate taxes/overtime/statutory entitlements. Existing monetary records and labels remain USD; they have not been silently relabelled as rand.
+The app does not provision cloud environments, run remote CI jobs, index repositories, ingest monitoring telemetry, control external release flags, provide VPN/endpoint agents, send phishing emails, connect benefit/payment providers, query data warehouses or train/serve ML models. Those services require separately implemented provider integrations and infrastructure. Payroll values are employer-entered; Techdev calculates take-home as gross minus supplied deductions, but does not calculate taxes/overtime/statutory entitlements. Existing monetary records and labels remain ZAR; they have not been silently relabelled as rand.
 
 ## Checks and CI
 
