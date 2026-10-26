@@ -17,6 +17,11 @@ import EmployeeAvatar from "./EmployeeAvatar.jsx";
 import RecordInteraction from "./RecordInteraction.jsx";
 import { safeExternalUrl } from "../lib/reporting.js";
 import WikiArticleTools from "./WikiArticleTools.jsx";
+import useKnowledgeSearch from "../lib/useKnowledgeSearch.js";
+import WikiReviewPanel from "./WikiReviewPanel.jsx";
+import WikiReviewSummary, {
+  useWikiReviewSummaries,
+} from "./WikiReviewSummary.jsx";
 
 const topics = [
   "General",
@@ -95,6 +100,24 @@ export function articleBlocks(text) {
     });
 }
 
+function articlePreview(value) {
+  const text = String(
+    value || "Open this article to read more."
+  )
+    .replace(/^\s*(?:#{1,3}|[-*])\s+/gm, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const characters = Array.from(text);
+
+  return characters.length > 100
+    ? `${characters
+        .slice(0, 100)
+        .join("")
+        .trimEnd()}…`
+    : text;
+}
+
 export default function DocsWiki({
   module,
   records = [],
@@ -108,6 +131,7 @@ export default function DocsWiki({
   onInteract,
 }) {
   const [savedArticles, setSavedArticles] = useState({});
+  const [showArchived, setShowArchived] = useState(false);
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState("all");
   const [sort, setSort] = useState("recent");
@@ -122,24 +146,49 @@ export default function DocsWiki({
   const root = useRef(null);
 
   
-  const documents = useMemo(
-  () =>
-    records
-      .filter(
-        record =>
-          record.module_id === "collaboration.docs" &&
-          record.metadata?.kind !== "document"
-      )
-      .map(record => {
-        const saved = savedArticles[record.id];
+ const articleRevision = records
+  .filter(
+    record =>
+      record.module_id === "collaboration.docs" &&
+      record.metadata?.kind !== "document"
+  )
+  .map(
+    record =>
+      `${record.id}:${record.updated_at}:` +
+      `${record.wiki_revision}:${record.status}`
+  )
+  .join("|");
 
-        return saved &&
-          Number(saved.wiki_revision) >=
-            Number(record.wiki_revision || 1)
-          ? saved
-          : record;
-      }),
-  [records, savedArticles]
+const {
+  files: articleResults,
+  topics: articleTopics,
+  loading: searching,
+  loadError: searchError,
+  hasMore: moreArticles,
+  loadMore: loadMoreArticles,
+  refresh: refreshArticles,
+} = useKnowledgeSearch({
+  userId,
+  kind: "wiki",
+  query,
+  topic,
+  archived: showArchived,
+  sort,
+  revision: articleRevision,
+});
+
+const documents = useMemo(
+  () =>
+    articleResults.map(record => {
+      const saved = savedArticles[record.id];
+
+      return saved &&
+        Number(saved.wiki_revision) >
+          Number(record.wiki_revision || 1)
+        ? saved
+        : record;
+    }),
+  [articleResults, savedArticles]
 );
 
   const people = useMemo(
@@ -156,8 +205,22 @@ export default function DocsWiki({
   const author = id => people.get(id) || "Employee";
 
   const categories = [
-    ...new Set(documents.map(topicOf)),
-  ].sort();
+  ...new Set([
+    ...articleTopics,
+    ...(topic === "all" ? [] : [topic]),
+  ]),
+].sort();
+
+const {
+  reviews: wikiReviews,
+  loading: reviewsLoading,
+  error: reviewsError,
+  refresh: refreshWikiReviews,
+  today: reviewToday,
+} = useWikiReviewSummaries({
+  userId,
+  records: documents,
+});
 
   const selected = documents.find(
     record => record.id === selectedId
@@ -167,51 +230,7 @@ export default function DocsWiki({
     isManager || module.employeeCreate
   );
 
-  const search = query.trim().toLowerCase();
-
-  const visible = documents
-    .filter(record =>
-      (
-        topic === "all" ||
-        topicOf(record) === topic
-      ) &&
-      [
-        record.title,
-        record.description || "",
-        topicOf(record),
-        author(record.created_by),
-      ].join(" ").toLowerCase().includes(search)
-    )
-    .sort((a, b) => {
-      if (sort === "title") {
-        return a.title.localeCompare(b.title);
-      }
-
-      const difference =
-        new Date(a.updated_at || a.created_at) -
-        new Date(b.updated_at || b.created_at);
-
-      return (
-        (sort === "oldest" ? 1 : -1) * difference ||
-        a.id.localeCompare(b.id)
-      );
-    });
-
-  useEffect(() => {
-    if (selectedId) {
-      reader.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-
-      reader.current?.focus({ preventScroll: true });
-    }
-  }, [selectedId]);
-
-  useEffect(() => {
-    if (creating) editorTitle.current?.focus();
-  }, [creating]);
-
+  const visible = documents;
   useEffect(() => {
     const element = root.current;
     if (!element) return;
@@ -276,6 +295,8 @@ export default function DocsWiki({
       setCreating(false);
       setQuery("");
       setTopic("all");
+      setShowArchived(false);
+      await refreshArticles();
     } catch (failure) {
       setError(
         failure.message || "Could not save the article."
@@ -295,6 +316,7 @@ export default function DocsWiki({
 
     try {
       await onStatus(record, status);
+      await refreshArticles();
     } catch {
       setError("Could not update the article status.");
     } finally {
@@ -631,18 +653,28 @@ export default function DocsWiki({
                 <ArrowUpRight size={16} />
               </a>
             )}
+<WikiReviewPanel
+  key={`${userId}:${selected.id}:${selected.wiki_revision}`}
+  record={selected}
+  userId={userId}
+  isManager={isManager}
+  employees={employees}
+  onSaved={refreshWikiReviews}
+/>
 <WikiArticleTools
   key={`${userId}:${selected.id}`}
   record={selected}
   userId={userId}
   isManager={isManager}
   employees={employees}
-  onSaved={saved =>
+  onSaved={saved => {
     setSavedArticles(previous => ({
       ...previous,
       [saved.id]: saved,
-    }))
-  }
+    }));
+
+    refreshArticles();
+  }}
 />
             <div className="ld-management">
               {(
@@ -724,7 +756,8 @@ export default function DocsWiki({
           <label className="ld-search">
             <Search size={18} />
             <input
-              aria-label="Search loaded articles"
+              aria-label="Search company wiki"
+              maxLength={200}
               placeholder="Search titles, content or authors…"
               value={query}
               onChange={event =>
@@ -760,7 +793,51 @@ export default function DocsWiki({
             </option>
           </select>
         </div>
+<label className="td-document-archive-filter">
+  <input
+    type="checkbox"
+    checked={showArchived}
+    onChange={event =>
+      setShowArchived(event.target.checked)
+    }
+  />
+  Show archived articles
+</label>
 
+{searching && (
+  <p className="lf-summary" role="status">
+    Searching company knowledge…
+  </p>
+)}
+
+{searchError && (
+  <div className="ld-error" role="alert">
+    <p>{searchError}</p>
+
+    <button
+      type="button"
+      className="ld-secondary"
+      disabled={searching}
+      onClick={refreshArticles}
+    >
+      Retry search
+    </button>
+  </div>
+)}
+{reviewsError && (
+  <div className="ld-error" role="alert">
+    <p>{reviewsError}</p>
+
+    <button
+      type="button"
+      className="ld-secondary"
+      disabled={reviewsLoading}
+      onClick={refreshWikiReviews}
+    >
+      Retry review details
+    </button>
+  </div>
+)}
         <div className="ld-grid">
           {visible.map(record => (
             <article
@@ -796,19 +873,18 @@ export default function DocsWiki({
                 </button>
               </h3>
 
-              <p>
-                {String(
-                  record.description ||
-                  "Open this article to read more."
-                )
-                  .replace(/^#{1,3}\s+/gm, "")
-                  .slice(0, 150)}
-
-                {record.description?.length > 150
-                  ? "…"
-                  : ""}
+               <p className="ld-excerpt">
+                {articlePreview(record.description)}
               </p>
 
+<WikiReviewSummary
+  record={record}
+  review={wikiReviews[record.id]}
+  employees={employees}
+  loading={reviewsLoading}
+  error={reviewsError}
+  today={reviewToday}
+/>
               <div className="ld-card-bottom">
                 <span>{author(record.created_by)}</span>
                 <small>
@@ -838,23 +914,29 @@ export default function DocsWiki({
           ))}
         </div>
 
-        {!visible.length && (
-          <div className="ld-empty">
-            <BookOpen size={35} />
+       {moreArticles && (
+  <button
+    type="button"
+    className="ld-secondary lf-load"
+    disabled={searching || busy}
+    onClick={loadMoreArticles}
+  >
+    {searching ? "Loading…" : "Load more articles"}
+  </button>
+)}
 
-            <h3>
-              {documents.length
-                ? "No articles match"
-                : "Build your company knowledge"}
-            </h3>
+{!searching && !searchError && !visible.length && (
+  <div className="ld-empty">
+    <BookOpen size={35} />
 
-            <p>
-              {documents.length
-                ? "Try another search or choose a different topic."
-                : "Add the first handbook, procedure or reference article."}
-            </p>
-          </div>
-        )}
+    <h3>No articles found</h3>
+
+    <p>
+      Try another search, topic or archive setting.
+      If the wiki is empty, create its first article.
+    </p>
+  </div>
+)}
       </section>
     </section>
   );

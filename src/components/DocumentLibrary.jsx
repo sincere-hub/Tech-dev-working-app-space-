@@ -1,5 +1,4 @@
 import {
-  useCallback,
   useEffect,
   useRef,
   useState,
@@ -21,6 +20,7 @@ import {
 
 import { supabase } from "../lib/supabase.js";
 import DocumentVersionTools from "./DocumentVersionTools.jsx";
+import useKnowledgeSearch from "../lib/useKnowledgeSearch.js";
 
 const documentTypes = {
   pdf: "application/pdf",
@@ -88,26 +88,8 @@ export default function DocumentLibrary({
   employees = [],
   records = [],
 }) {
-  const [files, setFiles] = useState(() =>
-    records
-      .filter(
-        record =>
-          record.module_id === "collaboration.docs" &&
-          record.metadata?.kind === "document"
-      )
-      .sort(
-        (a, b) =>
-          new Date(b.created_at) - new Date(a.created_at) ||
-          b.id.localeCompare(a.id)
-      )
-      .slice(0, 100)
-  );
-
   const [showArchived, setShowArchived] = useState(false);
   const [query, setQuery] = useState("");
-  const [hasMore, setHasMore] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -119,7 +101,6 @@ export default function DocumentLibrary({
 
   const lock = useRef(false);
   const pending = useRef(null);
-  const version = useRef(0);
   const mounted = useRef(true);
   const urls = useRef(new Set());
   const dialog = useRef(null);
@@ -134,50 +115,72 @@ export default function DocumentLibrary({
     )
     .map(
       record =>
-        `${record.id}:${record.updated_at}:${record.metadata.file_state}`
+        `${record.id}:${record.updated_at}:` +
+        `${record.document_revision}:${record.status}:` +
+        `${record.metadata.file_state}`
     )
     .join("|");
 
-  const author = id =>
-    employees.find(person => person.id === id)?.display_name ||
-    "Employee";
-
-  const search = query.trim().toLowerCase();
-
-  const matches = files
-  .filter(file =>
-    (
-      showArchived
-        ? file.status === "archived"
-        : file.status !== "archived"
-    ) &&
-    (
-      topicFilter === "all" ||
-      String(file.metadata.field_value || "General") ===
-        topicFilter
-    ) &&
-    [
-      file.title,
-      file.description,
-      file.metadata.file_name,
-      file.metadata.field_value,
-      author(file.created_by),
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(search)
-  )
-  .sort((a, b) => {
-    if (sortOrder === "title") {
-      return a.title.localeCompare(b.title);
-    }
-
-    return (
-      (sortOrder === "oldest" ? 1 : -1) *
-        (new Date(a.created_at) - new Date(b.created_at)) ||
-      a.id.localeCompare(b.id)
-    );
+  const {
+    files,
+    setFiles,
+    hasMore,
+    loading,
+    setLoading,
+    loadError,
+    refresh,
+    loadMore,
+    version,
+    topics: libraryTopics,
+  } = useKnowledgeSearch({
+    userId,
+    kind: "document",
+    query,
+    topic: topicFilter,
+    archived: showArchived,
+    sort: sortOrder,
+    revision,
   });
+
+  const author = id =>
+    employees.find(person => person.id === id)
+      ?.display_name || "Employee";
+
+  const matches = files.filter(file =>
+    showArchived
+      ? file.status === "archived"
+      : file.status !== "archived"
+  );
+
+  const availableTopics = [
+    ...new Set([
+      ...topics,
+      ...libraryTopics,
+      ...(topicFilter === "all" ? [] : [topicFilter]),
+    ]),
+  ].sort();
+
+  useEffect(() => {
+    mounted.current = true;
+
+    return () => {
+      mounted.current = false;
+      urls.current.forEach(url =>
+        URL.revokeObjectURL(url)
+      );
+      urls.current.clear();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (
+      preview &&
+      dialog.current &&
+      !dialog.current.open
+    ) {
+      dialog.current.showModal();
+    }
+  }, [preview]);
 
   async function currentUser() {
     const { data, error } = await supabase.auth.getSession();
@@ -192,141 +195,6 @@ export default function DocumentLibrary({
       );
     }
   }
-
-  const refresh = useCallback(async () => {
-    const request = ++version.current;
-    setLoading(true);
-
-    try {
-      await currentUser();
-
-      const { data, error } = await supabase
-        .from("workplace_records")
-        .select("*")
-        .eq("module_id", "collaboration.docs")
-        .eq("metadata->>kind", "document")
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false })
-        .range(0, 99);
-
-      if (error) throw error;
-
-      await currentUser();
-
-      if (
-        mounted.current &&
-        request === version.current
-      ) {
-        setFiles(data || []);
-        setHasMore(data?.length === 100);
-        setLoadError("");
-      }
-    } catch (failure) {
-      if (
-        mounted.current &&
-        request === version.current
-      ) {
-        setLoadError(
-          failure.message || "Could not load documents."
-        );
-      }
-    } finally {
-      if (
-        mounted.current &&
-        request === version.current
-      ) {
-        setLoading(false);
-      }
-    }
-  }, [userId]);
-
-  async function loadMore() {
-    if (loading || !hasMore || !files.length) return;
-
-    const request = ++version.current;
-    const cursor = files.at(-1);
-
-    setLoading(true);
-
-    try {
-      await currentUser();
-
-      const { data, error } = await supabase
-        .from("workplace_records")
-        .select("*")
-        .eq("module_id", "collaboration.docs")
-        .eq("metadata->>kind", "document")
-        .or(
-          `created_at.lt.${cursor.created_at},and(created_at.eq.${cursor.created_at},id.lt.${cursor.id})`
-        )
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false })
-        .range(0, 99);
-
-      if (error) throw error;
-
-      await currentUser();
-
-      if (
-        mounted.current &&
-        request === version.current
-      ) {
-        setFiles(previous => [
-          ...new Map(
-            [...previous, ...(data || [])].map(file => [
-              file.id,
-              file,
-            ])
-          ).values(),
-        ]);
-
-        setHasMore(data?.length === 100);
-        setLoadError("");
-      }
-    } catch (failure) {
-      if (
-        mounted.current &&
-        request === version.current
-      ) {
-        setLoadError(
-          failure.message || "Could not load more documents."
-        );
-      }
-    } finally {
-      if (
-        mounted.current &&
-        request === version.current
-      ) {
-        setLoading(false);
-      }
-    }
-  }
-
-  useEffect(() => {
-    mounted.current = true;
-
-    return () => {
-      mounted.current = false;
-      version.current++;
-
-      urls.current.forEach(url => URL.revokeObjectURL(url));
-      urls.current.clear();
-    };
-  }, []);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh, revision]);
-
-  useEffect(() => {
-    if (
-      preview &&
-      dialog.current &&
-      !dialog.current.open
-    ) {
-      dialog.current.showModal();
-    }
-  }, [preview]);
 
   async function operate(action) {
     if (lock.current) return;
@@ -878,58 +746,55 @@ export default function DocumentLibrary({
         </div>
 
         <div className="ld-filters">
-          <label className="ld-search">
-            <Search size={18} />
-            <input
-              aria-label="Search loaded documents"
-              placeholder="Search loaded files, topics or uploaders…"
-              value={query}
-              onChange={event =>
-                setQuery(event.target.value)
-              }
-            />
-          </label>
+  <label className="ld-search">
+    <Search size={18} />
 
-          <select
-            aria-label="Filter documents by topic"
-            value={topicFilter}
-            onChange={event =>
-              setTopicFilter(event.target.value)
-            }
-          >
-            <option value="all">All topics</option>
+    <input
+      aria-label="Search company documents"
+      placeholder="Search titles, filenames, descriptions or uploaders…"
+      maxLength={200}
+      value={query}
+      onChange={event =>
+        setQuery(event.target.value)
+      }
+    />
+  </label>
 
-            {[
-              ...new Set([
-                ...topics,
-                ...files.map(file =>
-                  String(
-                    file.metadata.field_value || "General"
-                  )
-                ),
-              ]),
-            ].map(topic => (
-              <option key={topic}>{topic}</option>
-            ))}
-          </select>
+  <select
+    aria-label="Filter documents by topic"
+    value={topicFilter}
+    onChange={event =>
+      setTopicFilter(event.target.value)
+    }
+  >
+    <option value="all">All topics</option>
 
-          <select
-            aria-label="Sort loaded documents"
-            value={sortOrder}
-            onChange={event =>
-              setSortOrder(event.target.value)
-            }
-          >
-            <option value="recent">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="title">Title A–Z</option>
-          </select>
-        </div>
+    {availableTopics.map(topic => (
+      <option key={topic} value={topic}>
+        {topic}
+      </option>
+    ))}
+  </select>
 
-        <p className="lf-summary">
-          {matches.length} matching · {files.length} files loaded.
-          {" "}Refresh loads the newest 100.
-        </p>
+  <select
+    aria-label="Sort document results"
+    value={sortOrder}
+    onChange={event =>
+      setSortOrder(event.target.value)
+    }
+  >
+    <option value="recent">Newest first</option>
+    <option value="oldest">Oldest first</option>
+    <option value="title">Title A–Z</option>
+  </select>
+</div>
+
+            <p className="lf-summary">
+              {matches.length} results shown
+              {hasMore ? " · More results available" : ""}.
+               {" "}Search covers permitted document details
+                across the library.
+               </p>
 
         {loadError && (
           <p className="ld-error" role="alert">
@@ -1120,23 +985,18 @@ export default function DocumentLibrary({
           })}
         </div>
 
-        {!loading && !matches.length && (
-          <div className="ld-empty">
-            <FileText size={34} />
+       {!loading && !loadError && !matches.length && (
+  <div className="ld-empty">
+    <FileText size={34} />
 
-            <h3>
-              {files.length
-                ? "No matching documents"
-                : "Your document library is ready"}
-            </h3>
+    <h3>No documents found</h3>
 
-            <p>
-              {files.length
-                ? "Try another search or load more files."
-                : "Upload a file to make it available inside Legion."}
-            </p>
-          </div>
-        )}
+    <p>
+      Try another search, topic or archive setting.
+      If the library is empty, upload its first document.
+    </p>
+  </div>
+)}
 
         {hasMore && (
           <button

@@ -42,6 +42,7 @@ import { clockMessage } from "./lib/clockMessage.js";
 import DevAppTest from "./components/DevAppTest.jsx";
 import TechDevGlobe from "./components/TechDevGlobe.jsx";
 import { ChatDelivery } from "./lib/companyChat.js";
+import useWorkspaceNavigation from "./lib/useWorkspaceNavigation.js";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -555,7 +556,6 @@ useEffect(() => {
 }, [session?.user?.id, session?.user?.user_metadata?.avatar_path]);
   const [profile, setProfile] = useState(null);
   const [data, setData] = useState({ employees: [], tasks: [], announcements: [], timeEntries: [], shifts: [], leaveRequests: [], shiftRequests: [], payslips: [], workplaceRecords: [], interactions: [] });
-  const [activeView, setActiveView] = useState("overview");
   const [devTestsOpen, setDevTestsOpen] = useState(false);
 
 useEffect(() => {
@@ -567,64 +567,6 @@ useEffect(() => {
   const [toast, setToast] = useState("");
   const [now, setNow] = useState(Date.now());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [suiteModule, setSuiteModule] = useState("");
-  const pageHistory = useRef([]);
-const currentPage = useRef({ view: "overview", moduleId: "" });
-const returningToPage = useRef(false);
-
-useEffect(() => {
-  pageHistory.current = [];
-  currentPage.current = { view: "overview", moduleId: "" };
-  returningToPage.current = false;
-  setActiveView("overview");
-  setSuiteModule("");
-  setMobileMenuOpen(false);
-}, [session?.user?.id]);
-
-function recordNavigation(view, moduleId) {
-  if (
-  !visibleNavigation.some(item => item.id === view) ||
-  (
-    view === "suite" &&
-    moduleId &&
-    !canAccessWorkplaceModule(moduleId, profile?.role)
-  )
-) {
-  returningToPage.current = false;
-  setToast("This tool is not available for your role.");
-  setMobileMenuOpen(false);
-  return;
-}
-  const previous = currentPage.current;
-
-  if (
-    !returningToPage.current &&
-    (previous.view !== view || previous.moduleId !== moduleId)
-  ) {
-    pageHistory.current.push({
-      ...previous,
-      scrollY: window.scrollY
-    });
-  }
-
-  returningToPage.current = false;
-  currentPage.current = { view, moduleId };
-}
-
-function goBack() {
-  const previous = pageHistory.current.pop();
-  if (!previous) return;
-
-  returningToPage.current = true;
-  navigate(previous.view, previous.moduleId);
-
-  window.requestAnimationFrame(() => {
-    window.scrollTo({
-      top: previous.scrollY || 0,
-      behavior: "instant"
-    });
-  });
-}
   const [mutating, setMutating] = useState(false);
   const mutationInFlight = useRef(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
@@ -649,28 +591,21 @@ useEffect(() => {
 
   const closeMenu = useCallback(() => setMobileMenuOpen(false), []);
   function toggleNavigation() { setMobileMenuOpen(value => !value); }
-  function navigate(view, moduleId = "") {
-  if (
-    !visibleNavigation.some(item => item.id === view) ||
-    (
-      view === "suite" &&
-      moduleId &&
-      !canAccessWorkplaceModule(moduleId, profile?.role)
-    )
-  ) {
-    returningToPage.current = false;
-    setToast("This tool is not available for your role.");
-    setMobileMenuOpen(false);
-    return false;
-  }
+  const {
+  activeView,
+  suiteModule,
+  navigate,
+  goBack,
+  canGoBack,
+} = useWorkspaceNavigation({
+  userId,
+  role: profile?.role,
+  items: visibleNavigation,
+  onCloseMenu: closeMenu,
 
-  recordNavigation(view, moduleId);
-  setActiveView(view);
-  setSuiteModule(moduleId);
-  setMobileMenuOpen(false);
-  window.scrollTo({ top: 0, behavior: "instant" });
-  return true;
-}
+  onUnavailable: () =>
+    setToast("This tool is not available for your role."),
+});
 
 usePushNavigation({
   ready: Boolean(
@@ -2044,7 +1979,20 @@ async function signOut() {
   role={profile?.role || "employee"}
   employees={data.employees}
 >
-      <NavigationDrawer open={mobileMenuOpen} items={visibleNavigation} activeView={activeView} onNavigate={navigate} onClose={closeMenu} onSignOut={signOut} name={displayName} role={profile?.role}avatarSrc={avatarSrc} onOpenDevTests={() => setDevTestsOpen(true)}/>
+      <NavigationDrawer
+  key={userId}
+  open={mobileMenuOpen}
+  items={visibleNavigation}
+  activeView={activeView}
+  activeModuleId={suiteModule}
+  onNavigate={navigate}
+  onClose={closeMenu}
+  onSignOut={signOut}
+  name={displayName}
+  role={profile?.role}
+  avatarSrc={avatarSrc}
+  onOpenDevTests={() => setDevTestsOpen(true)}
+/>
       <main className="main-area" inert={mobileMenuOpen ? true : undefined}>
         <header className="topbar">
           <div className="topbar-left"><button className="icon-button menu-trigger" aria-label="Open menu" aria-expanded={mobileMenuOpen} aria-controls="workspace-menu" onClick={toggleNavigation}><Menu size={21} /></button><Brand compact /><span className="desktop-page-name">{heading}</span></div>
@@ -2060,7 +2008,7 @@ async function signOut() {
       type="button"
       className="page-back-button"
       onClick={goBack}
-      disabled={pageHistory.current.length === 0}
+      disabled={!canGoBack}
       aria-label="Go back to the previous page"
     >
       <ArrowLeft size={18} />
