@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { supabase } from "../lib/supabase.js";
+import DocumentVersionTools from "./DocumentVersionTools.jsx";
 
 const documentTypes = {
   pdf: "application/pdf",
@@ -102,6 +103,7 @@ export default function DocumentLibrary({
       .slice(0, 100)
   );
 
+  const [showArchived, setShowArchived] = useState(false);
   const [query, setQuery] = useState("");
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -143,35 +145,39 @@ export default function DocumentLibrary({
   const search = query.trim().toLowerCase();
 
   const matches = files
-    .filter(
-      file =>
-        (
-          topicFilter === "all" ||
-          String(file.metadata.field_value || "General") ===
-            topicFilter
-        ) &&
-        [
-          file.title,
-          file.description,
-          file.metadata.file_name,
-          file.metadata.field_value,
-          author(file.created_by),
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(search)
-    )
-    .sort((a, b) => {
-      if (sortOrder === "title") {
-        return a.title.localeCompare(b.title);
-      }
+  .filter(file =>
+    (
+      showArchived
+        ? file.status === "archived"
+        : file.status !== "archived"
+    ) &&
+    (
+      topicFilter === "all" ||
+      String(file.metadata.field_value || "General") ===
+        topicFilter
+    ) &&
+    [
+      file.title,
+      file.description,
+      file.metadata.file_name,
+      file.metadata.field_value,
+      author(file.created_by),
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(search)
+  )
+  .sort((a, b) => {
+    if (sortOrder === "title") {
+      return a.title.localeCompare(b.title);
+    }
 
-      return (
-        (sortOrder === "oldest" ? 1 : -1) *
-          (new Date(a.created_at) - new Date(b.created_at)) ||
-        a.id.localeCompare(b.id)
-      );
-    });
+    return (
+      (sortOrder === "oldest" ? 1 : -1) *
+        (new Date(a.created_at) - new Date(b.created_at)) ||
+      a.id.localeCompare(b.id)
+    );
+  });
 
   async function currentUser() {
     const { data, error } = await supabase.auth.getSession();
@@ -841,7 +847,16 @@ export default function DocumentLibrary({
           {message}
         </p>
       )}
-
+<label className="td-document-archive-filter">
+  <input
+    type="checkbox"
+    checked={showArchived}
+    onChange={event =>
+      setShowArchived(event.target.checked)
+    }
+  />
+  Show archived documents
+</label>
       <section className="ld-library">
         <div className="ld-library-heading">
           <div>
@@ -1014,62 +1029,92 @@ export default function DocumentLibrary({
                       : "Incomplete upload · select the original file to retry"}
                 </p>
 
-                <footer className="lf-actions">
-                  {ready && (
-                    <button
-                      type="button"
-                      className="ld-open"
-                      disabled={busy}
-                      onClick={() =>
-                        openFile(record, false)
-                      }
-                    >
-                      <Download size={15} />
-                      Download
-                    </button>
-                  )}
+               <footer className="lf-actions">
+  <span className="td-document-version">
+    Version {record.document_revision || 1}
+    {record.status === "archived" ? " · Archived" : ""}
+  </span>
 
-                  {ready && canPreview && (
-                    <button
-                      type="button"
-                      className="ld-open"
-                      disabled={busy}
-                      onClick={() =>
-                        openFile(record, true)
-                      }
-                    >
-                      <Eye size={15} />
-                      Preview
-                    </button>
-                  )}
+  {ready && (
+    <button
+      type="button"
+      className="ld-open"
+      disabled={busy}
+      onClick={() => openFile(record, false)}
+    >
+      <Download size={15} />
+      Download
+    </button>
+  )}
 
-                  {state === "pending" &&
-                    record.created_by === userId && (
-                      <button
-                        type="button"
-                        className="ld-open"
-                        disabled={busy}
-                        onClick={() =>
-                          startUpload(record)
-                        }
-                      >
-                        <Upload size={15} />
-                        Retry upload
-                      </button>
-                    )}
+  {ready && canPreview && (
+    <button
+      type="button"
+      className="ld-open"
+      disabled={busy}
+      onClick={() => openFile(record, true)}
+    >
+      <Eye size={15} />
+      Preview
+    </button>
+  )}
 
-                  {canDelete && (
-                    <button
-                      type="button"
-                      className="ld-delete"
-                      disabled={busy}
-                      onClick={() => remove(record)}
-                    >
-                      <Trash2 size={15} />
-                      Delete
-                    </button>
-                  )}
-                </footer>
+  {state === "pending" &&
+    record.created_by === userId && (
+      <button
+        type="button"
+        className="ld-open"
+        disabled={busy}
+        onClick={() => startUpload(record)}
+      >
+        <Upload size={15} />
+        Retry upload
+      </button>
+    )}
+
+  {ready && canDelete && (
+    <DocumentVersionTools
+      key={`${userId}:${record.id}`}
+      record={record}
+      userId={userId}
+      isManager={isManager}
+      employees={employees}
+      disabled={busy}
+      onBusy={value => {
+        lock.current = value;
+        setBusy(value);
+      }}
+      onSaved={saved => {
+        version.current += 1;
+        setLoading(false);
+
+        setFiles(previous =>
+          previous.map(item =>
+            item.id === saved.id ? saved : item
+          )
+        );
+
+        if (saved.status === "archived") {
+          setMessage(
+            "Document archived. Select Show archived documents to find it."
+          );
+        }
+      }}
+    />
+  )}
+
+  {!ready && canDelete && (
+    <button
+      type="button"
+      className="ld-delete"
+      disabled={busy}
+      onClick={() => remove(record)}
+    >
+      <Trash2 size={15} />
+      Delete incomplete upload
+    </button>
+  )}
+</footer>
               </article>
             );
           })}

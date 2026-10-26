@@ -1,0 +1,776 @@
+.td-knowledge {
+  --knowledge-text: #edf4fc;
+  --knowledge-muted: #afc1d6;
+  --knowledge-border: rgba(166, 193, 224, .18);
+
+  min-width: 0;
+  color: var(--knowledge-text);
+}
+
+.td-knowledge *,
+.td-knowledge *::before,
+.td-knowledge *::after {
+  box-sizing: border-box;
+}
+
+.td-knowledge [hidden] {
+  display: none !important;
+}
+
+.td-knowledge-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 24px;
+  margin-bottom: 20px;
+  border: 1px solid var(--knowledge-border);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      ellipse at 95% 0%,
+      rgba(54, 116, 169, .22),
+      transparent 65%
+    ),
+    linear-gradient(135deg, #172d45, #101e30);
+}
+
+.td-knowledge-heading-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  height: 48px;
+  color: #b9dcff;
+  background: #223e5b;
+  border: 1px solid rgba(160, 204, 245, .22);
+  border-radius: 14px;
+}
+
+.td-knowledge-eyebrow,
+.td-knowledge-nav-label {
+  margin: 0 0 8px;
+  color: #a9c4df;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+.td-knowledge-heading h1 {
+  margin: 0;
+  color: #f2f7fd;
+  font-size: clamp(25px, 3vw, 34px);
+  line-height: 1.2;
+  letter-spacing: -.035em;
+}
+
+.td-knowledge-heading > div > p:last-child {
+  max-width: 600px;
+  margin: 10px 0 0;
+  color: var(--knowledge-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.td-knowledge-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+
+.td-knowledge-sidebar {
+  min-width: 0;
+  padding: 18px 12px;
+  border: 1px solid var(--knowledge-border);
+  border-radius: 18px;
+  background: #122237;
+}
+
+.td-knowledge-nav-label {
+  padding: 0 10px;
+  margin-bottom: 14px;
+}
+
+.td-knowledge-sidebar nav {
+  display: grid;
+  gap: 8px;
+}
+
+.td-knowledge-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 82px;
+  padding: 14px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: #b9cce0;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color .18s ease,
+    border-color .18s ease;
+}
+
+.td-knowledge-nav-item > svg {
+  flex-shrink: 0;
+}
+
+.td-knowledge-nav-item > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.td-knowledge-nav-item strong {
+  display: block;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.td-knowledge-nav-item small {
+  display: block;
+  margin-top: 5px;
+  color: #adbed1;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.td-knowledge-nav-item:hover {
+  background: #1c324a;
+}
+
+.td-knowledge-nav-item[aria-current="page"] {
+  border-color: rgba(128, 185, 235, .32);
+  background: linear-gradient(120deg, #244766, #1b344e);
+  color: #f1f7ff;
+}
+
+.td-knowledge-nav-item:focus-visible {
+  outline: 2px solid #93caff;
+  outline-offset: 3px;
+}
+
+.td-knowledge-help {
+  display: grid;
+  gap: 10px;
+  margin: 24px 10px 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--knowledge-border);
+  color: #abc8e3;
+}
+
+.td-knowledge-help strong {
+  color: #e0eaf6;
+  font-size: 13px;
+}
+
+.td-knowledge-help p {
+  margin: 0;
+  color: var(--knowledge-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.td-knowledge-content {
+  min-width: 0;
+}
+
+.td-knowledge-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 18px;
+  color: #afc1d6;
+  font-size: 12px;
+}
+
+.td-knowledge-breadcrumb strong {
+  color: #e2edf9;
+  font-weight: 600;
+}
+
+/* The workspace heading replaces the repeated panel banner.
+   Existing create/upload buttons remain visible. */
+.td-knowledge .ld-hero {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  min-height: 0;
+  margin: 0 0 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.td-knowledge .ld-hero > .ld-hero-icon,
+.td-knowledge .ld-hero > div {
+  display: none;
+}
+
+.td-knowledge .ld-library {
+  min-width: 0;
+}
+
+.td-knowledge .ld-grid {
+  grid-template-columns:
+    repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+
+.td-knowledge .ld-card,
+.td-knowledge .ld-reader,
+.td-knowledge .ld-editor {
+  min-width: 0;
+}
+
+.td-knowledge .ld-card h3,
+.td-knowledge .ld-card p,
+.td-knowledge .lf-filename {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1000px) {
+  .td-knowledge-layout {
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  .td-knowledge-heading {
+    padding: 20px 16px;
+    gap: 12px;
+    border-radius: 16px;
+  }
+
+  .td-knowledge-heading-icon {
+    flex-basis: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+
+  .td-knowledge-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .td-knowledge-sidebar {
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  .td-knowledge-sidebar nav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .td-knowledge-nav-label,
+  .td-knowledge-help,
+  .td-knowledge-nav-item small,
+  .td-knowledge-nav-item > svg:last-child {
+    display: none;
+  }
+
+  .td-knowledge-nav-item {
+    justify-content: center;
+    min-height: 52px;
+    padding: 10px 8px;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .td-knowledge-nav-item > span {
+    flex: initial;
+  }
+
+  .td-knowledge-nav-item strong {
+    font-size: 13px;
+  }
+
+  .td-knowledge-breadcrumb {
+    margin-top: 0;
+  }
+
+  .td-knowledge .ld-filters {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .td-knowledge .ld-filters > *,
+  .td-knowledge .ld-search,
+  .td-knowledge .ld-search input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .td-knowledge .ld-hero > button {
+    width: 100%;
+    justify-content: center;
+    min-height: 46px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .td-knowledge-nav-item {
+    transition: none;
+  }
+}
+/* Knowledge hub: desktop layout and readable surfaces */
+
+.td-knowledge {
+  --knowledge-text: #edf3fb;
+  --knowledge-muted: #b8c7da;
+}
+
+/* Keep the branding gradient restrained. */
+.td-knowledge .td-knowledge-heading {
+  padding: 22px 24px;
+  background:
+    radial-gradient(
+      ellipse at top right,
+      rgba(49, 106, 155, .15),
+      transparent 65%
+    ),
+    #122237;
+  box-shadow: none;
+}
+
+.td-knowledge .td-knowledge-sidebar {
+  background: #101e30;
+  box-shadow: none;
+}
+
+.td-knowledge .td-knowledge-nav-item[aria-current="page"] {
+  background: linear-gradient(120deg, #24445f, #1b324a);
+  border-color: #41617f;
+}
+
+/* Solid reading surfaces instead of bright gradients. */
+.td-knowledge .ld-library,
+.td-knowledge .ld-reader,
+.td-knowledge .ld-editor {
+  padding: 22px;
+  border: 1px solid #34485f;
+  border-radius: 16px;
+  background: #142337 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+  isolation: isolate;
+}
+
+.td-knowledge .ld-card {
+  padding: 20px;
+  border: 1px solid #3b5068;
+  border-radius: 12px;
+  background: #1a2d43 !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+  transform: none;
+}
+
+.td-knowledge .ld-library::before,
+.td-knowledge .ld-library::after,
+.td-knowledge .ld-card::before,
+.td-knowledge .ld-card::after {
+  content: none !important;
+}
+
+.td-knowledge .ld-card:hover {
+  border-color: #6a8bad;
+  background: #20364f !important;
+  transform: none;
+  box-shadow: none !important;
+}
+
+/* Clear hierarchy and readable secondary information. */
+.td-knowledge .ld-library-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.td-knowledge .ld-library-heading h2 {
+  margin: 4px 0 0;
+  color: #f0f5fc;
+  font-size: 21px;
+  line-height: 1.3;
+}
+
+.td-knowledge .ld-library-heading small,
+.td-knowledge .lf-summary,
+.td-knowledge .ld-card-bottom,
+.td-knowledge .ld-card-bottom small,
+.td-knowledge .lf-access,
+.td-knowledge .ld-status {
+  color: #b8c7da;
+  font-size: 13px;
+  line-height: 1.6;
+  opacity: 1;
+}
+
+.td-knowledge .lf-summary {
+  margin: 12px 0 18px;
+}
+
+.td-knowledge .ld-card h3,
+.td-knowledge .ld-card h3 button {
+  margin: 0;
+  color: #f1f6fd;
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.td-knowledge .ld-card > p {
+  margin: 0;
+  color: #c6d3e3;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.td-knowledge .ld-tag {
+  padding: 4px 9px;
+  border: 1px solid #49617a;
+  border-radius: 6px;
+  background: #223a52;
+  color: #d4e4f5;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.td-knowledge .ld-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Search and filters form a compact toolbar. */
+.td-knowledge .ld-filters {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) minmax(130px, 160px) minmax(150px, 180px);
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.td-knowledge .ld-search,
+.td-knowledge .ld-filters > select {
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid #48617b;
+  border-radius: 9px;
+  background: #0d1b2d !important;
+  color: #edf3fb;
+}
+
+.td-knowledge .ld-search input {
+  min-width: 0;
+  background: transparent !important;
+  color: #edf3fb;
+  font-size: 14px;
+}
+
+.td-knowledge .ld-search input::placeholder {
+  color: #afc1d6;
+  opacity: 1;
+}
+
+.td-knowledge .ld-filters > select {
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 13px;
+  color-scheme: dark;
+}
+
+/* Keep the primary action close to the content. */
+.td-knowledge .ld-hero {
+  margin-bottom: 12px;
+}
+
+.td-knowledge .ld-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin: 0 0 18px;
+  padding: 10px 0;
+  color: #bacade;
+  font-size: 13px;
+}
+
+.td-knowledge .ld-stats strong {
+  color: #edf5ff;
+  font-size: 15px;
+}
+
+/* Wiki: readable article summaries. */
+.td-knowledge [data-knowledge-tab="wiki"] .ld-grid {
+  display: grid;
+  grid-template-columns:
+    repeat(auto-fill, minmax(min(100%, 290px), 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.td-knowledge [data-knowledge-tab="wiki"] .ld-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+
+.td-knowledge .ld-document-icon {
+  color: #9bc6ef;
+}
+
+.td-knowledge [data-knowledge-tab="wiki"] .ld-card-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.td-knowledge .ld-card > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid #3b5068;
+}
+
+/* Documents: compact file rows instead of large tiles. */
+.td-knowledge .legion-files .ld-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+
+.td-knowledge .legion-files .ld-card {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr) 200px;
+  column-gap: 18px;
+  row-gap: 8px;
+  align-items: start;
+  padding: 18px;
+}
+
+.td-knowledge .legion-files .lf-filetype {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 62px;
+  margin: 0;
+  border: 1px solid #526d88;
+  border-radius: 10px;
+  background: #243e58;
+  color: #d9ebff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.td-knowledge .legion-files .ld-card-top {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.td-knowledge .legion-files .ld-card > h3 {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.td-knowledge .legion-files .ld-card > p:not(.lf-access) {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+.td-knowledge .legion-files .ld-card-bottom {
+  grid-column: 3;
+  grid-row: 1 / span 4;
+  display: grid;
+  gap: 5px;
+  padding: 0 0 0 16px;
+  border-left: 1px solid #3b5068;
+}
+
+.td-knowledge .legion-files .lf-filename {
+  color: #e0eaf7;
+  font-size: 13px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.td-knowledge .legion-files .lf-access {
+  grid-column: 2;
+  grid-row: 4;
+  margin: 0;
+}
+
+.td-knowledge .legion-files .lf-actions {
+  grid-column: 2 / -1;
+  grid-row: 5;
+  justify-content: flex-start;
+}
+
+/* Consistent secondary actions. */
+.td-knowledge .ld-open,
+.td-knowledge .ld-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 13px;
+  border: 1px solid #536e89;
+  border-radius: 8px;
+  background: #243c55 !important;
+  color: #edf4fd;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.td-knowledge .ld-open:hover,
+.td-knowledge .ld-secondary:hover {
+  background: #304e6d !important;
+  border-color: #88acce;
+}
+
+.td-knowledge .ld-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 13px;
+  border: 1px solid #986673;
+  border-radius: 8px;
+  background: #452b38 !important;
+  color: #ffdce3;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: none;
+}
+
+.td-knowledge button:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.td-knowledge button:focus-visible,
+.td-knowledge select:focus-visible,
+.td-knowledge input:focus-visible {
+  outline: 2px solid #9bd0ff;
+  outline-offset: 3px;
+}
+
+/* Preserve narrow-screen usability until phone testing. */
+@media (max-width: 1100px) {
+  .td-knowledge .ld-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .td-knowledge .ld-search {
+    grid-column: 1 / -1;
+  }
+
+  .td-knowledge .legion-files .ld-card {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  .td-knowledge .legion-files .ld-card-bottom {
+    grid-column: 2;
+    grid-row: 4;
+    padding: 8px 0 0;
+    border-left: 0;
+  }
+
+  .td-knowledge .legion-files .lf-access {
+    grid-column: 2;
+    grid-row: 5;
+  }
+
+  .td-knowledge .legion-files .lf-actions {
+    grid-column: 1 / -1;
+    grid-row: 6;
+  }
+}
+
+@media (max-width: 600px) {
+  .td-knowledge .ld-library,
+  .td-knowledge .ld-reader,
+  .td-knowledge .ld-editor {
+    padding: 16px;
+  }
+
+  .td-knowledge .ld-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .td-knowledge .legion-files .ld-card {
+    padding: 14px;
+    column-gap: 12px;
+  }
+
+  .td-knowledge .legion-files .lf-actions > button {
+    flex: 1 1 auto;
+  }
+}
+/* Remove inherited card stretching. */
+.td-knowledge .ld-grid {
+  align-items: start;
+  grid-auto-rows: auto;
+}
+
+.td-knowledge .ld-grid > .ld-card {
+  height: auto;
+  min-height: 0;
+  align-self: start;
+}
+
+.td-knowledge .legion-files .ld-card {
+  align-content: start;
+  grid-auto-rows: min-content;
+  row-gap: 6px;
+}
+
+.td-knowledge .legion-files .ld-card > h3,
+.td-knowledge .legion-files .ld-card > p {
+  padding-block: 0;
+  margin-block: 0;
+}
+
+.td-knowledge .legion-files .lf-actions {
+  margin-top: 6px;
+  padding-top: 10px;
+}
+
+.td-knowledge [data-knowledge-tab="wiki"] .ld-card {
+  gap: 12px;
+}
+
+.td-knowledge [data-knowledge-tab="wiki"] .ld-card-bottom {
+  margin-top: 0;
+}

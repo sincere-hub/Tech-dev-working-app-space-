@@ -16,6 +16,7 @@ import {
 import EmployeeAvatar from "./EmployeeAvatar.jsx";
 import RecordInteraction from "./RecordInteraction.jsx";
 import { safeExternalUrl } from "../lib/reporting.js";
+import WikiArticleTools from "./WikiArticleTools.jsx";
 
 const topics = [
   "General",
@@ -106,6 +107,7 @@ export default function DocsWiki({
   onDelete,
   onInteract,
 }) {
+  const [savedArticles, setSavedArticles] = useState({});
   const [query, setQuery] = useState("");
   const [topic, setTopic] = useState("all");
   const [sort, setSort] = useState("recent");
@@ -122,12 +124,22 @@ export default function DocsWiki({
   
   const documents = useMemo(
   () =>
-    records.filter(
-      record =>
-        record.module_id === "collaboration.docs" &&
-        record.metadata?.kind !== "document"
-    ),
-  [records]
+    records
+      .filter(
+        record =>
+          record.module_id === "collaboration.docs" &&
+          record.metadata?.kind !== "document"
+      )
+      .map(record => {
+        const saved = savedArticles[record.id];
+
+        return saved &&
+          Number(saved.wiki_revision) >=
+            Number(record.wiki_revision || 1)
+          ? saved
+          : record;
+      }),
+  [records, savedArticles]
 );
 
   const people = useMemo(
@@ -619,7 +631,19 @@ export default function DocsWiki({
                 <ArrowUpRight size={16} />
               </a>
             )}
-
+<WikiArticleTools
+  key={`${userId}:${selected.id}`}
+  record={selected}
+  userId={userId}
+  isManager={isManager}
+  employees={employees}
+  onSaved={saved =>
+    setSavedArticles(previous => ({
+      ...previous,
+      [saved.id]: saved,
+    }))
+  }
+/>
             <div className="ld-management">
               {(
                 isManager ||
