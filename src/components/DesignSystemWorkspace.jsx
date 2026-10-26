@@ -1,67 +1,119 @@
-import { useEffect, useRef, useState } from "react";
 import {
-  Layers3,
-  Plus,
-  Search,
-  Pencil,
-  X,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Boxes,
   Copy,
   ExternalLink,
-  Sun,
+  Layers3,
+  Link2,
+  LoaderCircle,
   Moon,
+  Palette,
+  Pencil,
+  Plus,
+  Search,
+  Sun,
+  X,
 } from "lucide-react";
-import { safeExternalUrl } from "../lib/reporting.js";
 
-const kinds = {
-  buttons: "Buttons",
-  forms: "Form fields",
-  cards: "Cards",
-  badges: "Status badges",
+import "./design-system-workspace.css";
+
+const MODULE = "collaboration.design-system";
+
+const categories = {
+  buttons: "Button",
+  forms: "Text field",
+  badges: "Status badge",
+  cards: "Content card",
+  avatars: "Avatar",
+  dialogs: "Dialog",
   colors: "Colour tokens",
   typography: "Typography",
   spacing: "Spacing",
 };
 
-const hexPattern = /^#[0-9a-f]{6}$/i;
+const foundations = new Set([
+  "colors",
+  "typography",
+  "spacing",
+]);
 
-function safeAccent(value) {
-  return hexPattern.test(String(value))
-    ? String(value).toUpperCase()
-    : "#8B9EFF";
+const phases = {
+  in_progress: "Draft",
+  pending_approval: "In review",
+  published: "Published",
+  archived: "Deprecated",
+};
+
+const text = value =>
+  typeof value === "string" ? value : "";
+
+const hex = /^#[a-f0-9]{6}$/i;
+
+export function safeLink(value) {
+  try {
+    const url = new URL(value);
+
+    return (
+      url.protocol === "https:" &&
+      !url.username &&
+      !url.password
+    )
+      ? url.href
+      : "";
+  } catch {
+    return "";
+  }
 }
 
-function accentInk(hex) {
-  const color = safeAccent(hex).slice(1);
+export function designData(record) {
+  const data = record?.metadata?.design_system || {};
 
-  const [r, g, b] = [0, 2, 4].map(index => {
-    const value =
-      parseInt(color.slice(index, index + 2), 16) / 255;
+  return {
+    ...data,
 
-    return value <= 0.04045
-      ? value / 12.92
-      : ((value + 0.055) / 1.055) ** 2.4;
-  });
+    kind: Object.hasOwn(categories, data.kind)
+      ? data.kind
+      : "cards",
 
-  const luminance =
-    0.2126 * r + 0.7152 * g + 0.0722 * b;
+    version: text(data.version) || "1.0.0",
 
-  const blackContrast = (luminance + 0.05) / 0.05;
-  const whiteContrast = 1.05 / (luminance + 0.05);
+    accessibility: text(data.accessibility),
 
-  return blackContrast >= whiteContrast
-    ? "#000000"
-    : "#FFFFFF";
+    maintainer_id:
+      text(data.maintainer_id) ||
+      record?.created_by ||
+      "",
+
+    tokens: Array.isArray(data.tokens)
+      ? data.tokens.filter(token =>
+          /^[a-z][a-z0-9.-]{0,79}$/.test(
+            token?.name || "",
+          ) &&
+          hex.test(token?.value || "")
+        )
+      : [],
+  };
 }
 
-function parseTokens(value) {
+export function parseTokens(value) {
   const lines = value
     .split(/\r?\n/)
     .map(line => line.trim())
     .filter(Boolean);
 
-  if (!lines.length || lines.length > 12) {
+  if (!lines.length || lines.length > 24) {
     throw new Error(
-      "Add between one and twelve colour tokens.",
+      "Add between 1 and 24 colour tokens.",
     );
   }
 
@@ -69,25 +121,26 @@ function parseTokens(value) {
 
   return lines.map(line => {
     const match =
-      /^([a-z][a-z0-9-]{0,39})\s*:\s*(#[0-9a-f]{6})$/i.exec(
+      /^([a-z][a-z0-9.-]{0,79})\s*:\s*(#[a-f0-9]{6})$/i.exec(
         line,
       );
 
     if (!match) {
       throw new Error(
-        "Write each colour as name: #112233, for example primary: #8B9EFF.",
+        "Write each token as color.text.primary: #F3F7FF.",
       );
     }
 
     const name = match[1].toLowerCase();
+    const cssName = name.replaceAll(".", "-");
 
-    if (names.has(name)) {
+    if (names.has(cssName)) {
       throw new Error(
-        `The colour token “${name}” is repeated.`,
+        `The token ${name} produces a repeated CSS name.`,
       );
     }
 
-    names.add(name);
+    names.add(cssName);
 
     return {
       name,
@@ -96,274 +149,1059 @@ function parseTokens(value) {
   });
 }
 
-function designData(record) {
-  const data = record?.metadata?.design_system || {};
-
-  return {
-    kind: Object.hasOwn(kinds, data.kind)
-      ? data.kind
-      : "cards",
-    version:
-      typeof data.version === "string"
-        ? data.version
-        : "1.0.0",
-    accent: safeAccent(data.accent),
-    accessibility:
-      typeof data.accessibility === "string"
-        ? data.accessibility
-        : "",
-    tokens: Array.isArray(data.tokens)
-      ? data.tokens.filter(token =>
-          token &&
-          typeof token.name === "string" &&
-          /^[a-z][a-z0-9-]{0,39}$/i.test(token.name) &&
-          hexPattern.test(String(token.value)),
-        )
-      : [],
-  };
+function tokenCSS(tokens) {
+  return `:root {
+${tokens.map(token =>
+  `  --${token.name.replaceAll(".", "-")}: ${token.value};`
+).join("\n")}
+}`;
 }
 
-function statusLabel(value) {
-  return {
-    published: "Published",
-    in_progress: "Draft",
-    archived: "Deprecated",
-  }[value] || "Draft";
+function excerpt(value) {
+  const chars = Array.from(
+    text(value).replace(/\s+/g, " ").trim(),
+  );
+
+  return chars.length > 140
+    ? `${chars.slice(0, 140).join("")}…`
+    : chars.join("");
 }
 
-function Preview({ data, light }) {
-  const [message, setMessage] = useState("");
-  const [value, setValue] = useState("");
+function formatDate(value) {
+  const parsed = new Date(value);
+
+  return value && !Number.isNaN(parsed.getTime())
+    ? parsed.toLocaleDateString("en-ZA", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+        timeZone: "Africa/Johannesburg",
+      })
+    : "Date unavailable";
+}
+
+/*
+ * These exports are the actual components used
+ * by the interactive playground.
+ */
+
+export function DesignButton({
+  children = "Continue",
+  variant = "primary",
+  size = "regular",
+  loading = false,
+  disabled = false,
+  onClick,
+}) {
+  const appearance =
+    variant === "secondary"
+      ? "secondary"
+      : "primary";
+
+  const sizing =
+    size === "small" ? "small" : "regular";
 
   return (
-    <div
-      className={`ds-preview${light ? " ds-light" : ""}`}
-      style={{
-        "--ds-accent": data.accent,
-        "--ds-ink": accentInk(data.accent),
-      }}
+    <button
+      type="button"
+      className={
+        `tdkit-button tdkit-${appearance} ` +
+        `tdkit-${sizing}`
+      }
+      disabled={disabled || loading}
+      aria-busy={loading}
+      onClick={onClick}
     >
-      <span className="ds-preview-label">
-        EXAMPLE PREVIEW
-      </span>
-
-      {data.kind === "buttons" && (
-        <>
-          <div className="ds-demo-row">
-            <button
-              type="button"
-              className="ds-demo-primary"
-              onClick={() =>
-                setMessage(
-                  "Primary button preview clicked.",
-                )
-              }
-            >
-              Primary action
-            </button>
-
-            <button
-              type="button"
-              className="ds-demo-secondary"
-              onClick={() =>
-                setMessage(
-                  "Secondary button preview clicked.",
-                )
-              }
-            >
-              Secondary
-            </button>
-
-            <button
-              type="button"
-              className="ds-demo-primary"
-              disabled
-            >
-              Disabled
-            </button>
-          </div>
-
-          <p className="ds-demo-caption" role="status">
-            {message ||
-              "Try the enabled buttons to inspect their interaction."}
-          </p>
-        </>
+      {loading && (
+        <LoaderCircle
+          size={16}
+          className="tdkit-spin"
+          aria-hidden="true"
+        />
       )}
 
-      {data.kind === "forms" && (
-        <label className="ds-demo-field">
-          Example text field
-          <input
-            value={value}
-            onChange={event =>
-              setValue(event.target.value)
-            }
-            placeholder="Type to test this field"
+      {children}
+    </button>
+  );
+}
+
+export function DesignField({
+  label = "Work email",
+  hint = "Use your company email.",
+  error = "",
+  disabled = false,
+}) {
+  const id = useId();
+
+  return (
+    <div className="tdkit-field">
+      <label htmlFor={id}>{label}</label>
+
+      <input
+        id={id}
+        disabled={disabled}
+        aria-invalid={Boolean(error)}
+        aria-describedby={`${id}-hint`}
+      />
+
+      <p
+        id={`${id}-hint`}
+        className={error ? "tdkit-error" : ""}
+      >
+        {error || hint}
+      </p>
+    </div>
+  );
+}
+
+export function DesignBadge({
+  tone = "info",
+  children = "In progress",
+}) {
+  const appearance =
+    ["success", "warning"].includes(tone)
+      ? tone
+      : "info";
+
+  return (
+    <span
+      className={`tdkit-badge tdkit-${appearance}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+export function DesignCard({
+  title = "Project brief",
+  children =
+    "Keep the context and next action together.",
+  onClick,
+}) {
+  return (
+    <article className="tdkit-card">
+      <h3>{title}</h3>
+      <p>{children}</p>
+
+      <DesignButton
+        variant="secondary"
+        onClick={onClick}
+      >
+        View brief
+      </DesignButton>
+    </article>
+  );
+}
+
+export function DesignAvatar({
+  name = "Alex Morgan",
+}) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map(part => Array.from(part)[0])
+    .join("")
+    .toUpperCase();
+
+  return (
+    <span
+      className="tdkit-avatar"
+      role="img"
+      aria-label={name}
+    >
+      {initials}
+    </span>
+  );
+}
+
+export function DesignDialog() {
+  const dialog = useRef(null);
+  const trigger = useRef(null);
+  const id = useId();
+
+  return (
+    <>
+      <button
+        ref={trigger}
+        type="button"
+        className="tdkit-button tdkit-primary"
+        onClick={() => dialog.current?.showModal()}
+      >
+        Open example dialog
+      </button>
+
+      <dialog
+        ref={dialog}
+        className="tdkit-dialog"
+        aria-labelledby={id}
+        onClose={() => trigger.current?.focus()}
+      >
+        <h3 id={id}>Review changes</h3>
+
+        <p>
+          This example does not change any
+          workplace data.
+        </p>
+
+        <button
+          type="button"
+          className="tdkit-button tdkit-secondary"
+          onClick={() => dialog.current?.close()}
+        >
+          Close dialog
+        </button>
+      </dialog>
+    </>
+  );
+}
+
+function Playground({ kind, tokens }) {
+  const [light, setLight] = useState(false);
+  const [size, setSize] = useState("regular");
+  const [variant, setVariant] = useState("primary");
+  const [state, setState] = useState("default");
+  const [notice, setNotice] = useState("");
+
+  const names = {
+    buttons: "DesignButton",
+    forms: "DesignField",
+    badges: "DesignBadge",
+    cards: "DesignCard",
+    avatars: "DesignAvatar",
+    dialogs: "DesignDialog",
+  };
+
+  const snippets = {
+    buttons:
+      `<DesignButton variant="${variant}" size="${size}"` +
+      `${state === "loading" ? " loading" : ""}` +
+      `${state === "disabled" ? " disabled" : ""}` +
+      `>Continue</DesignButton>`,
+
+    forms:
+      `<DesignField label="Work email"` +
+      `${state === "error"
+        ? ' error="Enter a valid work email."'
+        : ""}` +
+      `${state === "disabled" ? " disabled" : ""}` +
+      ` />`,
+
+    badges:
+      '<DesignBadge tone="info">In progress</DesignBadge>',
+
+    cards:
+      '<DesignCard title="Project brief">' +
+      "Keep the context and next action together." +
+      "</DesignCard>",
+
+    avatars:
+      '<DesignAvatar name="Alex Morgan" />',
+
+    dialogs: "<DesignDialog />",
+  };
+
+  const code = names[kind]
+    ? (
+        `import { ${names[kind]} } from ` +
+        `"./components/DesignSystemWorkspace.jsx";\n\n` +
+        snippets[kind]
+      )
+    : kind === "colors"
+      ? tokenCSS(tokens)
+      : kind === "spacing"
+        ? `:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+}`
+        : `/* Example type scale */
+.heading {
+  font-size: 1.75rem;
+  line-height: 1.25;
+}
+
+.body {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.caption {
+  font-size: 0.875rem;
+  line-height: 1.5;
+}`;
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(code);
+      setNotice("Example copied.");
+    } catch {
+      setNotice(
+        "Copy unavailable. Select and copy the code below.",
+      );
+    }
+  }
+
+  return (
+    <div className="tds-playground">
+      <div className="tds-toolbar">
+        <span>Built-in React example</span>
+
+        <button
+          type="button"
+          className="tds-button"
+          aria-pressed={light}
+          onClick={() => setLight(value => !value)}
+        >
+          {light
+            ? <Moon size={16} />
+            : <Sun size={16} />}
+
+          {light ? "Dark canvas" : "Light canvas"}
+        </button>
+      </div>
+
+      <div
+        className={
+          `tds-canvas${light ? " tds-canvas-light" : ""}`
+        }
+      >
+        {kind === "buttons" && (
+          <DesignButton
+            size={size}
+            variant={variant}
+            disabled={state === "disabled"}
+            loading={state === "loading"}
+            onClick={() => setNotice(
+              "Example action activated. No workplace data changed.",
+            )}
           />
-          <span>
-            Use a visible label and useful supporting text.
-          </span>
-        </label>
+        )}
+
+        {kind === "forms" && (
+          <DesignField
+            disabled={state === "disabled"}
+            error={
+              state === "error"
+                ? "Enter a valid work email."
+                : ""
+            }
+          />
+        )}
+
+        {kind === "badges" && (
+          <div className="tds-wrap">
+            <DesignBadge>In progress</DesignBadge>
+
+            <DesignBadge tone="success">
+              Complete
+            </DesignBadge>
+
+            <DesignBadge tone="warning">
+              Needs attention
+            </DesignBadge>
+          </div>
+        )}
+
+        {kind === "cards" && (
+          <DesignCard
+            onClick={() => setNotice(
+              "Example brief opened. No workplace data changed.",
+            )}
+          />
+        )}
+
+        {kind === "avatars" && <DesignAvatar />}
+
+        {kind === "dialogs" && <DesignDialog />}
+
+        {kind === "colors" && (
+          <div className="tds-swatches">
+            {tokens.map(token => (
+              <div key={`swatch:${token.name}`}>
+                <i
+                  style={{
+                    backgroundColor: token.value,
+                  }}
+                />
+
+                <strong>{token.name}</strong>
+                <code>{token.value}</code>
+              </div>
+            ))}
+
+            {!tokens.length && (
+              <p>
+                No colour tokens recorded. Edit this
+                foundation to add them.
+              </p>
+            )}
+          </div>
+        )}
+
+        {kind === "typography" && (
+          <div className="tds-types">
+            <h2>A clear heading</h2>
+
+            <p>
+              Readable text helps people finish
+              their work.
+            </p>
+
+            <small>
+              A supporting detail with useful context.
+            </small>
+          </div>
+        )}
+
+        {kind === "spacing" && (
+          <div className="tds-space">
+            {[4, 8, 12, 16, 24, 32].map(value => (
+              <div key={`space:${value}`}>
+                <code>{value}px</code>
+                <i style={{ width: value * 5 }} />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {["buttons", "forms"].includes(kind) && (
+        <div className="tds-controls">
+          {kind === "buttons" && (
+            <>
+              <label>
+                Appearance
+
+                <select
+                  value={variant}
+                  onChange={event =>
+                    setVariant(event.target.value)
+                  }
+                >
+                  <option value="primary">
+                    Primary
+                  </option>
+
+                  <option value="secondary">
+                    Secondary
+                  </option>
+                </select>
+              </label>
+
+              <label>
+                Size
+
+                <select
+                  value={size}
+                  onChange={event =>
+                    setSize(event.target.value)
+                  }
+                >
+                  <option value="regular">
+                    Regular
+                  </option>
+
+                  <option value="small">
+                    Compact
+                  </option>
+                </select>
+              </label>
+            </>
+          )}
+
+          <label>
+            State
+
+            <select
+              value={state}
+              onChange={event =>
+                setState(event.target.value)
+              }
+            >
+              <option value="default">Default</option>
+              <option value="disabled">Disabled</option>
+
+              {kind === "buttons"
+                ? (
+                    <option value="loading">
+                      Loading
+                    </option>
+                  )
+                : (
+                    <option value="error">
+                      Error
+                    </option>
+                  )}
+            </select>
+          </label>
+        </div>
       )}
 
-      {data.kind === "cards" && (
-        <article className="ds-demo-card">
-          <span>EXAMPLE CARD</span>
-          <h3>Keep related information together</h3>
-          <p>
-            A clear title, useful context, and one primary
-            action.
+      <p className="tds-muted">
+        Hover and use Tab to inspect interaction and
+        keyboard focus. Typography and spacing previews
+        use the example scale shown below; document your
+        company rules in Usage.
+      </p>
+
+      <div className="tds-toolbar">
+        <h3>
+          {kind === "colors"
+            ? "CSS tokens"
+            : "Example code"}
+        </h3>
+
+        <button
+          type="button"
+          className="tds-button"
+          onClick={copy}
+        >
+          <Copy size={15} />
+          Copy example
+        </button>
+      </div>
+
+      <pre tabIndex={0} aria-label="Example code">
+        <code>{code}</code>
+      </pre>
+
+      <p className="tds-feedback" role="status">
+        {notice}
+      </p>
+    </div>
+  );
+}
+
+function ReferenceEditor({
+  record,
+  userId,
+  employees,
+  onSave,
+  onClose,
+  onSaved,
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const lock = useRef(false);
+  const alive = useRef(true);
+
+  const data = designData(record);
+
+  useEffect(() => {
+    alive.current = true;
+
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+
+  async function submit(event) {
+    event.preventDefault();
+
+    if (lock.current) return;
+
+    const form = new FormData(event.currentTarget);
+
+    const value = name =>
+      String(form.get(name) || "").trim();
+
+    setError("");
+
+    try {
+      if (!navigator.onLine) {
+        throw new Error(
+          "Connect to the internet to save. Your draft is still here.",
+        );
+      }
+
+      if (typeof onSave !== "function") {
+        throw new Error(
+          "The design save handler is missing. Check the WorkplaceSuite connection.",
+        );
+      }
+
+      if (
+        !value("title") ||
+        !value("description")
+      ) {
+        throw new Error(
+          "Add a name and usage guidance.",
+        );
+      }
+
+      if (
+        !/^\d+\.\d+\.\d+(?:-[a-z0-9.-]+)?$/i.test(
+          value("version"),
+        )
+      ) {
+        throw new Error(
+          "Use a version such as 1.0.0 or 1.0.0-beta.1.",
+        );
+      }
+
+      const links = [
+        "figma_url",
+        "source_url",
+        "resource_url",
+      ];
+
+      if (
+        links.some(name =>
+          value(name) && !safeLink(value(name))
+        )
+      ) {
+        throw new Error(
+          "Resource links must use HTTPS and contain no embedded username or password.",
+        );
+      }
+
+      const tokens = value("kind") === "colors"
+        ? parseTokens(value("tokens"))
+        : data.tokens;
+
+      const payload = {
+        title: value("title"),
+        description: value("description"),
+        status: value("status"),
+        visibility: value("visibility"),
+
+        metadata: {
+          ...record?.metadata,
+
+          resource_url: value("resource_url"),
+
+          design_system: {
+            ...data,
+            kind: value("kind"),
+            version: value("version"),
+            maintainer_id: value("maintainer_id"),
+            accessibility: value("accessibility"),
+            figma_url: value("figma_url"),
+            source_url: value("source_url"),
+            tokens,
+          },
+        },
+      };
+
+      lock.current = true;
+      setBusy(true);
+
+      const result = await onSave(record, payload);
+
+      if (!result) {
+        throw new Error(
+          "Saving was not confirmed. Check the workspace error and retry.",
+        );
+      }
+
+      if (alive.current) {
+        onSaved(result.id || record?.id);
+      }
+    } catch (failure) {
+      if (alive.current) {
+        setError(
+          failure.message ||
+          "Could not save this reference.",
+        );
+      }
+    } finally {
+      lock.current = false;
+
+      if (alive.current) {
+        setBusy(false);
+      }
+    }
+  }
+
+  const personOptions = [
+    ...new Map(
+      employees.map(person => [person.id, person]),
+    ).values(),
+  ];
+
+  const owner = data.maintainer_id || userId;
+
+  if (
+    owner &&
+    !personOptions.some(person => person.id === owner)
+  ) {
+    personOptions.push({
+      id: owner,
+      display_name: "Current maintainer",
+    });
+  }
+
+  return (
+    <form className="tds-editor" onSubmit={submit}>
+      <header className="tds-toolbar">
+        <div>
+          <p className="tds-eyebrow">
+            LIBRARY MANAGEMENT
           </p>
 
-          <button
-            type="button"
-            className="ds-demo-primary"
-            onClick={() =>
-              setMessage("Card action preview clicked.")
+          <h2>
+            {record
+              ? "Edit reference"
+              : "New reference"}
+          </h2>
+        </div>
+
+        <button
+          type="button"
+          className="tds-button"
+          disabled={busy}
+          onClick={() => {
+            if (
+              window.confirm(
+                "Discard unsaved reference changes?",
+              )
+            ) {
+              onClose();
+            }
+          }}
+        >
+          <X size={16} />
+          Close
+        </button>
+      </header>
+
+      <fieldset disabled={busy}>
+        <label className="tds-wide">
+          Name
+
+          <input
+            name="title"
+            required
+            maxLength={180}
+            defaultValue={record?.title || ""}
+            autoFocus
+          />
+        </label>
+
+        <label>
+          Category
+
+          <select
+            name="kind"
+            defaultValue={data.kind}
+          >
+            {Object.entries(categories).map(
+              ([id, label]) => (
+                <option
+                  key={`kind:${id}`}
+                  value={id}
+                >
+                  {label}
+                </option>
+              ),
+            )}
+          </select>
+        </label>
+
+        <label>
+          Version
+
+          <input
+            name="version"
+            required
+            maxLength={30}
+            defaultValue={data.version}
+          />
+        </label>
+
+        <label>
+          Status
+
+          <select
+            name="status"
+            defaultValue={
+              Object.hasOwn(phases, record?.status)
+                ? record.status
+                : "in_progress"
             }
           >
-            View details
-          </button>
+            {Object.entries(phases).map(
+              ([id, label]) => (
+                <option
+                  key={`phase:${id}`}
+                  value={id}
+                >
+                  {label}
+                </option>
+              ),
+            )}
+          </select>
+        </label>
 
-          <p className="ds-demo-caption" role="status">
-            {message}
-          </p>
-        </article>
+        <label>
+          Maintainer
+
+          <select
+            name="maintainer_id"
+            defaultValue={owner}
+          >
+            {personOptions.map(person => (
+              <option
+                key={`person:${person.id}`}
+                value={person.id}
+              >
+                {person.display_name || "Employee"}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label>
+          Visibility
+
+          <select
+            name="visibility"
+            defaultValue={
+              record?.visibility || "company"
+            }
+          >
+            <option value="company">
+              Company employees
+            </option>
+
+            <option value="private">
+              Creator and managers
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Documentation link
+
+          <input
+            name="resource_url"
+            type="url"
+            maxLength={2000}
+            defaultValue={
+              record?.metadata?.resource_url || ""
+            }
+            placeholder="https://"
+          />
+        </label>
+
+        <label>
+          Figma link
+
+          <input
+            name="figma_url"
+            type="url"
+            maxLength={2000}
+            defaultValue={text(data.figma_url)}
+            placeholder="https://"
+          />
+        </label>
+
+        <label>
+          Source code link
+
+          <input
+            name="source_url"
+            type="url"
+            maxLength={2000}
+            defaultValue={text(data.source_url)}
+            placeholder="https://"
+          />
+        </label>
+
+        <label className="tds-wide">
+          Usage guidance
+
+          <textarea
+            name="description"
+            required
+            rows={5}
+            maxLength={5000}
+            defaultValue={record?.description || ""}
+            placeholder="Describe its purpose, when to use it, variants and situations to avoid."
+          />
+        </label>
+
+        <label className="tds-wide">
+          Accessibility notes and test evidence
+
+          <textarea
+            name="accessibility"
+            rows={3}
+            maxLength={3000}
+            defaultValue={data.accessibility}
+            placeholder="Record keyboard and screen-reader behaviour, test date, version and any known issues."
+          />
+        </label>
+
+        <label className="tds-wide">
+          Colour tokens · required for the
+          Colour tokens category
+
+          <textarea
+            name="tokens"
+            rows={3}
+            maxLength={4000}
+            defaultValue={
+              data.tokens.map(token =>
+                `${token.name}: ${token.value}`
+              ).join("\n")
+            }
+            placeholder={
+              "color.text.primary: #F3F7FF\n" +
+              "color.surface.panel: #122138"
+            }
+          />
+        </label>
+      </fieldset>
+
+      <p className="tds-muted">
+        Status and test notes are maintained by your
+        team. Assigning a maintainer does not change
+        editing permissions.
+      </p>
+
+      {error && (
+        <p className="tds-error" role="alert">
+          {error}
+        </p>
       )}
 
-      {data.kind === "badges" && (
-        <div className="ds-demo-row">
-          <span className="ds-demo-badge">
-            In progress
-          </span>
-          <span className="ds-demo-badge ds-badge-success">
-            Completed
-          </span>
-          <span className="ds-demo-badge ds-badge-warning">
-            Needs attention
-          </span>
-        </div>
-      )}
-
-      {data.kind === "colors" && (
-        <div className="ds-swatches">
-          {data.tokens.map(token => (
-            <div key={token.name}>
-              <span
-                className="ds-swatch"
-                style={{
-                  backgroundColor: safeAccent(token.value),
-                }}
+      <button
+        type="submit"
+        className="tds-button tds-primary"
+        disabled={busy}
+      >
+        {busy
+          ? (
+              <LoaderCircle
+                className="tdkit-spin"
+                size={16}
               />
-              <strong>{token.name}</strong>
-              <code>{safeAccent(token.value)}</code>
-            </div>
-          ))}
+            )
+          : <Plus size={16} />}
 
-          {!data.tokens.length && (
-            <p>
-              Add colour tokens when editing this reference.
-            </p>
-          )}
-        </div>
-      )}
-
-      {data.kind === "typography" && (
-        <div className="ds-type">
-          <p style={{ fontSize: 28 }}>A clear heading</p>
-          <p style={{ fontSize: 18 }}>
-            A useful section title
-          </p>
-          <p style={{ fontSize: 14 }}>
-            Readable body text with enough room to breathe.
-          </p>
-          <span>
-            Example scale: 28 / 18 / 14 px. Record your actual
-            type rules in the usage guidance.
-          </span>
-        </div>
-      )}
-
-      {data.kind === "spacing" && (
-        <div className="ds-spacing">
-          {[8, 16, 24, 32].map(size => (
-            <div key={size}>
-              <span>{size}px</span>
-              <i style={{ width: size * 4 }} />
-            </div>
-          ))}
-          <p>
-            Example spacing scale. Record the approved
-            spacing rules in the usage guidance.
-          </p>
-        </div>
-      )}
-    </div>
+        {busy ? "Saving…" : "Save reference"}
+      </button>
+    </form>
   );
 }
 
 export default function DesignSystemWorkspace({
   records = [],
+  employees = [],
+  userId,
   isManager,
   onSave,
 }) {
+  const [area, setArea] = useState("overview");
   const [query, setQuery] = useState("");
-  const [kind, setKind] = useState("all");
   const [status, setStatus] = useState("all");
   const [selectedId, setSelectedId] = useState("");
-  const [light, setLight] = useState(false);
+  const [tab, setTab] = useState("preview");
   const [editor, setEditor] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [notice, setNotice] = useState("");
 
-  const locked = useRef(false);
-  const reader = useRef(null);
   const root = useRef(null);
+  const reader = useRef(null);
 
-  const entries = records.filter(
-    record =>
-      record.module_id === "collaboration.design-system",
+  const entries = useMemo(
+    () => [
+      ...new Map(
+        records
+          .filter(record =>
+            record.module_id === MODULE
+          )
+          .map(record => [record.id, record]),
+      ).values(),
+    ],
+    [records],
   );
 
-  const visible = entries
+  const byId = new Map(
+    employees.map(person => [person.id, person]),
+  );
+
+  const selected = entries.find(
+    record => record.id === selectedId,
+  );
+
+  const data = designData(selected);
+
+  const ownerName = id =>
+    byId.get(id)?.display_name ||
+    (id === userId ? "You" : "Employee unavailable");
+
+  const resources = entries.flatMap(record =>
+    [
+      ["Figma", designData(record).figma_url],
+      ["Source code", designData(record).source_url],
+      ["Documentation", record.metadata?.resource_url],
+    ]
+      .filter(([, url]) => safeLink(url))
+      .map(([label, url]) => ({
+        record,
+        label,
+        url: safeLink(url),
+      })),
+  );
+
+  const search = query.trim().toLowerCase();
+
+  const matches = entries
     .filter(record => {
-      const data = designData(record);
+      const info = designData(record);
 
       return (
-        (kind === "all" || data.kind === kind) &&
+        (
+          area !== "foundations" ||
+          foundations.has(info.kind)
+        ) &&
+        (
+          area !== "components" ||
+          !foundations.has(info.kind)
+        ) &&
         (
           status === "all" ||
-          statusLabel(record.status) === status
+          record.status === status
         ) &&
-        `${record.title} ${record.description} ${kinds[data.kind]}`
+        [
+          record.title,
+          record.description,
+          categories[info.kind],
+          ownerName(info.maintainer_id),
+        ]
+          .join(" ")
           .toLowerCase()
-          .includes(query.trim().toLowerCase())
+          .includes(search)
       );
     })
-    .sort(
-      (a, b) =>
-        a.title.localeCompare(b.title) ||
-        String(a.id).localeCompare(String(b.id)),
+    .sort((a, b) =>
+      a.title.localeCompare(b.title) ||
+      a.id.localeCompare(b.id)
     );
 
-  const selected =
-    visible.find(record => record.id === selectedId) ||
-    visible[0];
+  function open(record) {
+    setSelectedId(record.id);
+    setTab("preview");
+    setEditor(null);
+  }
 
-  const data = selected ? designData(selected) : null;
-
-  const resource =
-    selected &&
-    safeExternalUrl(selected.metadata?.resource_url);
+  function navigate(next) {
+    setArea(next);
+    setSelectedId("");
+    setQuery("");
+    setStatus("all");
+    setEditor(null);
+    setNotice("");
+  }
 
   useEffect(() => {
     if (selectedId) {
-      reader.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-
       reader.current?.focus({
         preventScroll: true,
       });
@@ -371,255 +1209,151 @@ export default function DesignSystemWorkspace({
   }, [selectedId]);
 
   useEffect(() => {
-    if (!root.current) return;
-
     const observer = new MutationObserver(changes => {
       for (const change of changes) {
         if (
-          change.target.dataset.activityTarget === "true" &&
+          change.target.dataset.activityTarget ===
+            "true" &&
           change.target.dataset.designId
         ) {
-          setQuery("");
-          setKind("all");
-          setStatus("all");
-          setSelectedId(change.target.dataset.designId);
+          setSelectedId(
+            change.target.dataset.designId,
+          );
+
+          setEditor(null);
+          setTab("preview");
         }
       }
     });
 
-    observer.observe(root.current, {
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["data-activity-target"],
-    });
+    if (root.current) {
+      observer.observe(root.current, {
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["data-activity-target"],
+      });
+    }
 
     return () => observer.disconnect();
   }, []);
 
-  function edit(record = null) {
-    if (!isManager || locked.current) return;
+  const nav = [
+    ["overview", "Overview", Layers3],
+    ["components", "Components", Boxes],
+    ["foundations", "Foundations", Palette],
+    ["resources", "Resources", Link2],
+  ];
 
-    const value = designData(record);
+  const phase = record =>
+    phases[record.status] || "Draft";
 
-    setError("");
-    setMessage("");
+  function cards(items) {
+    return (
+      <div className="tds-grid">
+        {items.map(record => {
+          const info = designData(record);
 
-    setEditor({
-      record,
-      title: record?.title || "",
-      description: record?.description || "",
-      kind: value.kind,
-      version: value.version,
-      accent: value.accent,
-      accessibility: value.accessibility,
-      resource: record?.metadata?.resource_url || "",
-      tokens:
-        value.tokens
-          .map(token => `${token.name}: ${token.value}`)
-          .join("\n") ||
-        "primary: #8B9EFF\nsurface: #14243A\ntext: #F1F5FF",
-      status:
-        record?.status === "published"
-          ? "published"
-          : record?.status === "archived"
-            ? "archived"
-            : "in_progress",
-      visibility: record?.visibility || "company",
-    });
-  }
+          return (
+            <button
+              type="button"
+              className="tds-reference"
+              key={`reference:${record.id}`}
+              onClick={() => open(record)}
+            >
+              <span
+                className={
+                  `tds-mini tds-mini-${info.kind}`
+                }
+                aria-hidden="true"
+              >
+                {info.kind === "buttons"
+                  ? <span>Continue →</span>
+                  : info.kind === "colors"
+                    ? <><i /><i /><i /></>
+                    : info.kind === "avatars"
+                      ? <b>AM</b>
+                      : <BookOpen size={28} />}
+              </span>
 
-  function change(field, value) {
-    setEditor(old => ({
-      ...old,
-      [field]: value,
-    }));
-  }
+              <span className="tds-toolbar">
+                <small>{categories[info.kind]}</small>
 
-  function closeEditor() {
-    if (
-      !locked.current &&
-      window.confirm(
-        "Discard these unsaved design reference changes?",
-      )
-    ) {
-      setEditor(null);
-      setError("");
-    }
-  }
+                <span
+                  className={
+                    `tds-status ` +
+                    `tds-status-${record.status}`
+                  }
+                >
+                  {phase(record)}
+                </span>
+              </span>
 
-  async function save(event) {
-    event.preventDefault();
+              <strong>{record.title}</strong>
 
-    if (!isManager || !editor || locked.current) return;
+              <span className="tds-excerpt">
+                {excerpt(record.description)}
+              </span>
 
-    setError("");
+              <span className="tds-card-footer">
+                <span>
+                  v{info.version}
+                  {" · "}
+                  {ownerName(info.maintainer_id)}
+                </span>
 
-    if (!navigator.onLine) {
-      setError(
-        "Connect to the internet to save. Your changes are still here.",
-      );
-      return;
-    }
-
-    if (
-      !editor.title.trim() ||
-      !editor.description.trim() ||
-      !editor.version.trim()
-    ) {
-      setError("Add a name, version, and usage guidance.");
-      return;
-    }
-
-    if (!hexPattern.test(editor.accent)) {
-      setError(
-        "Use a six-digit accent colour such as #8B9EFF.",
-      );
-      return;
-    }
-
-    const link = editor.resource.trim();
-
-    if (link && !safeExternalUrl(link)) {
-      setError(
-        "Use a full HTTPS reference link without embedded credentials.",
-      );
-      return;
-    }
-
-    let tokens;
-
-    try {
-      tokens = editor.kind === "colors"
-        ? parseTokens(editor.tokens)
-        : designData(editor.record).tokens;
-    } catch (failure) {
-      setError(failure.message);
-      return;
-    }
-
-    const payload = {
-      title: editor.title.trim(),
-      description: editor.description.trim(),
-      status: editor.status,
-      visibility: editor.visibility,
-      metadata: {
-        ...(editor.record?.metadata || {}),
-        resource_url: link,
-        design_system: {
-          version: editor.version.trim(),
-          kind: editor.kind,
-          accent: safeAccent(editor.accent),
-          accessibility: editor.accessibility.trim(),
-          tokens,
-        },
-      },
-    };
-
-    locked.current = true;
-    setBusy(true);
-
-    try {
-      const result = await onSave(editor.record, payload);
-
-      if (!result) {
-        throw new Error(
-          "The reference was not saved. Your changes are still here; check the workspace error above.",
-        );
-      }
-
-      setEditor(null);
-      setQuery("");
-      setKind("all");
-      setStatus("all");
-
-      setSelectedId(
-        result.id || editor.record?.id || "",
-      );
-
-      setMessage("Design reference saved.");
-    } catch (failure) {
-      setError(
-        failure.message ||
-        "Could not save this reference.",
-      );
-    } finally {
-      locked.current = false;
-      setBusy(false);
-    }
-  }
-
-  async function copyReference() {
-    if (!selected) return;
-
-    setMessage("");
-    setError("");
-
-    const text = data.kind === "colors"
-      ? (
-          ":root {\n" +
-          data.tokens.map(
-            token =>
-              `  --${token.name}: ${safeAccent(token.value)};`,
-          ).join("\n") +
-          "\n}"
-        )
-      : (
-          `${selected.title}\n` +
-          `Version: ${data.version}\n` +
-          `Category: ${kinds[data.kind]}\n\n` +
-          `${selected.description}\n\n` +
-          "Accessibility notes:\n" +
-          `${data.accessibility || "Not documented."}` +
-          (resource ? `\n\nReference: ${resource}` : "")
-        );
-
-    try {
-      if (!navigator.clipboard?.writeText) {
-        throw new Error("Clipboard unavailable");
-      }
-
-      await navigator.clipboard.writeText(text);
-
-      setMessage(
-        data.kind === "colors"
-          ? "CSS colour tokens copied."
-          : "Reference copied.",
-      );
-    } catch {
-      setError(
-        "The browser could not copy this reference. Select the text or colour values and copy them manually.",
-      );
-    }
+                <ArrowRight size={16} />
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    );
   }
 
   return (
     <section
-      className="td-design"
+      className="tds-hub"
       ref={root}
       aria-label="Design system and components"
     >
-      <header className="ds-hero">
-        <span className="ds-symbol">
-          <Layers3 size={27} />
-        </span>
+      {entries.map(record => (
+        <span
+          hidden
+          key={`activity:${record.id}`}
+          id={`workplace-${record.id}`}
+          data-design-id={record.id}
+        />
+      ))}
 
-        <div>
-          <p className="ds-eyebrow">
-            ONE SHARED DESIGN LANGUAGE
-          </p>
-          <h1>Design system & components</h1>
-          <p>
-            Reusable patterns. Clear guidance.
-            Consistent experiences.
-          </p>
+      <header className="tds-hero">
+        <div className="tds-brand">
+          <span className="tds-emblem">
+            <Layers3 size={25} />
+          </span>
+
+          <div>
+            <p className="tds-eyebrow">
+              TECH DEV · DESIGN LIBRARY
+            </p>
+
+            <h1>Design system & components</h1>
+
+            <p>
+              Find a shared standard. Explore its
+              behaviour. Build with confidence.
+            </p>
+          </div>
         </div>
 
         {isManager && (
           <button
             type="button"
-            className="ds-primary"
-            disabled={busy || Boolean(editor)}
-            onClick={() => edit()}
+            className="tds-button tds-primary"
+            disabled={Boolean(editor)}
+            onClick={() => {
+              setEditor({ record: null });
+              setNotice("");
+            }}
           >
             <Plus size={17} />
             New reference
@@ -627,430 +1361,467 @@ export default function DesignSystemWorkspace({
         )}
       </header>
 
-      {message && (
-        <p className="ds-success" role="status">
-          {message}
-        </p>
-      )}
+      <div className="tds-layout">
+        <aside className="tds-sidebar">
+          <p className="tds-eyebrow">LIBRARY</p>
 
-      {error && (
-        <p className="ds-error" role="alert">
-          {error}
-        </p>
-      )}
-
-      {editor && (
-        <form className="ds-editor" onSubmit={save}>
-          <header>
-            <h2>
-              {editor.record
-                ? "Edit design reference"
-                : "Add a design reference"}
-            </h2>
-
-            <button
-              type="button"
-              className="ds-icon"
-              disabled={busy}
-              onClick={closeEditor}
-              aria-label="Close reference editor"
-            >
-              <X size={20} />
-            </button>
-          </header>
-
-          <fieldset disabled={busy}>
-            <div className="ds-fields">
-              <label className="ds-wide">
-                Reference name
-                <input
-                  autoFocus
-                  required
-                  maxLength={180}
-                  value={editor.title}
-                  onChange={event =>
-                    change("title", event.target.value)
-                  }
-                  placeholder="For example: Primary action buttons"
-                />
-              </label>
-
-              <label>
-                Category
-                <select
-                  value={editor.kind}
-                  onChange={event =>
-                    change("kind", event.target.value)
-                  }
-                >
-                  {Object.entries(kinds).map(
-                    ([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ),
-                  )}
-                </select>
-              </label>
-
-              <label>
-                Version
-                <input
-                  required
-                  maxLength={30}
-                  value={editor.version}
-                  onChange={event =>
-                    change("version", event.target.value)
-                  }
-                  placeholder="1.0.0"
-                />
-              </label>
-
-              <label>
-                Status
-                <select
-                  value={editor.status}
-                  onChange={event =>
-                    change("status", event.target.value)
-                  }
-                >
-                  <option value="in_progress">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="archived">Deprecated</option>
-                </select>
-              </label>
-
-              <label>
-                Visibility
-                <select
-                  value={editor.visibility}
-                  onChange={event =>
-                    change(
-                      "visibility",
-                      event.target.value,
-                    )
-                  }
-                >
-                  <option value="company">
-                    Company employees can view
-                  </option>
-                  <option value="private">
-                    Only creator and managers can view
-                  </option>
-                </select>
-              </label>
-
-              <label>
-                Preview accent colour
-                <input
-                  required
-                  pattern="#[0-9a-fA-F]{6}"
-                  maxLength={7}
-                  value={editor.accent}
-                  onChange={event =>
-                    change("accent", event.target.value)
-                  }
-                  placeholder="#8B9EFF"
-                />
-              </label>
-
-              <label>
-                Figma, Storybook, or documentation link
-                <input
-                  type="url"
-                  maxLength={2000}
-                  value={editor.resource}
-                  onChange={event =>
-                    change("resource", event.target.value)
-                  }
-                  placeholder="https://"
-                />
-              </label>
-
-              <label className="ds-wide">
-                Usage guidance
-                <textarea
-                  required
-                  rows={5}
-                  maxLength={5000}
-                  value={editor.description}
-                  onChange={event =>
-                    change(
-                      "description",
-                      event.target.value,
-                    )
-                  }
-                  placeholder="Explain when to use this pattern, its variants, and when to avoid it."
-                />
-              </label>
-
-              <label className="ds-wide">
-                Accessibility notes
-                <textarea
-                  rows={3}
-                  maxLength={2000}
-                  value={editor.accessibility}
-                  onChange={event =>
-                    change(
-                      "accessibility",
-                      event.target.value,
-                    )
-                  }
-                  placeholder="Document labels, keyboard behaviour, focus states, and contrast requirements."
-                />
-              </label>
-
-              {editor.kind === "colors" && (
-                <label className="ds-wide">
-                  Colour tokens · one per line
-                  <textarea
-                    required
-                    rows={5}
-                    maxLength={1000}
-                    value={editor.tokens}
-                    onChange={event =>
-                      change("tokens", event.target.value)
-                    }
-                    placeholder={
-                      "primary: #8B9EFF\nsurface: #14243A"
-                    }
-                  />
-                  <small>
-                    Use unique names containing letters,
-                    numbers, and hyphens. Maximum 12 tokens.
-                  </small>
-                </label>
-              )}
-            </div>
-
-            <footer>
-              <span>
-                Publishing documents a reference; it does
-                not change the rest of the app's styling.
-              </span>
+          <nav aria-label="Design library">
+            {nav.map(([id, label, Icon]) => (
               <button
-                type="submit"
-                className="ds-primary"
-              >
-                {busy ? "Saving…" : "Save reference"}
-              </button>
-            </footer>
-          </fieldset>
-        </form>
-      )}
-
-      <div className="ds-toolbar">
-        <label className="ds-search">
-          <Search size={17} />
-          <input
-            aria-label="Search loaded design references"
-            value={query}
-            onChange={event =>
-              setQuery(event.target.value)
-            }
-            placeholder="Search components, patterns, or guidance"
-          />
-        </label>
-
-        <select
-          aria-label="Filter design category"
-          value={kind}
-          onChange={event =>
-            setKind(event.target.value)
-          }
-        >
-          <option value="all">All categories</option>
-
-          {Object.entries(kinds).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-
-        <select
-          aria-label="Filter reference status"
-          value={status}
-          onChange={event =>
-            setStatus(event.target.value)
-          }
-        >
-          <option value="all">All statuses</option>
-
-          {["Published", "Draft", "Deprecated"].map(value => (
-            <option key={value}>{value}</option>
-          ))}
-        </select>
-      </div>
-
-      <p className="ds-hint">
-        {visible.length} matching references from your loaded
-        workspace. Previews are examples; published guidance
-        defines how your team should use them.
-      </p>
-
-      <div className="ds-layout">
-        <nav
-          className="ds-catalog"
-          aria-label="Design reference library"
-        >
-          {visible.map(record => (
-            <button
-              type="button"
-              id={`workplace-${record.id}`}
-              data-design-id={record.id}
-              key={record.id}
-              aria-pressed={selected?.id === record.id}
-              onClick={() => {
-                setSelectedId(record.id);
-                setMessage("");
-              }}
-            >
-              <span>
-                {kinds[designData(record).kind]}
-              </span>
-              <strong>{record.title}</strong>
-              <small>
-                {statusLabel(record.status)}
-                {" · "}
-                {designData(record).version}
-              </small>
-            </button>
-          ))}
-        </nav>
-
-        {selected ? (
-          <article
-            className="ds-reader"
-            tabIndex={-1}
-            ref={reader}
-          >
-            <header>
-              <div>
-                <span
-                  className={`ds-status ${
-                    selected.status === "archived"
-                      ? "ds-deprecated"
-                      : ""
-                  }`}
-                >
-                  {statusLabel(selected.status)}
-                </span>
-
-                <h2>{selected.title}</h2>
-
-                <p>
-                  {kinds[data.kind]}
-                  {" · "}Version {data.version}
-                  {selected.visibility === "private"
-                    ? " · Private"
-                    : ""}
-                </p>
-              </div>
-
-              {isManager && (
-                <button
-                  type="button"
-                  className="ds-secondary"
-                  disabled={busy || Boolean(editor)}
-                  onClick={() => edit(selected)}
-                >
-                  <Pencil size={15} />
-                  Edit reference
-                </button>
-              )}
-            </header>
-
-            {selected.status === "archived" && (
-              <p className="ds-warning">
-                This reference is deprecated. Check for a
-                replacement before using it in new work.
-              </p>
-            )}
-
-            <div className="ds-preview-toolbar">
-              <h3>Preview</h3>
-
-              <button
+                key={`nav:${id}`}
                 type="button"
-                className="ds-secondary"
-                aria-pressed={light}
-                onClick={() =>
-                  setLight(value => !value)
+                disabled={Boolean(editor)}
+                aria-current={
+                  area === id ? "page" : undefined
                 }
+                onClick={() => navigate(id)}
               >
-                {light
-                  ? <Moon size={15} />
-                  : <Sun size={15} />}
-
-                {light ? "Dark canvas" : "Light canvas"}
+                <Icon size={18} />
+                {label}
               </button>
-            </div>
+            ))}
+          </nav>
 
-            <Preview
-              key={selected.id}
-              data={data}
-              light={light}
-            />
+          <div className="tds-sidebar-note">
+            <BookOpen size={19} />
 
-            <section className="ds-documentation">
-              <h3>Usage guidance</h3>
-              <p>
-                {selected.description ||
-                  "No usage guidance documented yet."}
-              </p>
-
-              <h3>Accessibility notes</h3>
-              <p>
-                {data.accessibility ||
-                  "No accessibility notes documented yet."}
-              </p>
-            </section>
-
-            <footer className="ds-reader-actions">
-              <button
-                type="button"
-                className="ds-secondary"
-                onClick={copyReference}
-              >
-                <Copy size={15} />
-                {data.kind === "colors"
-                  ? "Copy CSS tokens"
-                  : "Copy reference"}
-              </button>
-
-              {resource && (
-                <a
-                  href={resource}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ds-secondary"
-                >
-                  <ExternalLink size={15} />
-                  Open source reference
-                </a>
-              )}
-            </footer>
-          </article>
-        ) : (
-          <div className="ds-empty">
-            <Layers3 size={34} />
-
-            <h2>
-              {entries.length
-                ? "No matching references"
-                : "Build a consistent design language"}
-            </h2>
+            <strong>One place to start</strong>
 
             <p>
-              {entries.length
-                ? "Try another search or filter."
-                : isManager
-                  ? "Add your first component or foundation reference, with clear usage guidance."
-                  : "Company references will appear here when a manager adds them."}
+              Use shared references across company
+              projects. Check the source and recorded
+              test evidence before adopting a component.
             </p>
           </div>
-        )}
+        </aside>
+
+        <div className="tds-main">
+          {notice && (
+            <p className="tds-feedback" role="status">
+              {notice}
+            </p>
+          )}
+
+          {editor ? (
+            <ReferenceEditor
+              key={
+                `editor:${userId}:` +
+                `${editor.record?.id || "new"}`
+              }
+              record={editor.record}
+              userId={userId}
+              employees={employees}
+              onSave={onSave}
+              onClose={() => setEditor(null)}
+              onSaved={id => {
+                setEditor(null);
+                setSelectedId(id || "");
+                setNotice("Reference saved.");
+              }}
+            />
+          ) : selected ? (
+            <article
+              className="tds-reader"
+              tabIndex={-1}
+              ref={reader}
+            >
+              <button
+                type="button"
+                className="tds-button"
+                onClick={() => setSelectedId("")}
+              >
+                <ArrowLeft size={16} />
+                Back to library
+              </button>
+
+              <header className="tds-detail-header">
+                <div>
+                  <span
+                    className={
+                      `tds-status ` +
+                      `tds-status-${selected.status}`
+                    }
+                  >
+                    {phase(selected)}
+                  </span>
+
+                  <h2>{selected.title}</h2>
+
+                  <p>
+                    {categories[data.kind]}
+                    {" · "}v{data.version}
+                    {" · "}
+                    {selected.visibility === "private"
+                      ? "Private reference"
+                      : "Company reference"}
+                  </p>
+                </div>
+
+                {isManager && (
+                  <button
+                    type="button"
+                    className="tds-button"
+                    onClick={() =>
+                      setEditor({ record: selected })
+                    }
+                  >
+                    <Pencil size={15} />
+                    Edit reference
+                  </button>
+                )}
+              </header>
+
+              {selected.status === "archived" && (
+                <p className="tds-warning">
+                  Deprecated reference. Check its usage
+                  guidance for a replacement before
+                  starting new work.
+                </p>
+              )}
+
+              <div className="tds-metadata">
+                <span>
+                  Maintainer
+
+                  <strong>
+                    {ownerName(data.maintainer_id)}
+                  </strong>
+                </span>
+
+                <span>
+                  Last updated
+
+                  <strong>
+                    {formatDate(
+                      selected.updated_at ||
+                      selected.created_at,
+                    )}
+                  </strong>
+                </span>
+
+                <span>
+                  Implementation
+                  <strong>React examples</strong>
+                </span>
+              </div>
+
+              <div
+                className="tds-tabs"
+                role="group"
+                aria-label="Reference sections"
+              >
+                {[
+                  ["preview", "Preview & code"],
+                  ["usage", "Usage"],
+                  ["accessibility", "Accessibility"],
+                  ["links", "Design & source"],
+                ].map(([id, label]) => (
+                  <button
+                    key={`detail:${id}`}
+                    type="button"
+                    aria-pressed={tab === id}
+                    onClick={() => setTab(id)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              {tab === "preview" && (
+                <Playground
+                  key={
+                    `playground:${selected.id}:` +
+                    data.kind
+                  }
+                  kind={data.kind}
+                  tokens={data.tokens}
+                />
+              )}
+
+              {tab === "usage" && (
+                <section className="tds-prose">
+                  <h3>Usage guidance</h3>
+
+                  <p>
+                    {selected.description ||
+                      "No usage guidance recorded."}
+                  </p>
+                </section>
+              )}
+
+              {tab === "accessibility" && (
+                <section className="tds-prose">
+                  <h3>Recorded notes and evidence</h3>
+
+                  <p>
+                    {data.accessibility ||
+                      "No accessibility test results have been recorded for this reference."}
+                  </p>
+
+                  <h3>What to verify</h3>
+
+                  <ul>
+                    <li>
+                      Keyboard operation and a visible
+                      focus indicator.
+                    </li>
+
+                    <li>
+                      Useful labels, error messages and
+                      screen-reader announcements.
+                    </li>
+
+                    <li>
+                      Readable contrast and behaviour
+                      at browser zoom.
+                    </li>
+
+                    <li>
+                      Phone layout, touch targets and
+                      reduced-motion preferences.
+                    </li>
+                  </ul>
+
+                  <p className="tds-muted">
+                    Publishing a reference does not
+                    automatically certify accessibility.
+                    Record the tested version, date,
+                    method and known issues.
+                  </p>
+                </section>
+              )}
+
+              {tab === "links" && (
+                <section className="tds-prose">
+                  <h3>Connected resources</h3>
+
+                  <div className="tds-resource-list">
+                    {resources
+                      .filter(item =>
+                        item.record.id === selected.id
+                      )
+                      .map(item => (
+                        <a
+                          key={
+                            `detail-link:${item.label}`
+                          }
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {item.label}
+                          <ExternalLink size={16} />
+                        </a>
+                      ))}
+                  </div>
+
+                  {!resources.some(item =>
+                    item.record.id === selected.id
+                  ) && (
+                    <p>
+                      No design or source links recorded.
+                      A manager can add them through
+                      Edit reference.
+                    </p>
+                  )}
+                </section>
+              )}
+            </article>
+          ) : (
+            <>
+              <header className="tds-page-header">
+                <p className="tds-eyebrow">
+                  {area === "overview"
+                    ? "START HERE"
+                    : "BROWSE THE LIBRARY"}
+                </p>
+
+                <h2>
+                  {nav.find(item =>
+                    item[0] === area
+                  )?.[1]}
+                </h2>
+
+                <p>
+                  {area === "components"
+                    ? "Reusable interface controls, with behaviour and usage guidance."
+                    : area === "foundations"
+                      ? "Shared colour, type and spacing decisions."
+                      : area === "resources"
+                        ? "Figma files, source code and documentation linked to your references."
+                        : "Explore the references maintained by your company."}
+                </p>
+              </header>
+
+              {area === "overview" ? (
+                <>
+                  <div className="tds-metrics">
+                    <div>
+                      <strong>{entries.length}</strong>
+                      <span>Loaded references</span>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {entries.filter(item =>
+                          item.status === "published"
+                        ).length}
+                      </strong>
+
+                      <span>Published</span>
+                    </div>
+
+                    <div>
+                      <strong>
+                        {entries.filter(item =>
+                          item.status ===
+                            "pending_approval"
+                        ).length}
+                      </strong>
+
+                      <span>Marked for review</span>
+                    </div>
+                  </div>
+
+                  <div className="tds-toolbar">
+                    <h3>Recently updated</h3>
+
+                    <button
+                      type="button"
+                      className="tds-button"
+                      onClick={() =>
+                        navigate("components")
+                      }
+                    >
+                      Browse components
+                      <ArrowRight size={15} />
+                    </button>
+                  </div>
+
+                  {cards(
+                    [...entries]
+                      .sort((a, b) =>
+                        (
+                          new Date(
+                            b.updated_at ||
+                            b.created_at,
+                          ).getTime() || 0
+                        ) -
+                        (
+                          new Date(
+                            a.updated_at ||
+                            a.created_at,
+                          ).getTime() || 0
+                        )
+                      )
+                      .slice(0, 6),
+                  )}
+                </>
+              ) : area === "resources" ? (
+                <div className="tds-resource-list">
+                  {resources.map(item => (
+                    <a
+                      key={
+                        `resource:${item.record.id}:` +
+                        item.label
+                      }
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span>
+                        <strong>
+                          {item.record.title}
+                        </strong>
+
+                        <small>{item.label}</small>
+                      </span>
+
+                      <ExternalLink size={17} />
+                    </a>
+                  ))}
+
+                  {!resources.length && (
+                    <p>
+                      No resource links recorded yet.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <>
+                  <div className="tds-filters">
+                    <label className="tds-search">
+                      <Search size={18} />
+
+                      <input
+                        aria-label="Search loaded design references"
+                        placeholder="Search names, guidance or maintainers…"
+                        value={query}
+                        onChange={event =>
+                          setQuery(event.target.value)
+                        }
+                      />
+                    </label>
+
+                    <select
+                      aria-label="Filter status"
+                      value={status}
+                      onChange={event =>
+                        setStatus(event.target.value)
+                      }
+                    >
+                      <option value="all">
+                        All statuses
+                      </option>
+
+                      {Object.entries(phases).map(
+                        ([id, label]) => (
+                          <option
+                            key={`filter:${id}`}
+                            value={id}
+                          >
+                            {label}
+                          </option>
+                        ),
+                      )}
+                    </select>
+                  </div>
+
+                  <p className="tds-muted">
+                    {matches.length} matching references
+                    in the loaded workspace.
+                  </p>
+
+                  {cards(matches)}
+
+                  {!matches.length &&
+                    entries.length > 0 && (
+                      <p className="tds-empty">
+                        No matching references.
+                        Try another search or status.
+                      </p>
+                    )}
+                </>
+              )}
+
+              {!entries.length && (
+                <div className="tds-empty">
+                  <Layers3 size={32} />
+
+                  <h3>
+                    Your shared library starts here
+                  </h3>
+
+                  <p>
+                    {isManager
+                      ? "Use New reference to add a component or foundation with its usage guidance."
+                      : "Company references will appear here when a manager adds them."}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </section>
   );

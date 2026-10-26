@@ -249,6 +249,8 @@ if (
     <DesignSystemWorkspace
       key={userId}
       records={records}
+      employees={employees}
+      userId={userId}
       isManager={isManager}
       onSave={onSaveDesignReference}
     />

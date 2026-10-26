@@ -22,6 +22,7 @@ import WikiReviewPanel from "./WikiReviewPanel.jsx";
 import WikiReviewSummary, {
   useWikiReviewSummaries,
 } from "./WikiReviewSummary.jsx";
+import KnowledgeDeleteButton from "./KnowledgeDeleteButton.jsx";
 
 const topics = [
   "General",
@@ -706,17 +707,29 @@ const {
                 </label>
               )}
 
-              {isManager && onDelete && (
-                <button
-                  type="button"
-                  className="ld-delete"
-                  disabled={busy}
-                  onClick={() => onDelete(selected)}
-                >
-                  <Trash2 size={15} />
-                  Delete article
-                </button>
-              )}
+<KnowledgeDeleteButton
+  key={`${userId}:${selected.id}`}
+  record={selected}
+  userId={userId}
+  isManager={isManager}
+  disabled={busy}
+  onBusy={value => {
+    locked.current = value;
+    setBusy(value);
+  }}
+  onRefresh={refreshArticles}
+  onDeleted={async id => {
+    setSelectedId("");
+
+    setSavedArticles(previous => {
+      const next = { ...previous };
+      delete next[id];
+      return next;
+    });
+
+    await refreshArticles();
+  }}
+/>
             </div>
 
             {onInteract && (

@@ -21,6 +21,7 @@ import {
 import { supabase } from "../lib/supabase.js";
 import DocumentVersionTools from "./DocumentVersionTools.jsx";
 import useKnowledgeSearch from "../lib/useKnowledgeSearch.js";
+import KnowledgeDeleteButton from "./KnowledgeDeleteButton.jsx";
 
 const documentTypes = {
   pdf: "application/pdf",
@@ -939,7 +940,7 @@ export default function DocumentLibrary({
 
   {ready && canDelete && (
     <DocumentVersionTools
-      key={`${userId}:${record.id}`}
+      key={`versions:${userId}:${record.id}`}
       record={record}
       userId={userId}
       isManager={isManager}
@@ -968,17 +969,30 @@ export default function DocumentLibrary({
     />
   )}
 
-  {!ready && canDelete && (
-    <button
-      type="button"
-      className="ld-delete"
-      disabled={busy}
-      onClick={() => remove(record)}
-    >
-      <Trash2 size={15} />
-      Delete incomplete upload
-    </button>
-  )}
+ {canDelete && (
+  <KnowledgeDeleteButton
+   key={`delete:${userId}:${record.id}`}
+    record={record}
+    userId={userId}
+    isManager={isManager}
+    disabled={busy}
+    onBusy={value => {
+      lock.current = value;
+      setBusy(value);
+    }}
+    onRefresh={refresh}
+    onDeleted={async id => {
+      version.current += 1;
+
+      setFiles(previous =>
+        previous.filter(item => item.id !== id)
+      );
+
+      setMessage("Document deleted.");
+      await refresh();
+    }}
+  />
+)}
 </footer>
               </article>
             );

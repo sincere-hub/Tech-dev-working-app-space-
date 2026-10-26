@@ -9316,3 +9316,45 @@ main.app-crash-screen {
   overflow-wrap: anywhere;
   text-overflow: ellipsis;
 }
+.td-knowledge-delete {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.td-knowledge-delete > .ld-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid #b56876;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #853b4d, #542537);
+  color: #fff1f3;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.td-knowledge-delete > .ld-delete:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+.td-knowledge-delete > .ld-delete:focus-visible {
+  outline: 2px solid #ffc6d1;
+  outline-offset: 3px;
+}
+
+.td-knowledge-delete-error {
+  max-width: 360px;
+  color: #ffc8d0;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
