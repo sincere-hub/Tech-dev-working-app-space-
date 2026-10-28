@@ -1017,3 +1017,81 @@
     scroll-behavior: auto !important;
   }
 }
+.tds-hub .tds-review {
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px solid #365573;
+  border-radius: 12px;
+  background: #101f33;
+}
+
+.tds-hub .tds-review-actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.tds-hub .tds-review-actions > label {
+  display: grid;
+  gap: 7px;
+  color: #d3e1ef;
+  font-size: 14px;
+}
+
+.tds-hub .tds-review-list {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.tds-hub .tds-review-item {
+  padding: 17px;
+  border: 1px solid #314b68;
+  border-radius: 10px;
+  background: #13263d;
+}
+
+.tds-hub .tds-review-item .tds-toolbar > strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+}
+
+.tds-hub .tds-review-note {
+  white-space: pre-wrap;
+  color: #d0dfed;
+  margin: 12px 0;
+}
+
+.tds-hub .tds-review-item summary {
+  cursor: pointer;
+  color: #b5e4ff;
+  padding: 10px 0;
+  min-height: 44px;
+}
+
+.tds-hub .tds-review-item summary:focus-visible {
+  outline: 3px solid #70d6ff;
+  outline-offset: 3px;
+}
+
+.tds-hub .tds-review-item pre {
+  max-height: 280px;
+  overflow: auto;
+  padding: 15px;
+  border: 1px solid #37516e;
+  border-radius: 8px;
+  color: #c8e5f7;
+  background: #0a1626;
+  font-size: 13px;
+  white-space: pre;
+}
+
+.tds-hub .tds-review-progress {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #b5d7ef;
+  font-size: 14px;
+}

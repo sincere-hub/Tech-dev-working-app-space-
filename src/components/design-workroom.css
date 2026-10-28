@@ -1,0 +1,786 @@
+.dw-workroom {
+  --dw-line: #31465f;
+  --dw-text: #f2f6ff;
+  --dw-muted: #bac9dd;
+
+  width: 100%;
+  max-width: 1440px;
+  min-width: 0;
+  margin-inline: auto;
+  color: var(--dw-text);
+  color-scheme: dark;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.dw-workroom *,
+.dw-workroom *::before,
+.dw-workroom *::after {
+  box-sizing: border-box;
+}
+
+.dw-workroom [hidden] {
+  display: none !important;
+}
+
+.dw-workroom :is(h1, h2, h3, p) {
+  margin: 0;
+  color: inherit;
+}
+
+.dw-workroom :is(
+  p, strong, span, small, a, h1, h2, h3
+) {
+  overflow-wrap: anywhere;
+}
+
+.dw-workroom h1 {
+  font-size: clamp(29px, 3.4vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -.035em;
+  font-weight: 750;
+}
+
+.dw-workroom h2 {
+  font-size: clamp(22px, 2.2vw, 28px);
+  line-height: 1.3;
+  letter-spacing: -.025em;
+}
+
+.dw-workroom h3 {
+  font-size: 21px;
+  line-height: 1.4;
+  letter-spacing: -.015em;
+}
+
+/* Workspace header */
+
+.dw-workroom .dw-header {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 26px;
+  padding: clamp(26px, 4vw, 46px);
+  margin-bottom: 26px;
+  border: 1px solid #405775;
+  border-radius: 24px;
+
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      #24416c 0%,
+      transparent 62%
+    ),
+    linear-gradient(
+      120deg,
+      #172c45,
+      #101b30 75%
+    );
+
+  box-shadow:
+    0 18px 48px rgb(0 0 0 / 16%),
+    inset 0 1px 0 rgb(255 255 255 / 5%);
+}
+
+.dw-workroom .dw-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 30px;
+  right: 30px;
+  height: 2px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #73cfff,
+    #9d9cfb,
+    transparent
+  );
+
+  pointer-events: none;
+}
+
+.dw-workroom .dw-header > div {
+  flex: 1 1 430px;
+  min-width: 0;
+  max-width: 780px;
+}
+
+.dw-workroom .dw-header > .dw-button {
+  flex-shrink: 0;
+}
+
+.dw-workroom .dw-header p:last-child {
+  max-width: 62ch;
+  margin-top: 14px;
+  color: #c1d1e6;
+  font-size: 16px;
+}
+
+.dw-workroom .dw-eyebrow {
+  margin-bottom: 12px;
+  color: #a5dfff;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .15em;
+}
+
+/* Buttons and keyboard focus */
+
+.dw-workroom .dw-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 11px 17px;
+  border: 1px solid #4c637d;
+  border-radius: 12px;
+
+  background: linear-gradient(
+    150deg,
+    #263b55,
+    #192b42
+  );
+
+  color: #edf4ff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+
+  transition:
+    border-color .18s ease,
+    background .18s ease,
+    transform .18s ease,
+    box-shadow .18s ease;
+}
+
+.dw-workroom .dw-primary {
+  border-color: #71b8ed;
+
+  background: linear-gradient(
+    125deg,
+    #296fba,
+    #4a55b1
+  );
+
+  color: #fff;
+
+  box-shadow:
+    0 5px 16px rgb(14 47 105 / 25%),
+    inset 0 1px 0 rgb(255 255 255 / 15%);
+}
+
+.dw-workroom .dw-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.dw-workroom button:disabled {
+  opacity: .55;
+  cursor: default;
+}
+
+.dw-workroom :is(
+  button, input, textarea, a
+):focus-visible {
+  outline: 3px solid #8edbff;
+  outline-offset: 4px;
+}
+
+/* Content panels */
+
+.dw-workroom .dw-panel {
+  min-width: 0;
+  margin: 22px 0;
+  padding: clamp(22px, 3vw, 32px);
+  border: 1px solid var(--dw-line);
+  border-radius: 20px;
+
+  background: linear-gradient(
+    145deg,
+    #14243a,
+    #101c2f 80%
+  );
+
+  box-shadow: 0 9px 25px rgb(0 0 0 / 10%);
+}
+
+.dw-workroom .dw-row,
+.dw-workroom .dw-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dw-workroom .dw-row > :is(h2, h3, strong) {
+  min-width: 0;
+}
+
+.dw-workroom .dw-actions {
+  justify-content: flex-start;
+}
+
+.dw-workroom .dw-page-actions {
+  margin: 8px 0 24px;
+}
+
+.dw-workroom .dw-muted {
+  margin: 10px 0 18px;
+  color: var(--dw-muted);
+  font-size: 14px;
+}
+
+.dw-workroom .dw-copy {
+  margin: 16px 0;
+  color: #dce6f5;
+  white-space: pre-wrap;
+  line-height: 1.85;
+}
+
+/* Manager instructions */
+
+.dw-workroom .dw-instruction {
+  border-top: 3px solid #78c9ef;
+}
+
+.dw-workroom .dw-instruction > .dw-copy {
+  max-width: 85ch;
+  font-size: 16px;
+}
+
+.dw-workroom .dw-instructions {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      auto-fit,
+      minmax(min(100%, 340px), 1fr)
+    );
+
+  align-items: stretch;
+  gap: 22px;
+}
+
+.dw-workroom .dw-instructions > .dw-panel {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.dw-workroom .dw-instruction-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  gap: 16px;
+  min-width: 0;
+  padding: 30px;
+  border: 1px solid #3b526e;
+  border-radius: 20px;
+
+  background: linear-gradient(
+    140deg,
+    #192e48,
+    #121f34 85%
+  );
+
+  color: var(--dw-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 4%);
+
+  transition:
+    transform .18s ease,
+    border-color .18s ease,
+    background .18s ease,
+    box-shadow .18s ease;
+}
+
+.dw-workroom .dw-instruction-card strong {
+  font-size: 22px;
+  line-height: 1.4;
+  letter-spacing: -.02em;
+}
+
+.dw-workroom .dw-instruction-card span {
+  color: #c1cfe2;
+  line-height: 1.8;
+}
+
+.dw-workroom .dw-instruction-card small {
+  color: #b8cbe0;
+  font-size: 13px;
+}
+
+.dw-workroom .dw-instruction-card b {
+  padding-top: 16px;
+  border-top: 1px solid #344c68;
+  color: #a8ddff;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+/* Forms */
+
+.dw-workroom .dw-form,
+.dw-workroom .dw-form fieldset {
+  display: grid;
+  gap: 19px;
+  min-width: 0;
+}
+
+.dw-workroom .dw-form fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.dw-workroom .dw-form label {
+  display: grid;
+  gap: 9px;
+  color: #e3ecf8;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dw-workroom input,
+.dw-workroom textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 13px 15px;
+  border: 1px solid #4a607d;
+  border-radius: 12px;
+  background: #0b1729;
+  color: #f2f6ff;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+
+  box-shadow:
+    inset 0 1px 3px rgb(0 0 0 / 12%);
+}
+
+.dw-workroom textarea {
+  resize: vertical;
+}
+
+.dw-workroom :is(input, textarea)::placeholder {
+  color: #a9bad0;
+  opacity: 1;
+}
+
+.dw-workroom .dw-tool-link,
+.dw-workroom .dw-work-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 11px 16px;
+  border: 1px solid #49769a;
+  border-radius: 12px;
+
+  background: linear-gradient(
+    120deg,
+    #1c3e57,
+    #1c304e
+  );
+
+  color: #bde9ff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Submitted work */
+
+.dw-workroom .dw-work-list {
+  display: grid;
+  gap: 20px;
+  margin-top: 22px;
+}
+
+.dw-workroom .dw-work-card {
+  min-width: 0;
+  padding: 25px;
+  border: 1px solid #415a77;
+  border-radius: 16px;
+
+  background: linear-gradient(
+    135deg,
+    #1b304b,
+    #14243a
+  );
+
+  box-shadow: 0 6px 18px rgb(0 0 0 / 9%);
+}
+
+.dw-workroom .dw-work-card > .dw-button {
+  margin-bottom: 22px;
+}
+
+.dw-workroom .dw-work-card .dw-row > strong {
+  font-size: 17px;
+}
+
+.dw-workroom .dw-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 11px;
+  border: 1px solid #7d6b46;
+  border-radius: 999px;
+  background: #382e1c;
+  color: #f6dfa0;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.dw-workroom .dw-status::before {
+  content: "";
+  flex: 0 0 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.dw-workroom .dw-approved {
+  border-color: #427e70;
+  background: #173c34;
+  color: #ace9d0;
+}
+
+.dw-workroom .dw-changes_requested {
+  border-color: #8a6176;
+  background: #3f283a;
+  color: #ffd0df;
+}
+
+.dw-workroom .dw-feedback {
+  margin: 0;
+  padding: 18px;
+  border: 1px solid #45617e;
+  border-left: 3px solid #91c4ed;
+  border-radius: 12px;
+  background: #1d334c;
+}
+
+.dw-workroom .dw-feedback strong {
+  color: #e6f1ff;
+  font-size: 14px;
+}
+
+.dw-workroom .dw-feedback .dw-copy {
+  margin: 9px 0 12px;
+}
+
+.dw-workroom .dw-feedback small {
+  color: #bdcee3;
+  font-size: 13px;
+}
+
+/* Questions and replies */
+
+.dw-workroom .dw-messages {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.dw-workroom .dw-message {
+  width: min(100%, 780px);
+  padding: 20px;
+  border: 1px solid #3b516c;
+  border-radius: 4px 16px 16px;
+  background: #192c44;
+}
+
+.dw-workroom .dw-own-message {
+  margin-left: auto;
+  border-color: #466c87;
+  border-radius: 16px 4px 16px 16px;
+
+  background: linear-gradient(
+    130deg,
+    #1d3e54,
+    #1b334c
+  );
+}
+
+.dw-workroom .dw-message strong {
+  font-size: 14px;
+}
+
+.dw-workroom .dw-message small {
+  color: #bdcde0;
+  font-size: 12px;
+}
+
+.dw-workroom .dw-message .dw-copy {
+  margin: 10px 0 0;
+}
+
+/* Feedback and notices */
+
+.dw-workroom .dw-error,
+.dw-workroom .dw-success {
+  padding: 15px 18px;
+  border: 1px solid;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.dw-workroom .dw-error {
+  color: #ffdae4;
+  background: #3a2334;
+  border-color: #97627b;
+}
+
+.dw-workroom .dw-success {
+  margin: 16px 0;
+  color: #bdeedb;
+  background: #17382f;
+  border-color: #4b806f;
+}
+
+/* In-app review preview */
+
+.dw-preview-dialog.dw-workroom {
+  width: min(1500px, calc(100vw - 32px));
+  max-width: none;
+  height: calc(100dvh - 32px);
+  max-height: none;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #526f91;
+  border-radius: 22px;
+
+  background: linear-gradient(
+    135deg,
+    #182d46,
+    #0e1b2f 75%
+  );
+
+  overflow: auto;
+  box-shadow: 0 30px 100px rgb(0 0 0 / 45%);
+}
+
+.dw-preview-dialog::backdrop {
+  background: rgb(3 8 17 / 88%);
+}
+
+.dw-preview-dialog .dw-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 24px 28px;
+  border-bottom: 1px solid #3b526e;
+}
+
+.dw-preview-dialog .dw-preview-header > div {
+  min-width: 0;
+}
+
+.dw-preview-dialog .dw-preview-header .dw-eyebrow {
+  margin-bottom: 8px;
+}
+
+.dw-preview-dialog .dw-preview-header small {
+  display: block;
+  margin: 7px 0 0;
+}
+
+.dw-preview-dialog .dw-preview-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  min-height: calc(100% - 145px);
+}
+
+.dw-preview-dialog .dw-preview-canvas {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #091320;
+}
+
+.dw-preview-dialog iframe {
+  display: block;
+  flex: 1;
+  width: 100%;
+  min-height: 460px;
+  border: 0;
+  background: #eef2f6;
+  color-scheme: light;
+}
+
+.dw-preview-dialog .dw-preview-review {
+  min-width: 0;
+  padding: 26px;
+  border-left: 1px solid #3b526e;
+
+  background: linear-gradient(
+    160deg,
+    #1b3049,
+    #122138
+  );
+}
+
+.dw-preview-dialog .dw-preview-help {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px 22px;
+  color: #bdcfe4;
+  font-size: 13px;
+}
+
+.dw-preview-dialog .dw-preview-help p {
+  flex: 1 1 240px;
+}
+
+.dw-preview-dialog .dw-preview-empty {
+  padding: 36px;
+}
+
+.dw-preview-dialog .dw-preview-empty p {
+  max-width: 65ch;
+  margin-top: 14px;
+  color: #c3d3e8;
+}
+
+/* Desktop hover */
+
+@media (hover: hover) {
+  .dw-workroom .dw-button:hover:not(:disabled) {
+    border-color: #a2c6e7;
+    transform: translateY(-1px);
+    box-shadow: 0 7px 18px rgb(0 0 0 / 16%);
+  }
+
+  .dw-workroom .dw-instruction-card:hover {
+    transform: translateY(-3px);
+    border-color: #6a94bd;
+
+    background: linear-gradient(
+      140deg,
+      #1d3552,
+      #15253c
+    );
+
+    box-shadow: 0 15px 30px rgb(0 0 0 / 18%);
+  }
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .dw-preview-dialog .dw-preview-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dw-preview-dialog .dw-preview-review {
+    border-left: 0;
+    border-top: 1px solid #3b526e;
+  }
+
+  .dw-preview-dialog iframe {
+    min-height: 55dvh;
+  }
+}
+
+/* Phone */
+
+@media (max-width: 600px) {
+  .dw-workroom .dw-header {
+    gap: 22px;
+    padding: 25px 21px;
+    border-radius: 19px;
+  }
+
+  .dw-workroom .dw-header > div {
+    flex-basis: 100%;
+  }
+
+  .dw-workroom .dw-header > .dw-button {
+    width: 100%;
+  }
+
+  .dw-workroom .dw-panel {
+    padding: 21px 17px;
+    border-radius: 16px;
+  }
+
+  .dw-workroom .dw-instruction-card {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  .dw-workroom .dw-instruction-card strong {
+    font-size: 21px;
+  }
+
+  .dw-workroom .dw-work-card {
+    padding: 19px 16px;
+  }
+
+  .dw-workroom .dw-message {
+    padding: 16px;
+  }
+
+  .dw-workroom .dw-actions > :is(button, a) {
+    flex: 1 1 100%;
+  }
+
+  .dw-workroom .dw-page-actions > .dw-button {
+    flex: 1 1 130px;
+  }
+
+  .dw-preview-dialog.dw-workroom {
+    width: calc(100vw - 12px);
+    height: calc(100dvh - 12px);
+    border-radius: 15px;
+  }
+
+  .dw-preview-dialog .dw-preview-header,
+  .dw-preview-dialog .dw-preview-review {
+    padding: 20px 16px;
+  }
+
+  .dw-preview-dialog .dw-preview-header .dw-actions {
+    width: 100%;
+  }
+
+  .dw-preview-dialog .dw-preview-help {
+    padding: 16px;
+  }
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .dw-workroom .dw-button,
+  .dw-workroom .dw-instruction-card {
+    transition: none;
+  }
+
+  .dw-workroom .dw-button:hover:not(:disabled),
+  .dw-workroom .dw-instruction-card:hover {
+    transform: none;
+  }
+}

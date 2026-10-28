@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 
 import "./design-system-workspace.css";
+import DesignReviewPanel from "./DesignReviewPanel.jsx";
+import DesignPatternPreview from "./DesignPatternPreview.jsx";
 
 const MODULE = "collaboration.design-system";
 
@@ -36,15 +38,26 @@ const categories = {
   cards: "Content card",
   avatars: "Avatar",
   dialogs: "Dialog",
+
   colors: "Colour tokens",
   typography: "Typography",
   spacing: "Spacing",
+
+  pattern_registration: "Registration workflow",
+  pattern_upload: "Document upload workflow",
+  pattern_approval: "Approval workflow",
 };
 
 const foundations = new Set([
   "colors",
   "typography",
   "spacing",
+]);
+
+const patternKinds = new Set([
+  "pattern_registration",
+  "pattern_upload",
+  "pattern_approval",
 ]);
 
 const phases = {
@@ -362,6 +375,10 @@ function Playground({ kind, tokens }) {
   const [variant, setVariant] = useState("primary");
   const [state, setState] = useState("default");
   const [notice, setNotice] = useState("");
+
+  if (patternKinds.has(kind)) {
+  return <DesignPatternPreview kind={kind} />;
+}
 
   const names = {
     buttons: "DesignButton",
@@ -914,29 +931,26 @@ function ReferenceEditor({
           />
         </label>
 
-        <label>
-          Status
+<label>
+  Save as
 
-          <select
-            name="status"
-            defaultValue={
-              Object.hasOwn(phases, record?.status)
-                ? record.status
-                : "in_progress"
-            }
-          >
-            {Object.entries(phases).map(
-              ([id, label]) => (
-                <option
-                  key={`phase:${id}`}
-                  value={id}
-                >
-                  {label}
-                </option>
-              ),
-            )}
-          </select>
-        </label>
+  <select
+    name="status"
+    defaultValue={
+      record?.status === "archived"
+        ? "archived"
+        : "in_progress"
+    }
+  >
+    <option value="in_progress">
+      Draft
+    </option>
+
+    <option value="archived">
+      Deprecated
+    </option>
+  </select>
+</label>
 
         <label>
           Maintainer
@@ -1097,6 +1111,7 @@ export default function DesignSystemWorkspace({
   userId,
   isManager,
   onSave,
+  onRefresh,
 }) {
   const [area, setArea] = useState("overview");
   const [query, setQuery] = useState("");
@@ -1152,38 +1167,49 @@ export default function DesignSystemWorkspace({
 
   const search = query.trim().toLowerCase();
 
-  const matches = entries
-    .filter(record => {
-      const info = designData(record);
+ const matches = entries
+  .filter(record => {
+    const info = designData(record);
 
-      return (
+    return (
+      (
+        area !== "foundations" ||
+        foundations.has(info.kind)
+      ) &&
+
+      (
+        area !== "components" ||
         (
-          area !== "foundations" ||
-          foundations.has(info.kind)
-        ) &&
-        (
-          area !== "components" ||
-          !foundations.has(info.kind)
-        ) &&
-        (
-          status === "all" ||
-          record.status === status
-        ) &&
-        [
-          record.title,
-          record.description,
-          categories[info.kind],
-          ownerName(info.maintainer_id),
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(search)
-      );
-    })
-    .sort((a, b) =>
-      a.title.localeCompare(b.title) ||
-      a.id.localeCompare(b.id)
+          !foundations.has(info.kind) &&
+          !patternKinds.has(info.kind)
+        )
+      ) &&
+
+      (
+        area !== "patterns" ||
+        patternKinds.has(info.kind)
+      ) &&
+
+      (
+        status === "all" ||
+        record.status === status
+      ) &&
+
+      [
+        record.title,
+        record.description,
+        categories[info.kind],
+        ownerName(info.maintainer_id),
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(search)
     );
+  })
+  .sort((a, b) =>
+    a.title.localeCompare(b.title) ||
+    a.id.localeCompare(b.id)
+  );
 
   function open(record) {
     setSelectedId(record.id);
@@ -1238,11 +1264,12 @@ export default function DesignSystemWorkspace({
   }, []);
 
   const nav = [
-    ["overview", "Overview", Layers3],
-    ["components", "Components", Boxes],
-    ["foundations", "Foundations", Palette],
-    ["resources", "Resources", Link2],
-  ];
+  ["overview", "Overview", Layers3],
+  ["components", "Components", Boxes],
+  ["patterns", "Patterns", BookOpen],
+  ["foundations", "Foundations", Palette],
+  ["resources", "Resources", Link2],
+];
 
   const phase = record =>
     phases[record.status] || "Draft";
@@ -1504,7 +1531,14 @@ export default function DesignSystemWorkspace({
                   <strong>React examples</strong>
                 </span>
               </div>
-
+<DesignReviewPanel
+  key={`reviews:${userId}:${selected.id}`}
+  record={selected}
+  userId={userId}
+  employees={employees}
+  isManager={isManager}
+  onRefresh={onRefresh}
+/>
               <div
                 className="tds-tabs"
                 role="group"
@@ -1629,29 +1663,33 @@ export default function DesignSystemWorkspace({
             </article>
           ) : (
             <>
-              <header className="tds-page-header">
-                <p className="tds-eyebrow">
-                  {area === "overview"
-                    ? "START HERE"
-                    : "BROWSE THE LIBRARY"}
-                </p>
+  <header className="tds-page-header">
+  <p className="tds-eyebrow">
+    {area === "overview"
+      ? "START HERE"
+      : "BROWSE THE LIBRARY"}
+  </p>
 
-                <h2>
-                  {nav.find(item =>
-                    item[0] === area
-                  )?.[1]}
-                </h2>
+  <h2>
+    {nav.find(item => item[0] === area)?.[1]}
+  </h2>
 
-                <p>
-                  {area === "components"
-                    ? "Reusable interface controls, with behaviour and usage guidance."
-                    : area === "foundations"
-                      ? "Shared colour, type and spacing decisions."
-                      : area === "resources"
-                        ? "Figma files, source code and documentation linked to your references."
-                        : "Explore the references maintained by your company."}
-                </p>
-              </header>
+  <p>
+    {area === "components"
+      ? "Reusable interface controls, with behaviour and usage guidance."
+
+      : area === "patterns"
+        ? "Complete workflows with interactive examples, implementation guidance and saved review history."
+
+        : area === "foundations"
+          ? "Shared colour, type and spacing decisions."
+
+          : area === "resources"
+            ? "Figma files, source code and documentation linked to your references."
+
+            : "Explore the references maintained by your company."}
+  </p>
+</header>
 
               {area === "overview" ? (
                 <>

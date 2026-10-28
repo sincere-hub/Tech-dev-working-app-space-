@@ -28,7 +28,7 @@ import InternalChat from "./InternalChat.jsx";
 import DocsWorkspace from "./DocsWorkspace.jsx";
 import OkrWorkspace from "./OkrWorkspace.jsx";
 import MeetingWorkspace from "./MeetingWorkspace.jsx";
-import DesignSystemWorkspace from "./DesignSystemWorkspace.jsx";
+import DesignWorkroom from "./DesignWorkroom.jsx";
 
 const groupIcons = {
   platform: Code2,
@@ -60,6 +60,7 @@ export default function WorkplaceSuite({
   onSaveOkr,
   onSaveMeeting,
   onSaveDesignReference,
+  onRefreshDesign,
   onStatus,
   onDelete,
   onNavigate,
@@ -246,13 +247,16 @@ if (
   selectedModule.id === "collaboration.design-system"
 ) {
   return (
-    <DesignSystemWorkspace
+    <DesignWorkroom
       key={userId}
       records={records}
+      interactions={interactions}
       employees={employees}
       userId={userId}
       isManager={isManager}
       onSave={onSaveDesignReference}
+      onRefresh={onRefreshDesign}
+      onInteract={onInteract}
     />
   );
 }
