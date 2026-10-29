@@ -4,7 +4,7 @@ import {
   clearOfflineWorkspace,
 } from "../lib/offlineWorkspace.js";
 
-export const APP_BUILD_NUMBER = "2026.10.15.1";
+export const APP_BUILD_NUMBER = "2026.10.29.2";
 
 export default function DevAppTest({ userId, onClose }) {
   const dialog = useRef(null);
@@ -21,7 +21,26 @@ export default function DevAppTest({ userId, onClose }) {
 
   useEffect(() => {
     dialog.current?.showModal();
+try {
+  const saved = JSON.parse(
+    sessionStorage.getItem(
+      `techdev.factory-reset.${userId}`,
+    ) || "null",
+  );
 
+  if (
+    saved?.reset_supported === true &&
+    /^[0-9a-f]{64}$/.test(saved.token || "")
+  ) {
+    setPreview(saved);
+
+    setMessage(
+      saved.active
+        ? "A reset is in progress. Accept the agreement and re-enter the phrase to continue."
+        : "A saved preview is available. Refresh it before starting a reset.",
+    );
+  }
+} catch {}
     const timer = setInterval(
       () => setNow(Date.now()),
       1000,
@@ -31,11 +50,14 @@ export default function DevAppTest({ userId, onClose }) {
   }, []);
 
   async function request(body) {
-    const { data: auth, error: sessionError } =
+  let headers;
+
+  if (body.action !== "continue") {
+    const { data: auth, error } =
       await supabase.auth.getSession();
 
     if (
-      sessionError ||
+      error ||
       auth.session?.user.id !== userId
     ) {
       throw new Error(
@@ -43,35 +65,67 @@ export default function DevAppTest({ userId, onClose }) {
       );
     }
 
-    const { data, error: requestError } =
-      await supabase.functions.invoke("dev-app-test", {
+    headers = {
+      Authorization:
+        `Bearer ${auth.session.access_token}`,
+    };
+  }
+
+  const { data, error } =
+    await supabase.functions.invoke(
+      "dev-app-test",
+      {
         body,
-        headers: {
-          Authorization:
-            `Bearer ${auth.session.access_token}`,
-        },
+        headers,
         timeout: 60000,
-      });
+      },
+    );
 
-    if (requestError) {
-      let detail;
+  if (error) {
+    let detail;
 
-      try {
-        detail = await requestError.context?.json();
-      } catch {
-        // Use the normal error message below.
-      }
+    try {
+      detail =
+        await error.context?.clone().json();
+    } catch {}
 
-      throw new Error(
-        detail?.error ||
-        requestError.message ||
-        "The request failed.",
+    throw new Error(
+      detail?.error ||
+        error.message ||
+        "The reset request failed.",
+    );
+  }
+
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+
+  if (
+    !data ||
+    !data.counts ||
+    typeof data.phase !== "string"
+  ) {
+    throw new Error(
+      "The reset backend returned an invalid response.",
+    );
+  }
+
+  try {
+    const key =
+      `techdev.factory-reset.${userId}`;
+
+    if (data.done) {
+      sessionStorage.removeItem(key);
+    } else {
+      sessionStorage.setItem(
+        key,
+        JSON.stringify(data),
       );
     }
+  } catch {}
 
-    if (data?.error) throw new Error(data.error);
-    return data;
-  }
+  return data;
+}
 
   async function run(action) {
     if (inFlight.current) return;
@@ -169,13 +223,20 @@ export default function DevAppTest({ userId, onClose }) {
       )
     : 0;
 
-  const blocked = Boolean(
-    preview?.unknown_tables?.length ||
-    preview?.other_files,
-  );
+  const resetAvailable = Boolean(
+  preview?.reset_supported === true &&
+  typeof preview?.token === "string" &&
+  preview.token.length > 0
+);
+
+const blocked = Boolean(
+  !resetAvailable ||
+  preview?.unknown_tables?.length ||
+  preview?.other_files
+);
 
   const confirmed =
-  confirmation === "sudo legion factory-reset" &&
+  confirmation === "sudo techdev factory-reset" &&
   acknowledged;
 
   async function finish() {
@@ -293,14 +354,22 @@ export default function DevAppTest({ userId, onClose }) {
                 ))}
               </dl>
 
-              {blocked && (
-                <p className="dev-test-error">
-                  Additional tables or files need review:{" "}
-                  {(preview.unknown_tables || []).join(", ")
-                    || "other Storage buckets"}.
-                  Reset is blocked.
-                </p>
-              )}
+{blocked && (
+  <p
+    className={
+      resetAvailable
+        ? "dev-test-error"
+        : "dev-test-status"
+    }
+  >
+    {!resetAvailable
+      ? "Factory reset is not configured. This preview does not delete data."
+      : `Additional tables or files need review: ${
+          (preview.unknown_tables || []).join(", ") ||
+          "other Storage buckets"
+        }. Reset is blocked.`}
+  </p>
+)}
 
               
                <section
@@ -360,7 +429,7 @@ export default function DevAppTest({ userId, onClose }) {
       >
         To confirm, type this exact phrase:
 
-        <code>sudo legion factory-reset</code>
+        <code>sudo techdev factory-reset</code>
       </label>
 
       <input
@@ -405,7 +474,7 @@ export default function DevAppTest({ userId, onClose }) {
             ? `Workers stopping · ${wait}s`
             : preview.active
               ? "Continue factory reset"
-              : "Permanently reset Legion"}
+              : "Permanently reset TechDev"}
       </button>
 
       {!preview.active && (

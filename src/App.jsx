@@ -43,6 +43,7 @@ import DevAppTest from "./components/DevAppTest.jsx";
 import TechDevGlobe from "./components/TechDevGlobe.jsx";
 import { ChatDelivery } from "./lib/companyChat.js";
 import useWorkspaceNavigation from "./lib/useWorkspaceNavigation.js";
+import AdminRoles from "./components/AdminRoles.jsx";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -2039,6 +2040,15 @@ async function signOut() {
           {activeView === "attendance" && <AttendanceView entries={isManager ? data.timeEntries : data.timeEntries.filter(entry => entry.employee_id === userId)} employees={data.employees} employeeId={userId} openEntry={openEntry} seconds={todaySeconds} weeklySeconds={weeklySeconds} onClock={toggleClock} />}
           {activeView === "leave" && <LeaveView isManager={isManager} employeeId={userId} requests={employeeRequests} shiftRequests={employeeShiftRequests} shifts={upcomingShifts} employees={data.employees} onLeave={submitLeave} onShiftRequest={submitShiftRequest} onReview={reviewRequest} onShift={submitShift} />}
           {activeView === "payslips" && <PayslipsView isManager={isManager} payslips={data.payslips.filter(slip => isManager || slip.employee_id === userId)} employees={data.employees} employeeId={userId} onDownload={downloadPayslip} onCreate={submitPayslip} />}
+{activeView === "manager" &&
+  profile?.id === userId &&
+  profile?.role === "admin" && (
+    <AdminRoles
+      key={userId}
+      userId={userId}
+      onChanged={() => loadWorkspace(session.user)}
+    />
+  )}
           {activeView === "manager" && isManager && <ManagerView tasks={data.tasks} announcements={announcements} employees={data.employees} requests={data.leaveRequests} shiftRequests={data.shiftRequests} shifts={data.shifts} onTask={submitTask} onUpdateTask={updateTask} onAnnouncement={submitAnnouncement} onReview={reviewRequest} onShift={submitShift} onView={navigate} />}
           {activeView === "suite" && <WorkplaceSuite key={suiteModule || "all"} initialModuleId={suiteModule} interactions={data.interactions} onInteract={recordInteraction} records={data.workplaceRecords} employees={data.employees} tasks={data.tasks} announcements={announcements} isManager={isManager} userId={userId} onCreate={submitWorkplaceRecord} onSaveOkr={saveOkr} onSaveMeeting={saveMeeting} onSaveDesignReference={saveDesignReference} onRefreshDesign={() => loadWorkspace(session.user)} onStatus={updateWorkplaceRecord} onDelete={deleteWorkplaceRecord} onNavigate={navigate}role={profile?.role || "employee"} />}
           {activeView === "notices" && (
