@@ -29,7 +29,11 @@ import {
   X,
 } from "lucide-react";
 
-import EmployeeAvatar from "./EmployeeAvatar.jsx";
+import {
+  ChatAvatar as EmployeeAvatar,
+  ChatSignalsProvider,
+  ChatPreviewTicks,
+} from "./ChatSignals.jsx";
 import ChatTools, {
   MentionText,
   useChatTools,
@@ -44,6 +48,7 @@ import VoiceRecorder, {
 import { supabase } from "../lib/supabase.js";
 import {
   chatCall,
+  chatListPreview,
   chatId,
   chatRequest,
   messageStatus,
@@ -352,7 +357,7 @@ function CompanyChat({
       const blocked = failure.message?.includes(
         "TD_CHAT_BLOCKED",
       );
-
+      if (blocked) inbox.refresh();
       if (alive.current) {
         setOutbox(previous =>
           previous.map(row =>
@@ -386,7 +391,11 @@ function CompanyChat({
     const item = {
       id: chatId(),
       client_id: chatId(),
-      room_id: room.room_id,
+           room_id: room.room_id,
+      preview_after_id:
+        room.chat_last_message?.id || null,
+      preview_after_at:
+        room.last_at || null,
       sender_id: userId,
       body: text,
       created_at: new Date().toISOString(),
@@ -413,6 +422,10 @@ function CompanyChat({
     selected === "archive" || Boolean(room);
 
   return (
+    <ChatSignalsProvider
+      userId={userId}
+      rooms={inbox.rooms}
+    >
     <section
       ref={chatRoot}
       className={`td-chat${
@@ -538,6 +551,11 @@ function CompanyChat({
                 </article>
               ))
             : rooms.map(item => {
+              const preview = chatListPreview(
+                  item,
+                  outbox,
+                  userId
+                );
                 const title = roomTitle(
                   item,
                   people,
@@ -584,17 +602,20 @@ function CompanyChat({
                       }
                     >
                       <strong>{title}</strong>
-                      <span>
-                        {item.last_body ||
-                          (item.kind === "company"
-                            ? "Everyone in one place"
-                            : "Start the conversation")}
+                       <span className="td-chat-list-preview">
+                        <ChatPreviewTicks
+                          message={preview.message}
+                        />
+
+                        <span className="td-chat-preview-text">
+                          {preview.text}
+                        </span>
                       </span>
                     </button>
 
                     <div className="td-chat-contact-meta">
                       <time>
-                        {dateText(item.last_at)}
+                        {dateText(preview.at)}
                       </time>
 
                       {Number(item.unread) > 0 && (
@@ -761,6 +782,7 @@ function CompanyChat({
         />
       )}
     </section>
+     </ChatSignalsProvider>
   );
 }
 

@@ -180,6 +180,7 @@ function RoleRow({
 export default function AdminRoles({
   userId,
   onChanged,
+  onBanEmployees,
 }) {
   const headingId = useId();
 
@@ -229,7 +230,7 @@ export default function AdminRoles({
         try {
           const data = await roleRequest(
             userId,
-            "admin_list_employee_roles",
+            "admin_list_employee_access",
             {
               p_search: search.trim(),
               p_page: page,
@@ -387,7 +388,19 @@ export default function AdminRoles({
       className: "ar-tool",
       "aria-labelledby": headingId,
     },
-
+    h(
+      "div",
+      { className: "ar-ban-navigation" },
+      h(
+        "button",
+        {
+          type: "button",
+          disabled: Boolean(saving),
+          onClick: onBanEmployees,
+        },
+        "Ban employees"
+      )
+    ),
     h(
       "header",
       { className: "ar-header" },

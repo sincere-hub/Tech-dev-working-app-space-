@@ -24,7 +24,14 @@ function pageTarget(view, moduleId = "") {
   return {
     view,
     moduleId:
-      view === "suite" && typeof moduleId === "string"
+      typeof moduleId === "string" &&
+      (
+        view === "suite" ||
+        (
+          view === "manager" &&
+          moduleId === "employee-bans"
+        )
+      )
         ? moduleId
         : "",
   };
@@ -59,20 +66,30 @@ export default function useWorkspaceNavigation({
     onUnavailable,
   };
 
-  function allowed(target) {
+    function allowed(target) {
     const context = settings.current;
 
-    return (
-      context.items.some(
+    if (
+      !context.items.some(
         item => item.id === target.view
-      ) &&
-      (
-        target.view !== "suite" ||
-        !target.moduleId ||
-        canAccessWorkplaceModule(
-          target.moduleId,
-          context.role || "employee"
-        )
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      target.view === "manager" &&
+      target.moduleId === "employee-bans"
+    ) {
+      return context.role === "admin";
+    }
+
+    return (
+      target.view !== "suite" ||
+      !target.moduleId ||
+      canAccessWorkplaceModule(
+        target.moduleId,
+        context.role || "employee"
       )
     );
   }

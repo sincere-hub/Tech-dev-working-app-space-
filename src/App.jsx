@@ -44,6 +44,10 @@ import TechDevGlobe from "./components/TechDevGlobe.jsx";
 import { ChatDelivery } from "./lib/companyChat.js";
 import useWorkspaceNavigation from "./lib/useWorkspaceNavigation.js";
 import AdminRoles from "./components/AdminRoles.jsx";
+import AdminBans from "./components/AdminBans.jsx";
+import useEmployeeAccess from "./lib/useEmployeeAccess.js";
+import TaskAssignment from "./components/TaskAssignment.jsx";
+import TeamTaskBoard from "./components/TeamTaskBoard.jsx";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -284,7 +288,19 @@ function AuthScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(() => {
+  try {
+    return sessionStorage.getItem("techdev-access-notice") || "";
+  } catch {
+    return "";
+  }
+});
+
+useEffect(() => {
+  try {
+    sessionStorage.removeItem("techdev-access-notice");
+  } catch {}
+}, []);
   const [error, setError] = useState("");
 
   async function submit(event) {
@@ -462,6 +478,7 @@ function PasswordRecovery({ onComplete }) {
 
 function App() {
   const [session, setSession] = useState(null);
+  useEmployeeAccess(session?.user?.id, () => setSession(null));
   const [avatarUploadsEnabled, setAvatarUploadsEnabled] = useState(false);
 const [featureSaving, setFeatureSaving] = useState(false);
 
@@ -713,7 +730,7 @@ function openActivityItem(activity) {
         withTimeout(() =>
           supabase
             .from("employees")
-            .select("id,display_name,job_title,role")
+            .select("id,display_name,job_title,role,is_banned")
             .order("display_name")
         ),
 
@@ -2043,13 +2060,25 @@ async function signOut() {
 {activeView === "manager" &&
   profile?.id === userId &&
   profile?.role === "admin" && (
-    <AdminRoles
-      key={userId}
-      userId={userId}
-      onChanged={() => loadWorkspace(session.user)}
-    />
+    suiteModule === "employee-bans" ? (
+      <AdminBans
+        key={userId}
+        userId={userId}
+        onBack={goBack}
+        onChanged={() => loadWorkspace(session.user)}
+      />
+    ) : (
+      <AdminRoles
+        key={userId}
+        userId={userId}
+        onBanEmployees={() =>
+          navigate("manager", "employee-bans")
+        }
+        onChanged={() => loadWorkspace(session.user)}
+      />
+    )
   )}
-          {activeView === "manager" && isManager && <ManagerView tasks={data.tasks} announcements={announcements} employees={data.employees} requests={data.leaveRequests} shiftRequests={data.shiftRequests} shifts={data.shifts} onTask={submitTask} onUpdateTask={updateTask} onAnnouncement={submitAnnouncement} onReview={reviewRequest} onShift={submitShift} onView={navigate} />}
+          {activeView === "manager" && isManager && suiteModule !== "employee-bans" && <ManagerView tasks={data.tasks} announcements={announcements} employees={data.employees} requests={data.leaveRequests} shiftRequests={data.shiftRequests} shifts={data.shifts} onTask={submitTask} onUpdateTask={updateTask} onAnnouncement={submitAnnouncement} onReview={reviewRequest} onShift={submitShift} onView={navigate} />}
           {activeView === "suite" && <WorkplaceSuite key={suiteModule || "all"} initialModuleId={suiteModule} interactions={data.interactions} onInteract={recordInteraction} records={data.workplaceRecords} employees={data.employees} tasks={data.tasks} announcements={announcements} isManager={isManager} userId={userId} onCreate={submitWorkplaceRecord} onSaveOkr={saveOkr} onSaveMeeting={saveMeeting} onSaveDesignReference={saveDesignReference} onRefreshDesign={() => loadWorkspace(session.user)} onStatus={updateWorkplaceRecord} onDelete={deleteWorkplaceRecord} onNavigate={navigate}role={profile?.role || "employee"} />}
           {activeView === "notices" && (
   <>
@@ -2461,11 +2490,21 @@ function TasksView({ tasks, isManager, employees, employeeId, onTask, onClaim, o
   const assigned = isManager ? tasks : tasks.filter(task => task.assignee_id === employeeId || task.assignee_id === null);
   return <>
     <PageHeading eyebrow={isManager ? "TEAM WORK" : "YOUR WORK"} title={isManager ? "Team tasks" : "My tasks"} description={isManager ? "Create clear assignments and follow progress across the team." : "Keep priorities clear and make progress one task at a time."} />
-    {isManager && <Card title="Assign a task" subtitle="Assign now or leave open for an employee to claim."><form className="form-grid" onSubmit={onSubmit}><Field label="Task title"><input name="title" required maxLength={160} placeholder="What needs to get done?" /></Field><Field label="Assign to"><select name="assignee" defaultValue=""><option value="">Open task pool</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.display_name}</option>)}</select></Field><Field label="Due date"><input name="due" type="date" min={dateKey()} /></Field><Field label="Priority"><select name="priority"><option value="normal">Normal</option><option value="high">High</option></select></Field><Field label="Details"><textarea className="wide-field" name="description" maxLength={1000} placeholder="Add useful context (optional)." /></Field><button className="primary-button form-action" type="submit"><Plus size={15} /> Assign task</button></form></Card>}
-    <Card className="spaced-card" title={isManager ? "Team task board" : "Your task list"} subtitle={`${assigned.filter(task => task.status === "done").length} of ${assigned.length} tasks complete`} action={<span className="metric-chip">{assigned.length} tasks</span>}>
-      {assigned.length ? <div className="task-list">{assigned.map(task => <TaskRow key={task.id} task={task} employee={employees.find(person => person.id === task.assignee_id)} onChange={onTask} onClaim={onClaim} managerMode={isManager} />)}</div> : <EmptyState icon={CheckCheck} title="No tasks here yet" text={isManager ? "Create a task above to get your team moving." : "Your assigned work and open tasks will appear here."} />}
-    </Card>
-  </>;
+{isManager && (
+  <TaskAssignment
+    employees={employees}
+    onSubmit={onSubmit}
+  />
+)}
+    <TeamTaskBoard
+  tasks={assigned}
+  employees={employees}
+  employeeId={employeeId}
+  isManager={isManager}
+  onTask={onTask}
+  onClaim={onClaim}
+ />
+  </>
 }
 
 function AttendanceView({ entries, employees, employeeId, openEntry, seconds, weeklySeconds, onClock }) {
@@ -2614,7 +2653,10 @@ function ManagerView({ tasks, announcements, employees, requests, shiftRequests,
     <div className="stat-grid"><Stat label="Team members" value={employees.length} detail="Active employee accounts" /><Stat label="Tasks in progress" value={openTasks} detail={`${tasks.filter(task => task.status === "done").length} complete`} /><Stat label="Requests to review" value={pending} detail="Leave and shift requests" /></div>
     <div className="manager-grid spaced-card">
       <div className="stack-column">
-        <Card title="Assign a task" subtitle="Assign an owner or add it to the open task pool."><form className="form-grid" onSubmit={onTask}><Field label="Task title"><input name="title" required maxLength={160} placeholder="What needs to get done?" /></Field><Field label="Assign to"><select name="assignee" defaultValue=""><option value="">Open task pool</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.display_name}</option>)}</select></Field><Field label="Due date"><input name="due" type="date" min={dateKey()} /></Field><Field label="Priority"><select name="priority"><option value="normal">Normal</option><option value="high">High</option></select></Field><Field label="Details"><textarea className="wide-field" name="description" maxLength={1000} placeholder="Add useful context (optional)." /></Field><button className="primary-button form-action" type="submit"><Plus size={15} /> Assign task</button></form></Card>
+<TaskAssignment
+  employees={employees}
+  onSubmit={onTask}
+/>
         <Card title="Team task progress" subtitle="Review ownership and completion across your team." action={<button className="text-action" onClick={() => onView("tasks")}>Task board <ArrowRight size={14} /></button>}>
           {tasks.length ? <div className="task-list">{tasks.slice(0, 8).map(task => <TaskRow key={task.id} task={task} employee={employees.find(employee => employee.id === task.assignee_id)} onChange={onUpdateTask} managerMode />)}</div> : <EmptyState icon={CheckCheck} title="No tasks assigned" text="Create the first team task above." />}
         </Card>

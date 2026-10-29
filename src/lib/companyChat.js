@@ -6,6 +6,9 @@ import {
 } from "react";
 import { supabase } from "./supabase.js";
 import { attachChatOptions } from "./groupChat.js";
+import {
+  useAppChatPresence,
+} from "./chatPresence.js";
 
 export async function chatRequest(query) {
   const controller = new AbortController();
@@ -233,7 +236,10 @@ export function useChatInbox(userId) {
             }
           })(),
         ]);
-const rooms = await attachChatOptions(userId, baseRooms);
+const rooms = await attachChatInboxIndicators(
+  userId,
+  await attachChatOptions(userId, baseRooms)
+);
         if (alive) {
           setState(previous => ({
             ...previous,
@@ -274,13 +280,14 @@ const rooms = await attachChatOptions(userId, baseRooms);
     const channel = supabase.channel(
       `td-chat-inbox-${userId}-${++channelId}`,
     );
-
     for (const table of [
       "td_chat_rooms",
       "td_chat_members",
       "td_chat_messages",
       "td_chat_receipts",
+      "td_chat_blocks",
     ]) {
+
       channel.on(
         "postgres_changes",
         {
@@ -403,6 +410,7 @@ export function useChatPage(
 
 // Mount once in App.jsx.
 export function ChatDelivery({ userId }) {
+    useAppChatPresence(userId);
   useEffect(() => {
     if (!userId || !supabase) return;
 
@@ -501,4 +509,96 @@ export function ChatDelivery({ userId }) {
   }, [userId]);
 
   return null;
+}
+async function attachChatInboxIndicators(
+  userId,
+  rooms
+) {
+  const signals = new Map();
+
+  for (
+    let offset = 0;
+    offset < rooms.length;
+    offset += 500
+  ) {
+    const rows = await chatCall(
+      userId,
+      "td_chat_inbox_signals_v1",
+      {
+        p_rooms: rooms
+          .slice(offset, offset + 500)
+          .map(room => room.room_id),
+      }
+    );
+
+    for (const row of rows || []) {
+      signals.set(row.room_id, row);
+    }
+  }
+
+  return rooms.map(room => {
+    const signal = signals.get(room.room_id);
+
+    return {
+      ...room,
+      blocked_by_other:
+        signal?.blocked_by_other === true,
+      chat_last_message:
+        signal?.last_message || null,
+      last_body: signal
+        ? signal.last_body
+        : room.last_body,
+      last_at: signal
+        ? signal.last_at
+        : room.last_at,
+    };
+  });
+}
+
+export function chatListPreview(
+  room,
+  outbox,
+  userId
+) {
+  const stored = room.chat_last_message;
+
+  const local = outbox
+    .filter(item => item.room_id === room.room_id)
+    .at(-1);
+
+  const sameMessage =
+    local &&
+    stored?.client_id === local.client_id;
+
+  const headUnchanged = stored
+    ? stored.id === local?.preview_after_id
+    : (room.last_at || null) ===
+      (local?.preview_after_at || null);
+
+  const pending =
+    local && !sameMessage && headUnchanged
+      ? local
+      : null;
+
+  const message = pending || stored;
+
+  return {
+    message:
+      message?.sender_id === userId
+        ? message
+        : null,
+
+    text: pending
+      ? pending.kind === "voice"
+        ? "Voice message"
+        : pending.body
+      : room.last_body ||
+        (
+          room.kind === "company"
+            ? "Everyone in one place"
+            : "Start the conversation"
+        ),
+
+    at: pending?.created_at || room.last_at,
+  };
 }

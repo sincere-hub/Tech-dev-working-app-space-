@@ -1,0 +1,224 @@
+.td-assign-task {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #354861;
+  border-radius: 20px;
+  background: #112035;
+  color: #edf3fc;
+  box-shadow: 0 14px 40px rgb(3 10 24 / 16%);
+  color-scheme: dark;
+}
+
+.td-assign-task *,
+.td-assign-task *::before,
+.td-assign-task *::after {
+  box-sizing: border-box;
+}
+
+.td-assign-task .tdaf-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 25px;
+  border-bottom: 1px solid #30435d;
+  background: linear-gradient(
+    115deg,
+    #1c3754,
+    #15273e 75%
+  );
+}
+
+.td-assign-task .tdaf-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border: 1px solid #4f7596;
+  border-radius: 14px;
+  background: #254563;
+  color: #b1e1ff;
+}
+
+.td-assign-task .tdaf-header h2 {
+  margin: 0;
+  color: #f3f7ff;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+}
+
+.td-assign-task .tdaf-header p {
+  max-width: 46ch;
+  margin: 8px 0 0;
+  color: #bbcbde;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.td-assign-task .tdaf-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 21px 18px;
+  margin: 0;
+  padding: 26px;
+}
+
+.td-assign-task .tdaf-wide {
+  grid-column: 1 / -1;
+}
+
+.td-assign-task .tdaf-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 9px;
+  margin: 0;
+}
+
+.td-assign-task .tdaf-field > span {
+  color: #dfe9f7;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.td-assign-task .tdaf-field input,
+.td-assign-task .tdaf-field select,
+.td-assign-task .tdaf-field textarea {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 49px;
+  margin: 0;
+  padding: 13px 14px;
+  border: 1px solid #425875;
+  border-radius: 11px;
+  background: #0d192c;
+  color: #edf4ff;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  box-shadow: none;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.td-assign-task .tdaf-field select {
+  padding-right: 30px;
+}
+
+.td-assign-task .tdaf-field textarea {
+  min-height: 130px;
+  resize: vertical;
+}
+
+.td-assign-task .tdaf-field input::placeholder,
+.td-assign-task .tdaf-field textarea::placeholder {
+  color: #98acc5;
+  opacity: 1;
+}
+
+.td-assign-task .tdaf-field input:hover,
+.td-assign-task .tdaf-field select:hover,
+.td-assign-task .tdaf-field textarea:hover {
+  border-color: #617e9f;
+}
+
+.td-assign-task .tdaf-field input:focus,
+.td-assign-task .tdaf-field select:focus,
+.td-assign-task .tdaf-field textarea:focus {
+  border-color: #8cccf8;
+  outline: 2px solid #8cccf8;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgb(103 181 239 / 10%);
+}
+
+.td-assign-task .tdaf-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 3px;
+  padding-top: 21px;
+  border-top: 1px solid #30435b;
+}
+
+.td-assign-task .tdaf-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: auto;
+  min-width: 155px;
+  min-height: 48px;
+  margin: 0;
+  padding: 12px 21px;
+  border: 1px solid #74addf;
+  border-radius: 11px;
+  background: linear-gradient(
+    120deg,
+    #2d80bc,
+    #3267a4
+  );
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  box-shadow: 0 5px 15px rgb(9 39 74 / 25%);
+  cursor: pointer;
+}
+
+.td-assign-task .tdaf-submit:hover:not(:disabled) {
+  background: linear-gradient(
+    120deg,
+    #378fcf,
+    #3a77b8
+  );
+}
+
+.td-assign-task .tdaf-submit:focus-visible {
+  outline: 3px solid #b2e0ff;
+  outline-offset: 4px;
+}
+
+.td-assign-task .tdaf-submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@media (max-width: 600px) {
+  .td-assign-task .tdaf-header {
+    gap: 12px;
+    padding: 20px;
+  }
+
+  .td-assign-task .tdaf-header h2 {
+    font-size: 21px;
+  }
+
+  .td-assign-task .tdaf-form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 19px;
+    padding: 20px;
+  }
+
+  .td-assign-task .tdaf-field input,
+  .td-assign-task .tdaf-field select,
+  .td-assign-task .tdaf-field textarea {
+    font-size: 16px;
+  }
+
+  .td-assign-task .tdaf-submit {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .td-assign-task .tdaf-field input,
+  .td-assign-task .tdaf-field select,
+  .td-assign-task .tdaf-field textarea {
+    transition: none;
+  }
+}
