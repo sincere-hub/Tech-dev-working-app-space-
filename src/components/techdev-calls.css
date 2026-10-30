@@ -1,0 +1,266 @@
+.td-chat-call-buttons {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.td-call-layer {
+  position: fixed;
+  z-index: 3000;
+  inset: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  overflow: auto;
+  border: 1px solid #597b9b;
+  border-radius: 20px;
+  background: linear-gradient(145deg, #18354f, #0c1d30);
+  color: #eef6ff;
+  box-shadow: 0 20px 80px #0008;
+}
+
+.td-call-layer > header,
+.td-call-history > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.td-call-layer > header > div {
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.td-call-layer small {
+  color: #bdd2e7;
+}
+
+.td-call-layer button,
+.td-call-history button,
+.td-call-incoming button {
+  padding: 9px 12px;
+  border: 1px solid #6389ab;
+  border-radius: 10px;
+  background: #285476;
+  color: #f2f8ff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.td-call-layer button:disabled,
+.td-call-history button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
+button.td-call-danger {
+  border-color: #b56474;
+  background: #7a3042;
+}
+
+.td-call-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #11283e;
+}
+
+.td-call-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.td-call-add input,
+.td-call-add select {
+  max-width: 220px;
+  padding: 9px;
+  border: 1px solid #557592;
+  border-radius: 9px;
+  background: #102338;
+  color: #edf5ff;
+  font: inherit;
+  font-size: 13px;
+}
+
+.td-call-agreement {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+
+.td-call-media {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #0a1929;
+}
+
+.td-call-grid {
+  flex: 1;
+  min-height: 180px;
+}
+
+.td-call-media-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 8px;
+}
+
+.td-call-recording {
+  padding: 9px 13px;
+  background: #482735;
+  color: #ffb5bd;
+  font-size: 13px;
+}
+
+.td-call-incoming {
+  position: fixed;
+  z-index: 4000;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  width: min(540px, calc(100vw - 24px));
+  padding: 18px;
+  border: 1px solid #7bb7e4;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #245679, #122b43);
+  color: #fff;
+  box-shadow: 0 12px 50px #0008;
+}
+
+.td-call-incoming > div {
+  flex: 1;
+  min-width: 160px;
+}
+
+.td-call-incoming p {
+  margin: 5px 0 0;
+  font-size: 13px;
+}
+
+.td-call-error {
+  position: fixed;
+  z-index: 5000;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  width: min(620px, calc(100vw - 24px));
+  padding: 14px;
+  border: 1px solid #c88192;
+  border-radius: 12px;
+  background: #512a3d;
+  color: #fff;
+}
+
+.td-call-error button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.td-call-history {
+  position: fixed;
+  z-index: 4100;
+  inset: 5vh 0;
+  box-sizing: border-box;
+  width: min(760px, calc(100vw - 24px));
+  max-height: 90dvh;
+  margin: auto;
+  padding: 22px;
+  overflow: auto;
+  border: 1px solid #678baa;
+  border-radius: 18px;
+  background: #132b43;
+  color: #edf6ff;
+}
+
+.td-call-history::backdrop {
+  background: #06101bd9;
+}
+
+.td-call-history > header {
+  justify-content: space-between;
+}
+
+.td-call-history article {
+  margin: 12px 0;
+  padding: 14px;
+  border: 1px solid #456b8b;
+  border-radius: 12px;
+  background: #1b3b56;
+}
+
+.td-call-history article button {
+  margin: 4px;
+}
+
+.td-call-history p {
+  color: #c6d7e9;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.td-call-layer.is-minimized {
+  inset: auto 18px 90px auto;
+  width: min(380px, calc(100vw - 28px));
+  height: auto;
+}
+
+.td-call-layer.is-minimized > .td-call-tools,
+.td-call-layer.is-minimized > .td-call-media {
+  display: none;
+}
+
+.td-call-layer :is(button, input, select):focus-visible,
+.td-call-history button:focus-visible {
+  outline: 2px solid #a4dcff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .td-call-layer {
+    inset: 8px;
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .td-call-grid {
+    min-height: 240px;
+  }
+
+  .td-call-tools {
+    max-height: 28dvh;
+    overflow: auto;
+  }
+
+  .td-call-media-controls {
+    flex-wrap: wrap;
+  }
+
+  .td-call-history {
+    padding: 15px;
+  }
+}

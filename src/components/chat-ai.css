@@ -1,0 +1,137 @@
+.td-chat .td-ai-open {
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin:0 17px 12px;
+  padding:11px 13px;
+  border:1px solid #537695;
+  border-radius:11px;
+  background:linear-gradient(110deg,#234566,#19334e);
+  color:#ecf6ff;
+  font-size:12px;
+}
+
+.td-chat .td-ai-open b {
+  margin-left:auto;
+  padding:2px 7px;
+  border-radius:20px;
+  background:#8dd6ff;
+  color:#122c42;
+}
+
+.td-ai-dialog {
+  width:min(760px,calc(100vw - 24px));
+  max-height:85dvh;
+  overflow:auto;
+}
+
+.td-ai-dialog > header,
+.td-ai-heading,
+.td-ai-actions {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.td-ai-dialog small {
+  color:#b6cde5;
+  font-size:10px;
+  letter-spacing:.08em;
+}
+
+.td-ai-controls {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:12px;
+  padding:15px;
+  margin:15px 0;
+  border:1px solid #4e6d8d;
+  border-radius:13px;
+  background:#16314a;
+}
+
+.td-ai-controls > span,
+.td-ai-controls > p {
+  flex-basis:100%;
+  font-size:12px;
+}
+
+.td-ai-dialog button {
+  cursor:pointer;
+}
+
+.td-ai-dialog button:not(.td-chat-icon) {
+  padding:9px 12px;
+  border:1px solid #6286a8;
+  border-radius:9px;
+  background:#254a6d;
+  color:#f3f8ff;
+  font:inherit;
+  font-size:12px;
+}
+
+.td-ai-dialog button:disabled {
+  opacity:.55;
+  cursor:wait;
+}
+
+.td-ai-report {
+  margin:16px 0;
+  padding:18px;
+  border:1px solid #4e6a87;
+  border-radius:15px;
+  background:linear-gradient(145deg,#203d59,#152c43);
+}
+
+.td-ai-heading > span {
+  color:#c4d7e9;
+  font-size:11px;
+}
+
+.td-ai-report p {
+  color:#d0dfef;
+  font-size:13px;
+  line-height:1.6;
+}
+
+.td-ai-evidence {
+  display:grid;
+  gap:8px;
+  padding:15px;
+  margin:14px 0;
+  border:1px solid #526d88;
+  border-radius:12px;
+  background:#0d2135;
+}
+
+.td-ai-evidence time {
+  color:#adc3d9;
+  font-size:11px;
+}
+
+.td-ai-evidence blockquote {
+  margin:0;
+  padding:12px;
+  border-left:3px solid #80caff;
+  border-radius:7px;
+  background:#193b58;
+  color:#f1f7ff;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  font-size:14px;
+  line-height:1.7;
+}
+
+.td-ai-dialog button:focus-visible {
+  outline:2px solid #9cd7ff;
+  outline-offset:3px;
+}
+
+@media(max-width:600px) {
+  .td-ai-dialog { padding:15px; }
+  .td-ai-report { padding:13px; }
+  .td-ai-actions button { flex:1 1 140px; }
+}

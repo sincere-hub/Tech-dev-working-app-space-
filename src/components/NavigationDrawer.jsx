@@ -6,6 +6,7 @@ import {
 } from "../lib/workplaceModules.js";
 
 import AdminBuildButton from "./AdminBuildButton.jsx";
+import WorkplaceIcon from "./WorkplaceIcon.jsx";
 
 export default function NavigationDrawer({
   open,
@@ -264,13 +265,21 @@ export default function NavigationDrawer({
             WORKPLACE TOOLS
           </p>
 
-          <AdminBuildButton
-            role={role}
-            onOpen={() => {
-              onOpenDevTests?.();
-              onClose();
-            }}
-          />
+{role === "admin" && (
+  <div className="td-menu-build">
+    <span className="td-menu-tool-icon">
+      <WorkplaceIcon id="developer.build" />
+    </span>
+
+    <AdminBuildButton
+      role={role}
+      onOpen={() => {
+        onOpenDevTests?.();
+        onClose();
+      }}
+    />
+  </div>
+)}
 
           {groups.map(group => (
             <details
@@ -305,8 +314,16 @@ export default function NavigationDrawer({
                   if (search) event.preventDefault();
                 }}
               >
-                {group.label}
-                <span>{group.modules.length}</span>
+                <WorkplaceIcon
+                   id={group.id}
+                     size={18}
+                 />
+
+<span className="td-menu-group-label">
+  {group.label}
+</span>
+
+<span>{group.modules.length}</span>
               </summary>
 
               <div>
@@ -323,8 +340,21 @@ export default function NavigationDrawer({
                       openTool(group, module)
                     }
                   >
-                    {module.title}
-                    <ArrowRight size={14} />
+  <span className="td-menu-tool-icon">
+  <WorkplaceIcon
+    id={module.id}
+    groupId={group.id}
+  />
+</span>
+
+<span className="td-menu-tool-label">
+  {module.title}
+</span>
+
+<ArrowRight
+  size={14}
+  className="td-menu-tool-arrow"
+/>
                   </button>
                 ))}
               </div>

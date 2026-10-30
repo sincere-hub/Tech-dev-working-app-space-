@@ -224,10 +224,13 @@ export default function ChatRoomSettings({
         </select>
       </label>
 
-      <p className="td-chat-note">
-        Voice notes can be up to 2 minutes.
-        Participants and company admins can access messages.
-      </p>
+<p className="td-chat-note">
+  Voice notes can be up to 2 minutes.
+  {" "}
+  {room.kind === "direct"
+    ? "Only participants can access this direct conversation through TechDev."
+    : "Group participants and company admins can access these messages."}
+</p>
 
       {room.kind !== "direct" && room.can_change_icon && (
         <>

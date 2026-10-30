@@ -58,6 +58,17 @@ import {
 } from "../lib/companyChat.js";
 import { uploadChatVoice } from "../lib/groupChat.js";
 import "./company-chat.css";
+import "./company-chat.css";
+import "./chat-polish.css";
+import {
+  chatPersonLabel,
+} from "../lib/chatPersonLabel.js";
+import ChatPresenceLabel from "./ChatPresenceLabel.jsx";
+import ChatAiReview, {
+  ChatAiAdminButton,
+  ChatAiNotice,
+} from "./ChatAiReview.jsx";
+import { ChatCallButtons } from "./CallProvider.jsx";
 
 const clock = new Intl.DateTimeFormat("en-ZA", {
   timeZone: "Africa/Johannesburg",
@@ -118,6 +129,7 @@ function CompanyChat({
   const [tab, setTab] = useState("chats");
   const [query, setQuery] = useState("");
   const [groupOpen, setGroupOpen] = useState(false);
+  const [safetyOpen, setSafetyOpen] = useState(false);
   const [opening, setOpening] = useState(false);
   const [error, setError] = useState("");
   const [drafts, setDrafts] = useState({});
@@ -170,10 +182,17 @@ function CompanyChat({
       ),
     [employees],
   );
-
-  const room = inbox.rooms.find(
-    item => item.room_id === selected,
-  );
+const room = inbox.rooms.find(
+  item =>
+    item.room_id === selected &&
+    (
+      item.is_member ||
+      (
+        inbox.role === "admin" &&
+        item.kind !== "direct"
+      )
+    ),
+);
 
   const admin = inbox.role === "admin";
   const canCreate = ["manager", "admin"].includes(
@@ -183,10 +202,14 @@ function CompanyChat({
 
   const rooms = inbox.rooms
     .filter(item =>
-      tab === "review"
-        ? !item.is_member && admin
-        : item.is_member,
-    )
+  tab === "review"
+    ? (
+        admin &&
+        !item.is_member &&
+        item.kind !== "direct"
+      )
+    : item.is_member,
+)
     .filter(item =>
       `${roomTitle(item, people, userId)} ${
         item.last_body || ""
@@ -471,7 +494,7 @@ function CompanyChat({
             ["chats", "Chats"],
             ["people", "People"],
             ...(admin
-              ? [["review", "Admin review"]]
+             ? [["review", "Group review"]]
               : []),
           ].map(([id, label]) => (
             <button
@@ -487,7 +510,12 @@ function CompanyChat({
             </button>
           ))}
         </div>
-
+{admin && (
+  <ChatAiAdminButton
+    userId={userId}
+    onOpen={() => setSafetyOpen(true)}
+  />
+)}
         <label className="td-chat-search">
           <Search size={17} />
           <input
@@ -540,7 +568,7 @@ function CompanyChat({
                       {person.display_name}
                     </strong>
                     <span>
-                      {person.job_title || "Employee"}
+                     {chatPersonLabel(person)}
                     </span>
                   </button>
 
@@ -763,11 +791,19 @@ function CompanyChat({
           </p>
           <span>
             <ShieldCheck size={15} />
-            Company admins can review workplace chats.
+           Direct chats are visible to their participants.
+           Company admins can review group chats.
           </span>
         </div>
       )}
-
+{safetyOpen && admin && (
+  <ChatAiReview
+    key={userId}
+    userId={userId}
+    employees={employees}
+    onClose={() => setSafetyOpen(false)}
+  />
+)}
       {groupOpen && (
         <GroupDialog
           userId={userId}
@@ -1035,12 +1071,23 @@ function RoomPane({
           <h2>{title}</h2>
           <span>
             {room.kind === "direct"
-              ? "Direct conversation"
-              : `${room.member_ids.length} members`}
+  ? chatPersonLabel(people.get(other))
+  : `${room.member_ids.length} members`}
             {" · View details"}
           </span>
+          {room.kind === "direct" && (
+  <ChatPresenceLabel
+    key={`${userId}:${other}`}
+    userId={userId}
+    employeeId={other}
+    blocked={Boolean(
+      room.blocked_by_me ||
+      room.blocked_by_other
+    )}
+  />
+)}
         </button>
-
+      <ChatCallButtons room={room} />
         <details
           ref={menu}
           className="td-chat-menu"
@@ -1053,6 +1100,20 @@ function RoomPane({
           </summary>
 
           <div>
+{room.kind === "direct" && room.is_member && (
+  <button
+    type="button"
+    onClick={() =>
+      action(() =>
+        setDetails({ kind: "settings" })
+      )
+    }
+  >
+    {room.blocked_by_me
+      ? "Unblock this person…"
+      : "Block this person…"}
+  </button>
+)}
             <button
               type="button"
               onClick={() =>
@@ -1130,14 +1191,19 @@ function RoomPane({
         </div>
       )}
 
-      <div className="td-chat-disclosure">
-        <ShieldCheck size={14} />
-        <span>
-          {room.is_member
-            ? "Participants and company admins can access this conversation."
-            : "Admin review · Read-only. Your visit does not mark messages as read."}
-        </span>
-      </div>
+<div className="td-chat-disclosure">
+  <ShieldCheck size={14} />
+
+  <span>
+    {room.kind === "direct" ? (
+      <ChatAiNotice userId={userId} />
+    ) : room.is_member ? (
+      "Group participants and company admins can access this conversation."
+    ) : (
+      "Group review · Read-only. Your visit does not mark messages as read."
+    )}
+  </span>
+</div>
 
       <div className="td-chat-pagination">
         <button
@@ -1920,12 +1986,13 @@ function ChatDetails({
 
       {kind === "members" && (
         <>
-          <p className="td-chat-note">
-            {room.kind === "company"
-              ? "Every employee joins this group automatically."
-              : "Conversation participants"}
-            {" Company admins can review messages."}
-          </p>
+<p className="td-chat-note">
+  {room.kind === "direct"
+    ? "Only the participants can access this direct conversation through TechDev."
+    : room.kind === "company"
+      ? "Every employee joins this group automatically. Company admins can review group messages."
+      : "Group participants and company admins can access these messages."}
+</p>
 
           <div className="td-chat-member-list">
             {room.member_ids.map(id => (
@@ -1946,8 +2013,7 @@ function ChatDetails({
                       "Former employee"}
                   </strong>
                   <span>
-                    {people.get(id)?.job_title ||
-                      "Employee"}
+                   {chatPersonLabel(people.get(id))}
                     {id === userId
                       ? " · You"
                       : ""}

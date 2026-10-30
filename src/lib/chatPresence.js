@@ -3,6 +3,9 @@ import {
   useSyncExternalStore,
 } from "react";
 import { supabase } from "./supabase.js";
+import {
+  useChatHeartbeat,
+} from "./chatLastSeen.js";
 
 const empty = new Set();
 const listeners = new Set();
@@ -44,6 +47,7 @@ export function useOnlineEmployees(userId) {
 }
 
 export function useAppChatPresence(userId) {
+
   useEffect(() => {
     if (!userId || !supabase) return;
 

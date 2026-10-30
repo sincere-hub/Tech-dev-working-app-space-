@@ -48,6 +48,7 @@ import AdminBans from "./components/AdminBans.jsx";
 import useEmployeeAccess from "./lib/useEmployeeAccess.js";
 import TaskAssignment from "./components/TaskAssignment.jsx";
 import TeamTaskBoard from "./components/TeamTaskBoard.jsx";
+import CallProvider from "./components/CallProvider.jsx";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -1992,12 +1993,17 @@ async function signOut() {
 
   return (
     <div className="app-shell organised-shell">
-  <EmployeeProfilesProvider
+<EmployeeProfilesProvider
   userId={userId}
   role={profile?.role || "employee"}
   employees={data.employees}
 >
-      <NavigationDrawer
+<CallProvider
+  key={userId}
+  userId={userId}
+  employees={data.employees}
+>
+<NavigationDrawer
   key={userId}
   open={mobileMenuOpen}
   items={visibleNavigation}
@@ -2126,6 +2132,7 @@ async function signOut() {
   )}
   <ChatDelivery userId={userId} />
           {toast && <div className="toast" role="status"><Check size={16} />{toast}</div>}
+      </CallProvider>
       </EmployeeProfilesProvider>
     </div>
   );

@@ -9,7 +9,9 @@ import { attachChatOptions } from "./groupChat.js";
 import {
   useAppChatPresence,
 } from "./chatPresence.js";
-
+import {
+  useChatHeartbeat,
+} from "./chatLastSeen.js";
 export async function chatRequest(query) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
@@ -410,7 +412,8 @@ export function useChatPage(
 
 // Mount once in App.jsx.
 export function ChatDelivery({ userId }) {
-    useAppChatPresence(userId);
+  useAppChatPresence(userId);
+  useChatHeartbeat(userId);
   useEffect(() => {
     if (!userId || !supabase) return;
 
