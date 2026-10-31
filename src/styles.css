@@ -9446,3 +9446,159 @@ main.app-crash-screen {
   flex: 1;
   min-width: 0;
 }
+/* Mobile chat header and message composer */
+@media (max-width: 759px) {
+  .td-chat .td-chat-room > .td-chat-room-header {
+    display: grid;
+    grid-template-columns: 40px 40px minmax(0, 1fr) 40px;
+    grid-template-areas:
+      "back avatar title menu"
+      "calls calls calls calls";
+    align-items: center;
+    gap: 10px 8px;
+    min-height: 0;
+    height: auto;
+    padding: 12px;
+  }
+
+  .td-chat .td-chat-room-header > .td-chat-back {
+    grid-area: back;
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    min-width: 40px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .td-chat
+    .td-chat-room-header:has(> .td-chat-room-title)
+    > :nth-child(2) {
+    grid-area: avatar;
+    justify-self: center;
+  }
+
+  .td-chat .td-chat-room-header > .td-chat-room-title {
+    grid-area: title;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+  }
+
+  .td-chat .td-chat-room-header .td-chat-room-title h2 {
+    display: block;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-wrap: normal;
+    word-break: normal;
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  .td-chat .td-chat-room-header .td-chat-room-title span,
+  .td-chat .td-chat-room-header .td-chat-room-title small {
+    display: block;
+    min-width: 0;
+    margin-top: 3px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #c0d2e5;
+  }
+
+  .td-chat .td-chat-room-header > .td-chat-menu {
+    grid-area: menu;
+    align-self: start;
+    justify-self: end;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .td-chat .td-chat-room-header > .td-chat-menu > summary {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    min-width: 40px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .td-chat .td-chat-room-header > .td-chat-call-buttons {
+    grid-area: calls;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    padding-top: 10px;
+    border-top: 1px solid #ffffff16;
+  }
+
+  .td-chat .td-chat-call-buttons > button {
+    display: grid;
+    place-items: center;
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 12px;
+  }
+
+  .td-chat .td-chat-call-buttons > button > svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .td-chat .td-chat-room-header > .td-chat-menu > div {
+    right: 0;
+    left: auto;
+    min-width: min(220px, calc(100vw - 64px));
+    max-width: calc(100vw - 64px);
+  }
+
+  .td-chat .td-chat-disclosure {
+    flex-shrink: 0;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .td-chat .td-chat-compose-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .td-chat .td-chat-compose-row textarea {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    min-height: 44px;
+    font-size: 16px;
+  }
+
+  .td-chat .td-chat-compose-row > .td-chat-icon,
+  .td-chat .td-chat-compose-row > .td-chat-send,
+  .td-chat .td-chat-compose-row > .td-chat-voice-control {
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+  }
+
+  .td-chat {
+    margin-bottom: calc(
+      80px + env(safe-area-inset-bottom, 0px)
+    );
+  }
+}
