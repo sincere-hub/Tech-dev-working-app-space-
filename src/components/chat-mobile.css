@@ -379,3 +379,17 @@
     transition: none;
   }
 }
+/* Keep the workspace menu above mobile chat */
+@media (max-width: 759px) {
+  .app-shell .drawer-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+  }
+
+  .app-shell .main-area[inert] .td-chat,
+  .app-shell:has(.drawer-layer) .td-chat {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
