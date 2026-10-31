@@ -69,6 +69,14 @@ import ChatAiReview, {
   ChatAiNotice,
 } from "./ChatAiReview.jsx";
 import { ChatCallButtons } from "./CallProvider.jsx";
+import {
+  useChatViewport,
+  useReplyContext,
+  replyPreview,
+  ReplyQuote,
+  ReplyComposer,
+  SwipeReply,
+} from "./ChatMobile.jsx";
 
 const clock = new Intl.DateTimeFormat("en-ZA", {
   timeZone: "Africa/Johannesburg",
@@ -138,6 +146,7 @@ function CompanyChat({
   const locks = useRef(new Set());
   const alive = useRef(true);
   const chatRoot = useRef(null);
+  useChatViewport(chatRoot);
 
   useEffect(() => {
     try {
@@ -359,11 +368,21 @@ const room = inbox.rooms.find(
       if (item.kind === "voice") {
         await uploadChatVoice(userId, item);
       } else {
-        await chatCall(userId, "td_chat_send", {
-          p_room: item.room_id,
-          p_body: item.body,
-          p_client_id: item.client_id,
-        });
+        await chatCall(
+  userId,
+  item.reply_to
+    ? "td_chat_send_reply_v1"
+    : "td_chat_send",
+  {
+    p_room: item.room_id,
+    p_body: item.body,
+    p_client_id: item.client_id,
+
+    ...(item.reply_to
+      ? { p_reply_to: item.reply_to }
+      : {}),
+  },
+);
       }
 
       if (alive.current) {
@@ -402,7 +421,7 @@ const room = inbox.rooms.find(
     }
   }
 
-  function send(text, voice = null) {
+  function send(text, voice = null, reply = null) {
     if (
       !room?.is_member ||
       room.blocked_by_me ||
@@ -426,6 +445,9 @@ const room = inbox.rooms.find(
       kind: voice ? "voice" : "text",
       blob: voice?.blob,
       duration_ms: voice?.duration_ms,
+      reply_to: !voice && reply ? reply.id : null,
+      reply_preview:
+      !voice && reply ? replyPreview(reply) : null,
     };
 
     setOutbox(previous => [...previous, item]);
@@ -846,6 +868,7 @@ function RoomPane({
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [reply, setReply] = useState(null);
 
   const before = pages.at(-1);
 
@@ -856,13 +879,30 @@ function RoomPane({
     revision,
     searchTerm,
   );
-
+const replies = useReplyContext(
+  userId,
+  room.room_id,
+  page.rows,
+  revision,
+);
   const feed = useRef(null);
   const input = useRef(null);
   const nearBottom = useRef(true);
   const lockedRead = useRef(false);
   const menu = useRef(null);
+function chooseReply(message) {
+  if (
+    !room.is_member ||
+    room.blocked_by_me ||
+    message.local ||
+    message.deleted_at
+  ) {
+    return;
+  }
 
+  setReply(message);
+  input.current?.focus({ preventScroll: true });
+}
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchTerm(search.trim());
@@ -1191,10 +1231,13 @@ function RoomPane({
         </div>
       )}
 
-<div className="td-chat-disclosure">
-  <ShieldCheck size={14} />
+<details className="td-chat-disclosure">
+  <summary>
+    <ShieldCheck size={14} />
+    Message privacy &amp; safety
+  </summary>
 
-  <span>
+  <div>
     {room.kind === "direct" ? (
       <ChatAiNotice userId={userId} />
     ) : room.is_member ? (
@@ -1202,8 +1245,8 @@ function RoomPane({
     ) : (
       "Group review · Read-only. Your visit does not mark messages as read."
     )}
-  </span>
-</div>
+  </div>
+</details>
 
       <div className="td-chat-pagination">
         <button
@@ -1313,7 +1356,9 @@ function RoomPane({
                   ?.display_name ||
                 "Former employee";
               const status = messageStatus(message);
-
+const quote = message.local
+  ? message.reply_preview
+  : replies.byId.get(message.id);
               return (
                 <Fragment
                   key={message.client_id}
@@ -1328,12 +1373,20 @@ function RoomPane({
                     </div>
                   )}
 
-                  <article
-                    className={`td-chat-message${
-                      mine ? " is-mine" : ""
-                    }`}
-                    data-chat-message={message.id}
-                  >
+<SwipeReply
+  onReply={
+    !message.local &&
+    !message.deleted_at &&
+    room.is_member &&
+    !room.blocked_by_me
+      ? () => chooseReply(message)
+      : undefined
+  }
+  className={`td-chat-message${
+    mine ? " is-mine" : ""
+  }`}
+  data-chat-message={message.id}
+>
                     {!mine && (
                       <EmployeeAvatar
                         employeeId={message.sender_id}
@@ -1351,7 +1404,13 @@ function RoomPane({
                       {!mine && (
                         <strong>{author}</strong>
                       )}
-
+{!message.deleted_at && (
+  <ReplyQuote
+    quote={quote}
+    people={people}
+    userId={userId}
+  />
+)}
                       {message.kind === "voice" &&
                       !message.deleted_at ? (
                         <VoiceMessage
@@ -1367,6 +1426,18 @@ function RoomPane({
                       )}
 
                       <footer>
+{!message.local &&
+  !message.deleted_at &&
+  room.is_member &&
+  !room.blocked_by_me && (
+    <button
+      type="button"
+      className="td-chat-reply-button"
+      onClick={() => chooseReply(message)}
+    >
+      Reply
+    </button>
+)}
                         {!message.local &&
                           !message.deleted_at &&
                           room.is_member && (
@@ -1484,7 +1555,7 @@ function RoomPane({
                         </div>
                       )}
                     </div>
-                  </article>
+                  </SwipeReply>
                 </Fragment>
               );
             },
@@ -1516,14 +1587,28 @@ function RoomPane({
           onSubmit={event => {
             event.preventDefault();
 
-            if (draft.trim() && !busy) {
-              onSend(draft.trim());
-              setEmojiOpen(false);
-              nearBottom.current = true;
-              setPages([null]);
-            }
+if (draft.trim() && !busy) {
+  const accepted = onSend(
+    draft.trim(),
+    null,
+    reply,
+  );
+
+  if (accepted) {
+    setReply(null);
+    setEmojiOpen(false);
+    nearBottom.current = true;
+    setPages([null]);
+  }
+}
           }}
         >
+<ReplyComposer
+  message={reply}
+  people={people}
+  userId={userId}
+  onCancel={() => setReply(null)}
+/>
           <div className="legion-chat td-chat-tools-host">
             <ChatTools
               tools={tools}
@@ -1585,7 +1670,7 @@ function RoomPane({
               }}
             />
 
-            {draft.trim() || busy ? (
+           {draft.trim() || busy || reply ? (
               <button
                 type="submit"
                 className="td-chat-send"

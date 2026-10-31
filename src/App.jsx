@@ -2094,7 +2094,10 @@ async function signOut() {
       description="Announcements shared by your company."
     />
 
-    <Card title="Latest updates">
+<Card
+  className="td-company-notices"
+  title="Latest updates"
+>
       {announcements.length ? announcements.map(item => (
         <AnnouncementRow
           key={item.id}
@@ -2519,7 +2522,7 @@ function AttendanceView({ entries, employees, employeeId, openEntry, seconds, we
   return <>
     <PageHeading eyebrow="TIME & ATTENDANCE" title="Your time" description="Record your workday and review your hours." action={<span className="metric-chip">{formatDuration(weeklySeconds)} this week</span>} />
     <ClockCard openEntry={openEntry} seconds={seconds} onClock={onClock} compact />
-    <Card className="spaced-card" title={employees.length > 1 && entries.length > mine.length ? "Team time records" : "Your recent time records"} subtitle="Clock events are stored securely in your company workspace." action={<span className="metric-chip">{entries.length} records</span>}>
+    <Card className="spaced-card td-time-records" title={employees.length > 1 && entries.length > mine.length ? "Team time records" : "Your recent time records"} subtitle="Clock events are stored securely in your company workspace." action={<span className="metric-chip">{entries.length} records</span>}>
       {entries.length ? <div className="table-wrap"><table><thead><tr><th>Employee</th><th>Date</th><th>Clock in</th><th>Clock out</th><th>Duration</th></tr></thead><tbody>{entries.slice(0, 40).map(entry => { const employee = employees.find(person => person.id === entry.employee_id); const end = entry.clocked_out_at ? new Date(entry.clocked_out_at) : new Date(); const duration = Math.max(0, Math.floor((end - new Date(entry.clocked_in_at)) / 1000)); return <tr key={entry.id}><td>{employee?.display_name || "Employee"}</td><td>{formatDate(entry.clocked_in_at, { month: "short", day: "numeric", year: "numeric" })}</td><td>{formatTime(entry.clocked_in_at)}</td><td>{entry.clocked_out_at ? formatTime(entry.clocked_out_at) : <span className="live-badge"><i /> Active</span>}</td><td>{formatDuration(duration)}</td></tr>; })}</tbody></table></div> : <EmptyState icon={Clock3} title="No time records yet" text="Clock in to start recording your workday." />}
     </Card>
   </>;
@@ -2530,7 +2533,8 @@ function LeaveView({ isManager, employeeId, requests, shiftRequests, shifts, emp
   const myShifts = shifts.filter(shift => shift.employee_id === employeeId && new Date(shift.ends_at) >= new Date());
   const relevantShiftRequests = shiftRequests.filter(request => request.employee_id === employeeId);
   const pending = mine.filter(request => request.status === "pending").length;
-  return <>
+  return (
+  <section className="td-leave-workspace">
     <PageHeading eyebrow="PEOPLE & TIME" title={isManager ? "Leave & schedules" : "Leave & schedule"} description={isManager ? "Review team requests, publish shifts, and help people plan ahead." : "Plan time away and keep the next shifts in view."} />
     <div className="stat-grid">
       <Stat label="Available leave" value={isManager ? "—" : "Company policy"} detail={isManager ? "Balances configured by HR" : "Check with your People team"} />
@@ -2620,7 +2624,8 @@ function LeaveView({ isManager, employeeId, requests, shiftRequests, shifts, emp
         {isManager && <Card title="Shift-change requests" subtitle="Requests that need a decision.">{shiftRequests.length ? <div className="request-list">{shiftRequests.map(request => <RequestRow key={request.id} title={`${request.employee?.display_name || "Employee"} · ${formatDate(request.shift?.starts_at)}`} details={`${formatTime(request.requested_starts_at)} requested · ${request.reason}`} status={request.status} isManager={isManager} onReview={status => onReview("shift", request.id, status)} />)}</div> : <EmptyState icon={Clock3} title="No shift requests" text="Employee requests for shift changes will appear here." />}</Card>}
       </div>
     </div>
-  </>;
+    </section>
+  );
 }
 
 function RequestRow({ title, details, status, isManager, onReview }) {
@@ -2643,19 +2648,22 @@ function PayslipsView({ isManager, payslips, employees, employeeId, onDownload, 
     result[year].push(slip);
     return result;
   }, {}), [payslips]);
-  return <>
+  return (
+  <section className="td-payroll-workspace">
     <PageHeading eyebrow="PAY & BENEFITS" title={isManager ? "Payroll statements" : "Payslips"} description={isManager ? "Publish pay statements to employees’ private accounts." : "Your pay statements, available when you need them."} />
     {isManager && <Card title="Publish a payslip" subtitle="The employer supplies the pay values. Techdev does not calculate payroll or tax."><form className="form-grid" onSubmit={onCreate}><Field label="Employee"><select name="employee" required defaultValue=""><option value="" disabled>Select an employee</option>{employees.map(employee => <option key={employee.id} value={employee.id}>{employee.display_name}</option>)}</select></Field><Field label="Period starts"><input name="period_start" type="date" required /></Field><Field label="Period ends"><input name="period_end" type="date" required /></Field><Field label="Gross pay (R)"><input name="gross" type="number" min="0" step="0.01" required /></Field><Field label="Deductions (R)"><input name="deductions" type="number" min="0" step="0.01" defaultValue="0" required /></Field><button className="primary-button form-action" type="submit"><Plus size={15} /> Publish payslip</button></form></Card>}
     {Object.keys(grouped).length ? Object.entries(grouped).sort(([a], [b]) => Number(b) - Number(a)).map(([year, yearSlips]) => <Card key={year} className="spaced-card" title={year} subtitle={`${yearSlips.length} pay ${yearSlips.length === 1 ? "statement" : "statements"}`}>
       <div className="slip-list">{yearSlips.map(slip => { const person = employees.find(employee => employee.id === slip.employee_id); return <div className="slip-row" key={slip.id}><span className="slip-icon"><FileText size={17} /></span><span className="slip-description"><strong>{formatDate(slip.period_start, { month: "long", year: "numeric" })}</strong><small>{formatDateRange(slip.period_start, slip.period_end)}{isManager ? ` · ${person?.display_name || "Employee"}` : ""}</small></span><span className="slip-net">{new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(slip.gross_pay - slip.deductions)}</span><button className="outline-button small-outline" onClick={() => onDownload(slip)}><ArrowDownToLine size={14} /> PDF</button></div>; })}</div>
     </Card>) : <Card className="spaced-card">{<EmptyState icon={FileText} title="No pay statements yet" text={isManager ? "Publish a statement above when payroll is ready." : "Your company has not published a pay statement."} />}</Card>}
-  </>;
+     </section>
+  );
 }
 
 function ManagerView({ tasks, announcements, employees, requests, shiftRequests, shifts, onTask, onUpdateTask, onAnnouncement, onReview, onShift, onView }) {
   const openTasks = tasks.filter(task => task.status !== "done").length;
   const pending = requests.filter(item => item.status === "pending").length + shiftRequests.filter(item => item.status === "pending").length;
-  return <>
+  return (
+  <section className="td-manager-workspace">
     <PageHeading eyebrow="TEAM OPERATIONS" title="Manager tools" description="Keep people, work, and team communication moving together." action={<span className="live-badge"><ShieldCheck size={14} /> Manager access</span>} />
     <div className="stat-grid"><Stat label="Team members" value={employees.length} detail="Active employee accounts" /><Stat label="Tasks in progress" value={openTasks} detail={`${tasks.filter(task => task.status === "done").length} complete`} /><Stat label="Requests to review" value={pending} detail="Leave and shift requests" /></div>
     <div className="manager-grid spaced-card">
@@ -2678,7 +2686,8 @@ function ManagerView({ tasks, announcements, employees, requests, shiftRequests,
       <Card title="Upcoming shifts" subtitle={`${shifts.length} published shifts across the team.`} action={<button className="text-action" onClick={() => onView("leave")}>Schedule <ArrowRight size={14} /></button>}>{shifts.length ? <div className="shift-list">{shifts.slice(0, 6).map(shift => <ShiftRow key={shift.id} shift={shift} showEmployee />)}</div> : <EmptyState icon={Clock3} title="No shifts published" text="Open Leave & schedule to publish shifts." />}</Card>
     </div>
     <div className="spaced-card"><Card title="Shift-change requests" subtitle="Approve requested shift times.">{shiftRequests.length ? <div className="request-list">{shiftRequests.map(request => <RequestRow key={request.id} title={`${request.employee?.display_name || "Employee"} · ${formatDate(request.shift?.starts_at)}`} details={`${formatTime(request.requested_starts_at)} requested · ${request.reason}`} status={request.status} isManager onReview={status => onReview("shift", request.id, status)} />)}</div> : <EmptyState icon={Clock3} title="No shift changes" text="Employee requests will appear here." />}</Card></div>
-  </>;
+    </section>
+  );
 }
 
 function Field({ label, children }) {

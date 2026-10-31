@@ -29,6 +29,10 @@ import DocsWorkspace from "./DocsWorkspace.jsx";
 import OkrWorkspace from "./OkrWorkspace.jsx";
 import MeetingWorkspace from "./MeetingWorkspace.jsx";
 import DesignWorkroom from "./DesignWorkroom.jsx";
+import DeveloperToolHeading, {
+  DeveloperToolIcon,
+} from "./DeveloperToolHeading.jsx";
+import "./internal-search.css";
 
 const groupIcons = {
   platform: Code2,
@@ -105,7 +109,7 @@ if (
           {visibleGroups.map(group => {
             const Icon = groupIcons[group.id] || Boxes;
             return (
-              <details className="suite-group card" key={group.id}>
+              <details className="suite-group card" key={group.id} data-suite-group={group.id}>
                 <summary className="suite-group-heading">
                   <span className={`suite-group-icon suite-${group.id}`}><Icon size={19} /></span>
                   <div><h2>{group.label}</h2><p>{group.description}</p></div>
@@ -115,8 +119,21 @@ if (
                   {group.modules.map(module => {
                     const moduleRecords = records.filter(record => record.module_id === module.id);
                     return (
-                      <button className="suite-module-card" key={module.id} onClick={() => openModule(module)}>
+<button
+  className="suite-module-card"
+  key={module.id}
+  data-module-id={module.id}
+  onClick={() => openModule(module)}
+>
                         <span className="suite-module-top">
+                          {group.id === "platform" && (
+                            <span className="td-dev-tile-icon">
+                              <DeveloperToolIcon
+                                moduleId={module.id}
+                                 size={20}
+                                  />
+                                  </span>
+                              )}
                           <strong>{module.title}</strong>
                           {module.provider ? <ExternalLink size={14} aria-label="Provider connection needed" /> : <ArrowRight size={15} />}
                         </span>
@@ -161,25 +178,225 @@ if (
   }
 
   if (selectedModule.nativeView === "search") {
-    const searchable = [
-      ...employees.map(item => ({ type: "Employee", title: item.display_name, description: item.job_title, key: `employee-${item.id}` })),
-      ...tasks.map(item => ({ type: "Task", title: item.title, description: item.description, key: `task-${item.id}` })),
-      ...announcements.map(item => ({ type: "Company notice", title: item.title, description: item.body, key: `notice-${item.id}` })),
-      ...records.map(item => ({ type: workplaceModules.find(module => module.id === item.module_id)?.title || "Workspace record", title: item.title, description: item.description, key: `record-${item.id}` })),
-    ];
-    const matches = searchable.filter(item => `${item.type} ${item.title} ${item.description}`.toLowerCase().includes(query.toLowerCase()));
-    return (
-      <section className="suite-detail">
-        <SuiteModuleHeading module={selectedModule} />
-        <label className="suite-search"><Search size={16} /><input autoFocus value={query} onChange={event => setQuery(event.target.value)} placeholder="Search workspace records" /></label>
-        <div className="suite-search-results">
-          {query && matches.map(item => <article className="suite-search-result card" key={item.key}><span>{item.type}</span><strong>{item.title}</strong><p>{item.description}</p></article>)}
-          {query && !matches.length && <SuiteEmpty title="No results" text="Try another search phrase." />}
-          {!query && <SuiteEmpty title="Search your workspace" text="Search employees, tasks, company notices, and records you have permission to view." />}
+  const searchable = [
+    ...employees.map(item => ({
+      kind: "person",
+      type: "Employee",
+      title: item.display_name,
+      description: item.job_title,
+      key: `employee-${item.id}`,
+    })),
+
+    ...tasks.map(item => ({
+      kind: "task",
+      type: "Task",
+      title: item.title,
+      description: item.description,
+      key: `task-${item.id}`,
+    })),
+
+    ...announcements.map(item => ({
+      kind: "notice",
+      type: "Company notice",
+      title: item.title,
+      description: item.body,
+      key: `notice-${item.id}`,
+    })),
+
+    ...records.map(item => ({
+      kind: "record",
+      type:
+        workplaceModules.find(
+          module => module.id === item.module_id,
+        )?.title || "Workspace record",
+      title: item.title,
+      description: item.description,
+      key: `record-${item.id}`,
+    })),
+  ];
+
+  const matches = searchable.filter(item =>
+    `${item.type} ${item.title} ${item.description}`
+      .toLowerCase()
+      .includes(query.toLowerCase()),
+  );
+
+  const resultIcons = {
+    person: Users,
+    task: Check,
+    notice: MessageSquare,
+    record: BookOpen,
+  };
+
+  return (
+    <section className="suite-detail td-internal-search">
+      <header className="td-search-heading">
+        <span className="td-search-heading-icon">
+          <Search size={26} aria-hidden="true" />
+        </span>
+
+        <div>
+          <p className="eyebrow">
+            {selectedModule.groupLabel}
+          </p>
+
+          <h1>{selectedModule.title}</h1>
+
+          <p>
+            Find people, tasks, company notices
+            and workspace records.
+          </p>
         </div>
-      </section>
-    );
-  }
+      </header>
+
+      <div className="td-search-box">
+        <Search size={21} aria-hidden="true" />
+
+        <input
+          autoFocus
+          value={query}
+          onChange={event =>
+            setQuery(event.target.value)
+          }
+          aria-label="Search workspace records"
+          placeholder="Search names, titles or descriptions…"
+        />
+
+        {query && (
+          <button
+            type="button"
+            onClick={event => {
+              const input =
+                event.currentTarget.parentElement
+                  .querySelector("input");
+
+              setQuery("");
+              input?.focus();
+            }}
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      <p className="td-search-scope">
+        Results include information available to
+        your account in this workspace.
+      </p>
+
+      {query && (
+        <div className="td-search-results-heading">
+          <h2>Search results</h2>
+
+          <span role="status" aria-live="polite">
+            {matches.length}{" "}
+            {matches.length === 1
+              ? "result"
+              : "results"}
+          </span>
+        </div>
+      )}
+
+      <div className="suite-search-results">
+        {query &&
+          matches.map(item => {
+            const Icon = resultIcons[item.kind];
+
+            const description = String(
+              item.description || "",
+            );
+
+            const letters = Array.from(description);
+            const long = letters.length > 180;
+
+            const preview = long
+              ? `${letters
+                  .slice(0, 180)
+                  .join("")
+                  .trimEnd()}…`
+              : description;
+
+            return (
+              <article
+                className="suite-search-result card"
+                key={item.key}
+                data-result-kind={item.kind}
+              >
+                <span className="td-search-result-icon">
+                  <Icon
+                    size={20}
+                    aria-hidden="true"
+                  />
+                </span>
+
+                <div className="td-search-result-copy">
+                  <span className="td-search-type">
+                    {item.type}
+                  </span>
+
+                  <h3>{item.title}</h3>
+
+                  {description && (
+                    <p className="td-search-preview">
+                      {preview}
+                    </p>
+                  )}
+
+                  {long && (
+                    <details className="td-search-expand">
+                      <summary>
+                        <span className="td-search-expand-open">
+                          Read full text
+                        </span>
+
+                        <span className="td-search-expand-close">
+                          Show less
+                        </span>
+                      </summary>
+
+                      <p>{description}</p>
+                    </details>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+
+        {(!query || !matches.length) && (
+          <div className="td-search-empty">
+            <span>
+              <Search
+                size={30}
+                aria-hidden="true"
+              />
+            </span>
+
+            <h2>
+              {query
+                ? "No results found"
+                : "What are you looking for?"}
+            </h2>
+
+            <p>
+              {query
+                ? "Try a shorter phrase, another name or a different keyword."
+                : "Start typing a name, task, notice or keyword to explore your workspace."}
+            </p>
+
+            {!query && (
+              <div className="td-search-categories">
+                <span>People</span>
+                <span>Tasks</span>
+                <span>Notices</span>
+                <span>Workspace records</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
 if (selectedModule.id === "collaboration.chat") {
   return (
     <InternalChat
@@ -270,7 +487,15 @@ if (
     .filter(record => `${record.title} ${record.description}`.toLowerCase().includes(query.toLowerCase()));
 
   return (
-    <section className="suite-detail">
+  <section
+    className={`suite-detail${
+      selectedModule.groupId === "platform"
+        ? " td-developer-workspace"
+        : ""
+    }`}
+    data-suite-group={selectedModule.groupId}
+    data-module-id={selectedModule.id}
+  >
       <SuiteModuleHeading module={selectedModule} />
       {selectedModule.provider && (
         <div className="suite-provider-note"><ExternalLink size={16} /><span><strong>External provider not connected</strong>{selectedModule.provider} This module stores internal tracking records only; it does not control or sync the external service.</span></div>
@@ -302,7 +527,12 @@ if (
               const canUpdate = isManager || record.created_by === userId;
               return (
                 <div id={`workplace-${record.id}`}className="suite-entry"key={record.id}><article className="suite-record-row">
-                  <span className="suite-record-icon">{selectedModule.id.startsWith("collaboration.docs") ? <BookOpen size={16} /> : selectedModule.id.startsWith("collaboration") ? <MessageSquare size={16} /> : selectedModule.id.startsWith("people") ? <BriefcaseBusiness size={16} /> : selectedModule.id.startsWith("platform") ? <Code2 size={16} /> : selectedModule.id.startsWith("security") ? <Shield size={16} /> : selectedModule.id.startsWith("data") ? <LayoutDashboard size={16} /> : <HeartHandshake size={16} />}</span>
+                  <span className="suite-record-icon">{selectedModule.id.startsWith("collaboration.docs") ? <BookOpen size={16} /> : selectedModule.id.startsWith("collaboration") ? <MessageSquare size={16} /> : selectedModule.id.startsWith("people") ? <BriefcaseBusiness size={16} /> : selectedModule.id.startsWith("platform") ? (
+  <DeveloperToolIcon
+    moduleId={selectedModule.id}
+    size={19}
+  />
+) : selectedModule.id.startsWith("security") ? <Shield size={16} /> : selectedModule.id.startsWith("data") ? <LayoutDashboard size={16} /> : <HeartHandshake size={16} />}</span>
                   <div className="suite-record-copy"><strong>{record.title}</strong>{record.description && <p>{record.description}</p>}{record.metadata?.field_value && <p><strong>{selectedModule.valueLabel || "Reference"}:</strong> {safeExternalUrl(record.metadata.field_value) ? <a href={safeExternalUrl(record.metadata.field_value)} target="_blank" rel="noopener noreferrer">Open resource <ExternalLink size={12} /></a> : record.metadata.field_value}</p>}{safeExternalUrl(record.metadata?.resource_url) && <p><a href={safeExternalUrl(record.metadata.resource_url)} target="_blank" rel="noopener noreferrer">Open linked resource <ExternalLink size={12} /></a></p>}<small>{record.visibility === "private" ? "Private · " : ""}{record.due_date ? `Due ${record.due_date} · ` : ""}{new Date(record.created_at).toLocaleDateString()}</small></div>
                   <select aria-label={`Status for ${record.title}`} value={record.status} disabled={!canUpdate || (selectedModule.reviewRequired && !isManager)} onChange={event => onStatus(record, event.target.value)}>{recordStatusOptions.map(status => <option value={status} key={status}>{displayStatus(status)}</option>)}</select>
                   {isManager && <button className="icon-quiet suite-delete" title={`Delete ${record.title}`} aria-label={`Delete ${record.title}`} onClick={() => onDelete(record)}><Trash2 size={15} /></button>}
@@ -317,6 +547,12 @@ if (
 }
 
 function SuiteModuleHeading({ module }) {
+  if (module.groupId === "platform") {
+    return (
+      <DeveloperToolHeading module={module} />
+    );
+  }
+
   return (
     <header className="suite-module-heading">
       <p className="eyebrow">{module.groupLabel}</p>
