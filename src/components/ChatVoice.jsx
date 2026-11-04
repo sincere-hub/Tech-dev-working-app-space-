@@ -131,7 +131,10 @@ export function VoiceMessage({ message }) {
 export default function VoiceRecorder({
   disabled,
   onSend,
-}) {
+  onRecordingChange,
+})
+
+{
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState("");
   const [elapsed, setElapsed] = useState(0);
@@ -140,6 +143,18 @@ export default function VoiceRecorder({
 
   const dialog = useRef(null);
   const resource = useRef({ generation: 0 });
+
+const recordingCallback = useRef(onRecordingChange);
+const reportedRecording = useRef(false);
+
+recordingCallback.current = onRecordingChange;
+
+function notifyRecording(value) {
+  if (reportedRecording.current === value) return;
+
+  reportedRecording.current = value;
+  recordingCallback.current?.(value);
+}
 
   function cleanup() {
     const current = resource.current;
@@ -274,7 +289,7 @@ export default function VoiceRecorder({
         stream.getTracks().forEach(track => track.stop());
 
         if (generation !== current.generation) return;
-
+        notifyRecording(false);
         const duration_ms = Math.min(
           120000,
           Math.max(
@@ -318,8 +333,9 @@ export default function VoiceRecorder({
         );
       };
 
-      recorder.start(250);
-      setStatus("recording");
+   recorder.start(250);
+   notifyRecording(true);
+   setStatus("recording");
 
       current.timer = setInterval(() => {
         const duration = Math.min(

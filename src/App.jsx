@@ -49,6 +49,7 @@ import useEmployeeAccess from "./lib/useEmployeeAccess.js";
 import TaskAssignment from "./components/TaskAssignment.jsx";
 import TeamTaskBoard from "./components/TeamTaskBoard.jsx";
 import CallProvider from "./components/CallProvider.jsx";
+import AttendanceAutomation from "./components/AttendanceAutomation.jsx";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -228,7 +229,15 @@ function WorkspaceContentLoading({ isOnline }) {
           </div>
         </div>
         <div className="page-content">
-        
+{profile?.id === userId && (
+  <AttendanceAutomation
+    key={userId}
+    userId={userId}
+    role={profile.role}
+    openEntryId={openEntry?.id || ""}
+    onChanged={() => loadWorkspace(session.user)}
+  />
+)}
           <div className="workspace-skeleton-heading">
             <div className="workspace-skeleton skeleton-heading-kicker" />
             <div className="workspace-skeleton skeleton-heading-title" />
@@ -1153,10 +1162,23 @@ function openActivityItem(activity) {
   const completedTasks = personalTasks.filter(task => task.status === "done").length;
   const completedPercent = personalTasks.length ? Math.round(completedTasks / personalTasks.length * 100) : 0;
 
-  async function toggleClock() {
-    const result = await mutate(() => supabase.rpc(openEntry ? "clock_out" : "clock_in"));
-   if (result) setToast(clockMessage(Boolean(openEntry)));
+ async function toggleClock() {
+  const result = await mutate(() =>
+    supabase.rpc("td_attendance_clock", {
+      p_clock_in: !openEntry,
+    })
+  );
+
+  if (result) {
+    setToast(
+      result.open_entry
+        ? "Clocked in successfully."
+        : result.latest_entry?.auto_clocked_out
+          ? "You were automatically clocked out at your cutoff time."
+          : "Clocked out successfully."
+    );
   }
+}
 
   async function updateTask(task, status) {
     const result = await mutate(() => supabase.from("tasks").update({ status }).eq("id", task.id).eq("status", task.status).select("id,status").single());
@@ -2026,6 +2048,15 @@ async function signOut() {
           avatarSrc={avatarSrc}onUpload={uploadAvatar}
            name={displayName}email={session?.user?.email || ""}role={profile?.role}onSignOut={signOut}closeSignal={`${activeView}:${mobileMenuOpen}`}/></div>
         </header><div className="page-content">
+{profile?.id === userId && (
+  <AttendanceAutomation
+    key={userId}
+    userId={userId}
+    role={profile.role}
+    openEntryId={openEntry?.id || ""}
+    onChanged={() => loadWorkspace(session.user)}
+  />
+)}
 {activeView !== "overview" && (
   <div className="page-navigation">
     <button
@@ -2523,7 +2554,31 @@ function AttendanceView({ entries, employees, employeeId, openEntry, seconds, we
     <PageHeading eyebrow="TIME & ATTENDANCE" title="Your time" description="Record your workday and review your hours." action={<span className="metric-chip">{formatDuration(weeklySeconds)} this week</span>} />
     <ClockCard openEntry={openEntry} seconds={seconds} onClock={onClock} compact />
     <Card className="spaced-card td-time-records" title={employees.length > 1 && entries.length > mine.length ? "Team time records" : "Your recent time records"} subtitle="Clock events are stored securely in your company workspace." action={<span className="metric-chip">{entries.length} records</span>}>
-      {entries.length ? <div className="table-wrap"><table><thead><tr><th>Employee</th><th>Date</th><th>Clock in</th><th>Clock out</th><th>Duration</th></tr></thead><tbody>{entries.slice(0, 40).map(entry => { const employee = employees.find(person => person.id === entry.employee_id); const end = entry.clocked_out_at ? new Date(entry.clocked_out_at) : new Date(); const duration = Math.max(0, Math.floor((end - new Date(entry.clocked_in_at)) / 1000)); return <tr key={entry.id}><td>{employee?.display_name || "Employee"}</td><td>{formatDate(entry.clocked_in_at, { month: "short", day: "numeric", year: "numeric" })}</td><td>{formatTime(entry.clocked_in_at)}</td><td>{entry.clocked_out_at ? formatTime(entry.clocked_out_at) : <span className="live-badge"><i /> Active</span>}</td><td>{formatDuration(duration)}</td></tr>; })}</tbody></table></div> : <EmptyState icon={Clock3} title="No time records yet" text="Clock in to start recording your workday." />}
+      {entries.length ? <div className="table-wrap"><table><thead><tr><th>Employee</th><th>Date</th><th>Clock in</th><th>Clock out</th><th>Duration</th></tr></thead><tbody>{entries.slice(0, 40).map(entry => { const employee = employees.find(person => person.id === entry.employee_id); const end = entry.clocked_out_at ? new Date(entry.clocked_out_at) : new Date(); const duration = Math.max(0, Math.floor((end - new Date(entry.clocked_in_at)) / 1000)); return <tr key={entry.id}><td>{employee?.display_name || "Employee"}</td><td>{formatDate(entry.clocked_in_at, { month: "short", day: "numeric", year: "numeric" })}</td><td>{formatTime(entry.clocked_in_at)}</td> <td>
+  {entry.clocked_out_at ? (
+    <>
+      {formatTime(entry.clocked_out_at)}
+
+      {entry.auto_clocked_out && (
+        <small
+          style={{
+            display: "block",
+            color: "#7bd9ff",
+            marginTop: 4,
+          }}
+        >
+          Auto clock-out
+        </small>
+      )}
+    </>
+  ) : (
+    <span className="live-badge">
+      <i />
+      Active
+    </span>
+  )}
+</td>
+<td>{formatDuration(duration)}</td></tr>; })}</tbody></table></div> : <EmptyState icon={Clock3} title="No time records yet" text="Clock in to start recording your workday." />}
     </Card>
   </>;
 }

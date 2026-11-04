@@ -77,6 +77,10 @@ import {
   ReplyComposer,
   SwipeReply,
 } from "./ChatMobile.jsx";
+import {
+  useChatActivity,
+  ChatActivityLabel,
+} from "./ChatActivity.jsx";
 
 const clock = new Intl.DateTimeFormat("en-ZA", {
   timeZone: "Africa/Johannesburg",
@@ -890,7 +894,8 @@ const replies = useReplyContext(
   const nearBottom = useRef(true);
   const lockedRead = useRef(false);
   const menu = useRef(null);
-function chooseReply(message) {
+
+  function chooseReply(message) {
   if (
     !room.is_member ||
     room.blocked_by_me ||
@@ -901,8 +906,14 @@ function chooseReply(message) {
   }
 
   setReply(message);
-  input.current?.focus({ preventScroll: true });
+
+  requestAnimationFrame(() => {
+    input.current?.focus({
+      preventScroll: true,
+    });
+  });
 }
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchTerm(search.trim());
@@ -972,6 +983,23 @@ function chooseReply(message) {
       !item.saved &&
       !item.blocked,
   );
+
+  const activity = useChatActivity({
+  userId,
+  roomId: room.room_id,
+
+  enabled: Boolean(
+    room.is_member &&
+    !room.blocked_by_me &&
+    !room.blocked_by_other
+  ),
+});
+
+useEffect(() => {
+  if (busy || !draft.trim()) {
+    activity.stopTyping();
+  }
+}, [busy, draft, activity.stopTyping]);
 
   const tools = useChatTools({
     draft,
@@ -1101,13 +1129,13 @@ function chooseReply(message) {
           <ChatGroupIcon room={room} />
         )}
 
-        <button
+<button
           type="button"
           className="td-chat-room-title"
           onClick={() =>
             setDetails({ kind: "members" })
           }
-        >
+>
           <h2>{title}</h2>
           <span>
             {room.kind === "direct"
@@ -1116,6 +1144,7 @@ function chooseReply(message) {
             {" · View details"}
           </span>
           {room.kind === "direct" && (
+  
   <ChatPresenceLabel
     key={`${userId}:${other}`}
     userId={userId}
@@ -1126,6 +1155,13 @@ function chooseReply(message) {
     )}
   />
 )}
+
+<ChatActivityLabel
+  members={activity.members}
+  people={people}
+  direct={room.kind === "direct"}
+/>
+
         </button>
       <ChatCallButtons room={room} />
         <details
@@ -1595,11 +1631,13 @@ if (draft.trim() && !busy) {
   );
 
   if (accepted) {
-    setReply(null);
-    setEmojiOpen(false);
-    nearBottom.current = true;
-    setPages([null]);
-  }
+  activity.stop();
+
+  setReply(null);
+  setEmojiOpen(false);
+  nearBottom.current = true;
+  setPages([null]);
+}
 }
           }}
         >
@@ -1640,7 +1678,11 @@ if (draft.trim() && !busy) {
               aria-label="Message"
               placeholder="Write a message…"
               value={draft}
-              onChange={tools.change}
+              onChange={event => {
+              tools.change(event);
+              activity.typing(event.currentTarget.value);
+              }}
+              onBlur={activity.stopTyping}
               onSelect={tools.select}
               aria-controls={
                 tools.open
@@ -1689,19 +1731,22 @@ if (draft.trim() && !busy) {
                 )}
               </button>
             ) : (
-              <VoiceRecorder
-                disabled={busy}
-                onSend={voice => {
-                  const accepted = onVoice(voice);
+              
+<VoiceRecorder
+  disabled={busy}
+  onRecordingChange={activity.setRecording}
+  onSend={voice => {
+    const accepted = onVoice(voice);
 
-                  if (accepted) {
-                    nearBottom.current = true;
-                    setPages([null]);
-                  }
+    if (accepted) {
+      activity.stop();
+      nearBottom.current = true;
+      setPages([null]);
+    }
 
-                  return accepted;
-                }}
-              />
+    return accepted;
+  }}
+/>
             )}
           </div>
 

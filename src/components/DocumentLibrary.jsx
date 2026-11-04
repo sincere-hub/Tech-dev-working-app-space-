@@ -22,6 +22,10 @@ import { supabase } from "../lib/supabase.js";
 import DocumentVersionTools from "./DocumentVersionTools.jsx";
 import useKnowledgeSearch from "../lib/useKnowledgeSearch.js";
 import KnowledgeDeleteButton from "./KnowledgeDeleteButton.jsx";
+import {
+  DocumentMoreActions,
+  DocumentPreview,
+} from "./DocumentFileUi.jsx";
 
 const documentTypes = {
   pdf: "application/pdf",
@@ -82,7 +86,20 @@ function sizeLabel(bytes) {
     ? `${Math.ceil(size / 1024)} KB`
     : `${(size / 1048576).toFixed(2)} MB`;
 }
+function documentMime(record) {
+  const extension = String(
+    record.metadata?.file_name || ""
+  )
+    .split(".")
+    .pop()
+    .toLowerCase();
 
+  return (
+    documentTypes[extension] ||
+    record.metadata?.content_type ||
+    ""
+  );
+}
 export default function DocumentLibrary({
   userId,
   isManager,
@@ -104,7 +121,6 @@ export default function DocumentLibrary({
   const pending = useRef(null);
   const mounted = useRef(true);
   const urls = useRef(new Set());
-  const dialog = useRef(null);
 
   const bucket = supabase.storage.from("legion-documents");
 
@@ -172,16 +188,6 @@ export default function DocumentLibrary({
       urls.current.clear();
     };
   }, []);
-
-  useEffect(() => {
-    if (
-      preview &&
-      dialog.current &&
-      !dialog.current.open
-    ) {
-      dialog.current.showModal();
-    }
-  }, [preview]);
 
   async function currentUser() {
     const { data, error } = await supabase.auth.getSession();
@@ -483,13 +489,91 @@ export default function DocumentLibrary({
   }
 
   function closePreview() {
-    if (preview?.url) {
-      URL.revokeObjectURL(preview.url);
-      urls.current.delete(preview.url);
+  const url = preview?.url;
+
+  setPreview(null);
+
+  if (url) {
+    URL.revokeObjectURL(url);
+    urls.current.delete(url);
+  }
+}
+
+async function openFile(record, showPreview) {
+  await operate(async () => {
+    const mime = documentMime(record);
+
+    const { data, error } = await bucket.download(
+      record.metadata.storage_path
+    );
+
+    if (error) throw error;
+
+    await currentUser();
+
+    if (!mounted.current) return;
+
+    if (
+      showPreview &&
+      ["text/plain", "text/csv"].includes(mime)
+    ) {
+      const text = await data
+        .slice(0, 100000)
+        .text();
+
+      await currentUser();
+
+      if (!mounted.current) return;
+
+      setPreview({
+        title: record.metadata.file_name,
+        text,
+        truncated: data.size > 100000,
+      });
+
+      return;
     }
 
-    setPreview(null);
-  }
+    const blob =
+      data.type === mime
+        ? data
+        : new Blob([data], {
+            type: mime || "application/octet-stream",
+          });
+
+    const url = URL.createObjectURL(blob);
+
+    urls.current.add(url);
+
+    if (showPreview) {
+      setPreview({
+        title: record.metadata.file_name,
+        url,
+      });
+
+      return;
+    }
+
+    const link = document.createElement("a");
+
+    link.href = url;
+
+    link.download =
+      record.metadata.file_name.replace(
+        /[\\/\x00-\x1f\x7f]/g,
+        "_"
+      );
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      urls.current.delete(url);
+    }, 60000);
+  });
+}
 
   async function openFile(record, showPreview) {
     await operate(async () => {
@@ -824,8 +908,8 @@ export default function DocumentLibrary({
 
             const canPreview =
               /^(image\/(jpeg|png|webp)|text\/(plain|csv))$/.test(
-                record.metadata.content_type
-              );
+              documentMime(record)
+         );
 
             return (
               <article
@@ -895,10 +979,13 @@ export default function DocumentLibrary({
                       : "Incomplete upload · select the original file to retry"}
                 </p>
 
-               <footer className="lf-actions">
+              <footer className="lf-actions td-file-card-actions">
   <span className="td-document-version">
     Version {record.document_revision || 1}
-    {record.status === "archived" ? " · Archived" : ""}
+
+    {record.status === "archived"
+      ? " · Archived"
+      : ""}
   </span>
 
   {ready && (
@@ -925,74 +1012,82 @@ export default function DocumentLibrary({
     </button>
   )}
 
-  {state === "pending" &&
-    record.created_by === userId && (
-      <button
-        type="button"
-        className="ld-open"
-        disabled={busy}
-        onClick={() => startUpload(record)}
-      >
-        <Upload size={15} />
-        Retry upload
-      </button>
-    )}
-
-  {ready && canDelete && (
-    <DocumentVersionTools
-      key={`versions:${userId}:${record.id}`}
-      record={record}
-      userId={userId}
-      isManager={isManager}
-      employees={employees}
+  {canDelete && (
+    <DocumentMoreActions
+      title={record.title}
       disabled={busy}
-      onBusy={value => {
-        lock.current = value;
-        setBusy(value);
-      }}
-      onSaved={saved => {
-        version.current += 1;
-        setLoading(false);
+    >
+      {state === "pending" &&
+        record.created_by === userId && (
+          <button
+            type="button"
+            className="ld-open"
+            disabled={busy}
+            onClick={() => startUpload(record)}
+          >
+            <Upload size={15} />
+            Retry upload
+          </button>
+        )}
 
-        setFiles(previous =>
-          previous.map(item =>
-            item.id === saved.id ? saved : item
-          )
-        );
+      {ready && (
+        <DocumentVersionTools
+          key={`versions:${userId}:${record.id}`}
+          record={record}
+          userId={userId}
+          isManager={isManager}
+          employees={employees}
+          disabled={busy}
+          onBusy={value => {
+            lock.current = value;
+            setBusy(value);
+          }}
+          onSaved={saved => {
+            version.current += 1;
+            setLoading(false);
 
-        if (saved.status === "archived") {
-          setMessage(
-            "Document archived. Select Show archived documents to find it."
+            setFiles(previous =>
+              previous.map(item =>
+                item.id === saved.id
+                  ? saved
+                  : item
+              )
+            );
+
+            if (saved.status === "archived") {
+              setMessage(
+                "Document archived. Select Show archived documents to find it."
+              );
+            }
+          }}
+        />
+      )}
+
+      <KnowledgeDeleteButton
+        key={`delete:${userId}:${record.id}`}
+        record={record}
+        userId={userId}
+        isManager={isManager}
+        disabled={busy}
+        onBusy={value => {
+          lock.current = value;
+          setBusy(value);
+        }}
+        onRefresh={refresh}
+        onDeleted={async id => {
+          version.current += 1;
+
+          setFiles(previous =>
+            previous.filter(item => item.id !== id)
           );
-        }
-      }}
-    />
+
+          setMessage("Document deleted.");
+
+          await refresh();
+        }}
+      />
+    </DocumentMoreActions>
   )}
-
- {canDelete && (
-  <KnowledgeDeleteButton
-   key={`delete:${userId}:${record.id}`}
-    record={record}
-    userId={userId}
-    isManager={isManager}
-    disabled={busy}
-    onBusy={value => {
-      lock.current = value;
-      setBusy(value);
-    }}
-    onRefresh={refresh}
-    onDeleted={async id => {
-      version.current += 1;
-
-      setFiles(previous =>
-        previous.filter(item => item.id !== id)
-      );
-
-      setMessage("Document deleted.");
-      await refresh();
-    }}
-  />
-)}
 </footer>
               </article>
             );
@@ -1024,47 +1119,13 @@ export default function DocumentLibrary({
         )}
       </section>
 
-      {preview && (
-        <dialog
-          ref={dialog}
-          className="lf-preview"
-          onCancel={event => {
-            event.preventDefault();
-            closePreview();
-          }}
-        >
-          <header>
-            <h2>{preview.title}</h2>
-
-            <button
-              type="button"
-              className="ld-icon"
-              aria-label="Close document preview"
-              onClick={closePreview}
-            >
-              <X size={20} />
-            </button>
-          </header>
-
-          {preview.url ? (
-            <img
-              src={preview.url}
-              alt={preview.title}
-            />
-          ) : (
-            <>
-              <pre>{preview.text}</pre>
-
-              {preview.truncated && (
-                <p>
-                  Showing the first 100 KB. Download the
-                  file to read all of it.
-                </p>
-              )}
-            </>
-          )}
-        </dialog>
-      )}
+{preview && (
+  <DocumentPreview
+    key={preview.url || preview.title}
+    preview={preview}
+    onClose={closePreview}
+  />
+)}
     </section>
   );
 }

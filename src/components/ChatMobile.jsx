@@ -11,96 +11,148 @@ import "./chat-mobile.css";
 export function useChatViewport(root) {
   useEffect(() => {
     const node = root.current;
+
     if (!node) return;
 
-    let frame = 0;
-
-    const viewport = window.visualViewport;
+    const view = window.visualViewport;
     const bar = document.querySelector(".topbar");
     const nav = document.querySelector(".mobile-nav");
 
+    let frame = 0;
+    let keyboard = false;
+
+    let baseline = Math.max(
+      window.innerHeight,
+      view?.height || 0
+    );
+
+    let desktopTop =
+      node.getBoundingClientRect().top +
+      window.scrollY;
+
+    let width = node.clientWidth;
+
+    function setPixels(name, value) {
+      const next = `${Math.round(value)}px`;
+
+      if (node.style.getPropertyValue(name) !== next) {
+        node.style.setProperty(name, next);
+      }
+    }
+
     function measure() {
+      frame = 0;
+
       const mobile = window.matchMedia(
-        "(max-width: 759px)",
+        "(max-width: 759px)"
       ).matches;
 
-      const offset = viewport?.offsetTop || 0;
+      const offset = view?.offsetTop || 0;
+      const height = view?.height || window.innerHeight;
+      const end = offset + height;
 
-      const end =
-        offset +
-        (viewport?.height || window.innerHeight);
+      const focused =
+        node.contains(document.activeElement) &&
+        document.activeElement?.matches(
+          "input,textarea,[contenteditable='true']"
+        );
 
-      const barRect = bar?.getBoundingClientRect();
+      if (!focused) {
+        baseline = Math.max(
+          window.innerHeight,
+          height
+        );
+      }
+
+      const difference = baseline - height;
+
+      keyboard = Boolean(
+        mobile &&
+        focused &&
+        (
+          keyboard
+            ? difference > 80
+            : difference > 140
+        )
+      );
+
+      if (node.clientWidth !== width) {
+        width = node.clientWidth;
+
+        desktopTop =
+          node.getBoundingClientRect().top +
+          window.scrollY;
+      }
 
       const top = mobile
         ? Math.min(
             end,
             Math.max(
               offset,
-              barRect?.bottom || offset,
-            ),
+              bar?.getBoundingClientRect().bottom ||
+                offset
+            )
           )
         : Math.max(
             offset,
-            node.getBoundingClientRect().top,
+            desktopTop - window.scrollY
           );
 
       const navRect = nav?.getBoundingClientRect();
 
       const bottom =
         mobile &&
+        !keyboard &&
         navRect?.height &&
         navRect.top > top &&
         navRect.top < end
           ? navRect.top
           : end;
 
-      node.style.setProperty(
-        "--td-chat-top",
-        `${top}px`,
-      );
+      setPixels("--td-chat-top", top);
 
-      node.style.setProperty(
+      setPixels(
         "--td-chat-height",
-        `${Math.max(
+        Math.max(
           0,
-          bottom - top - (mobile ? 0 : 16),
-        )}px`,
+          bottom - top - (mobile ? 0 : 16)
+        )
       );
 
-      const typing = document.activeElement?.matches(
-        "input,textarea,[contenteditable='true']",
-      );
-
-      node.classList.toggle(
-        "td-chat-keyboard-open",
-        Boolean(
-          mobile &&
-          typing &&
-          window.innerHeight -
-            (viewport?.height || window.innerHeight) >
-            120,
-        ),
-      );
+      if (
+        node.classList.contains(
+          "td-chat-keyboard-open"
+        ) !== keyboard
+      ) {
+        node.classList.toggle(
+          "td-chat-keyboard-open",
+          keyboard
+        );
+      }
     }
 
     function schedule() {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(measure);
+      if (!frame) {
+        frame = requestAnimationFrame(measure);
+      }
     }
 
-    const observer = new ResizeObserver(schedule);
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? null
+        : new ResizeObserver(schedule);
 
-    if (bar) observer.observe(bar);
-    if (nav) observer.observe(nav);
+    if (bar) observer?.observe(bar);
+    if (nav) observer?.observe(nav);
 
     window.addEventListener("resize", schedule);
+
     window.addEventListener("scroll", schedule, {
       passive: true,
     });
 
-    viewport?.addEventListener("resize", schedule);
-    viewport?.addEventListener("scroll", schedule);
+    view?.addEventListener("resize", schedule);
+    view?.addEventListener("scroll", schedule);
 
     document.addEventListener("focusin", schedule);
     document.addEventListener("focusout", schedule);
@@ -109,34 +161,30 @@ export function useChatViewport(root) {
 
     return () => {
       cancelAnimationFrame(frame);
-      observer.disconnect();
+      observer?.disconnect();
 
       window.removeEventListener("resize", schedule);
       window.removeEventListener("scroll", schedule);
 
-      viewport?.removeEventListener(
-        "resize",
-        schedule,
-      );
-
-      viewport?.removeEventListener(
-        "scroll",
-        schedule,
-      );
+      view?.removeEventListener("resize", schedule);
+      view?.removeEventListener("scroll", schedule);
 
       document.removeEventListener(
         "focusin",
-        schedule,
+        schedule
       );
 
       document.removeEventListener(
         "focusout",
-        schedule,
+        schedule
       );
 
       node.style.removeProperty("--td-chat-top");
       node.style.removeProperty("--td-chat-height");
-      node.classList.remove("td-chat-keyboard-open");
+
+      node.classList.remove(
+        "td-chat-keyboard-open"
+      );
     };
   }, [root]);
 }

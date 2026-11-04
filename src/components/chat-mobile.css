@@ -393,3 +393,129 @@
     pointer-events: none !important;
   }
 }
+/* Stable room and composer layout */
+.td-chat .td-chat-room {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.td-chat .td-chat-feed-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.td-chat .td-chat-feed {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.td-chat .td-chat-composer {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  min-width: 0;
+}
+
+.td-chat .td-chat-compose-row {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.td-chat .td-chat-compose-row textarea {
+  box-sizing: border-box;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-y: auto;
+  resize: none;
+  font-size: 16px;
+  line-height: 22px;
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Reply strip stays the same height */
+.td-chat .td-reply-composer {
+  box-sizing: border-box;
+  flex: 0 0 56px;
+  height: 56px;
+  min-height: 56px;
+  max-height: 56px;
+  overflow: hidden;
+  min-width: 0;
+  transition: none;
+  animation: none;
+}
+
+.td-chat .td-reply-composer > svg {
+  flex: 0 0 18px;
+}
+
+.td-chat .td-reply-composer > .td-reply-quote {
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 54px;
+  display: grid;
+  grid-template-rows: 18px 18px;
+  gap: 2px;
+  padding: 8px 10px;
+  overflow: hidden;
+}
+
+.td-chat .td-reply-composer
+  .td-reply-quote > :is(strong, span) {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.td-chat .td-reply-composer > button {
+  flex: 0 0 40px;
+  min-width: 40px;
+}
+
+/* Reserve space so activity changes do not move the header */
+.td-chat .td-chat-room-header
+  .td-chat-room-title > .td-chat-live-activity {
+  display: block;
+  height: 18px;
+  min-height: 18px;
+  line-height: 18px;
+  margin-top: 2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #66d8f2;
+  font-size: 11px;
+}
+
+.td-chat .td-chat-room-header
+  .td-chat-room-title
+  > .td-chat-live-activity.is-recording {
+  color: #ff9baf;
+}
+
+@media (max-width: 759px) {
+  .app-shell:has(.td-chat.td-chat-keyboard-open)
+    .mobile-nav {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
