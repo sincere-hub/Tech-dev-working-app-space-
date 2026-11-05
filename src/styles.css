@@ -13112,3 +13112,22 @@ main.app-crash-screen {
     justify-self: start;
   }
 }
+/* Expand the account menu only while open */
+.account-menu[open] {
+  width: auto;
+  min-width: 260px;
+}
+
+/* Include padding within the panel's width */
+.account-menu .account-panel {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 16px 12px;
+}
+
+/* Keep MY ACCOUNT on one line */
+.account-menu .account-panel p.account-label {
+  white-space: nowrap;
+  margin: 0 0 12px;
+}

@@ -2,6 +2,7 @@ import {
   Fragment,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -889,13 +890,14 @@ const replies = useReplyContext(
   page.rows,
   revision,
 );
+  const chatOpening = page.loading || replies.loading;
   const feed = useRef(null);
   const input = useRef(null);
   const nearBottom = useRef(true);
   const lockedRead = useRef(false);
   const menu = useRef(null);
 
-  function chooseReply(message) {
+function chooseReply(message) {
   if (
     !room.is_member ||
     room.blocked_by_me ||
@@ -911,6 +913,11 @@ const replies = useReplyContext(
     input.current?.focus({
       preventScroll: true,
     });
+
+    if (nearBottom.current && feed.current) {
+      feed.current.scrollTop =
+        feed.current.scrollHeight;
+    }
   });
 }
 
@@ -1019,20 +1026,23 @@ useEffect(() => {
     onLoaded(page.rows.map(row => row.client_id));
   }, [page.rows, onLoaded]);
 
-  useEffect(() => {
-    if (before) {
-      if (feed.current) feed.current.scrollTop = 0;
-      return;
-    }
+  useLayoutEffect(() => {
+  if (chatOpening || !feed.current) return;
 
-    if (nearBottom.current && feed.current) {
-      feed.current.scrollTop =
-        feed.current.scrollHeight;
-      setUnseen(false);
-    } else {
-      setUnseen(true);
-    }
-  }, [newest, before, local.length]);
+  if (before) {
+    feed.current.scrollTop = 0;
+    return;
+  }
+
+  if (nearBottom.current) {
+    feed.current.scrollTop =
+      feed.current.scrollHeight;
+
+    setUnseen(false);
+  } else {
+    setUnseen(true);
+  }
+}, [newest, before, local.length, chatOpening]);
 
   useEffect(() => {
     let alive = true;
@@ -1364,22 +1374,22 @@ useEffect(() => {
             }
           }}
         >
-          {page.loading && (
+          {chatOpening && (
             <p className="td-chat-empty">
               Loading messages…
             </p>
           )}
 
-          {!page.loading &&
+          {!chatOpening &&
             !page.rows.length &&
-            !local.length && (
+              !local.length && (
               <div className="td-chat-empty">
                 <MessageSquare size={32} />
                 <p>Start the conversation.</p>
               </div>
             )}
 
-          {[...page.rows, ...local].map(
+          {(chatOpening ? [] : [...page.rows, ...local]).map(
             (message, index, all) => {
               const day = dateText(
                 message.created_at,

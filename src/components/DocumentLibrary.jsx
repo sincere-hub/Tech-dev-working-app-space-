@@ -1013,6 +1013,7 @@ async function openFile(record, showPreview) {
   )}
 
   {canDelete && (
+    <div className="td-document-card-menu">
     <DocumentMoreActions
       title={record.title}
       disabled={busy}
@@ -1087,6 +1088,7 @@ async function openFile(record, showPreview) {
         }}
       />
     </DocumentMoreActions>
+    </div>
   )}
 </footer>
               </article>

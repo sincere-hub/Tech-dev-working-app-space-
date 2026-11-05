@@ -178,16 +178,10 @@ function BoardRow({
 
       <div className="tdtb-cell">
         <span className="tdtb-label">Priority</span>
-
-        <span
-          className={
-            "tdtb-priority" +
-            (task.priority === "high" ? " is-high" : "")
-          }
-        >
-          <i aria-hidden="true" />
-          {task.priority === "high" ? "High" : "Normal"}
-        </span>
+         <span className={`tdtb-priority${task.priority === "high" ? " is-high" : ""}`}>
+         {task.status !== "done" && <i aria-hidden="true" />}
+  {       task.priority === "high" ? "High" : "Normal"}
+       </span>
       </div>
 
       <div className="tdtb-cell tdtb-status-cell">

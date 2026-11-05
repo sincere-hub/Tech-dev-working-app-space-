@@ -519,3 +519,102 @@
     pointer-events: none;
   }
 }
+@media (min-width: 760px) {
+  .app-shell .td-chat {
+    height: 78dvh;
+    max-height: 78dvh;
+  }
+}
+
+.td-chat .td-chat-room {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.td-chat .td-chat-feed-wrap {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.td-chat .td-chat-feed {
+  box-sizing: border-box;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.td-chat .td-chat-composer {
+  position: relative;
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+/* Reply preview does not change the input layout */
+.td-chat .td-reply-composer {
+  position: absolute !important;
+  top: auto !important;
+  bottom: calc(100% + 6px);
+  left: 10px;
+  right: 10px;
+  z-index: 5;
+
+  box-sizing: border-box;
+  width: auto !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  max-height: 56px !important;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 !important;
+  padding: 0 8px;
+
+  overflow: hidden;
+  background: #142b40;
+  border: 1px solid #35516b;
+  border-radius: 12px;
+  box-shadow: 0 5px 18px #0003;
+
+  transform: none !important;
+  transition: none !important;
+  animation: none !important;
+}
+
+.td-chat .td-reply-composer > .td-reply-quote {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.td-chat .td-reply-composer > button {
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+}
+
+/* Keep the latest message clear of the reply preview */
+.td-chat .td-chat-room:has(.td-reply-composer)
+  .td-chat-feed {
+  padding-bottom: 80px !important;
+}
+
+.td-chat .td-chat-compose-row,
+.td-chat .td-chat-compose-row textarea {
+  transition: none !important;
+  animation: none !important;
+}
+
+.td-chat .td-chat-compose-row textarea {
+  box-sizing: border-box;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  overflow-y: auto;
+  resize: none;
+}

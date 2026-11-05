@@ -1,26 +1,26 @@
-export function clockMessage(clockedOut, date = new Date()) {
+export function clockMessage(isClockOut, at = Date.now()) {
+  const date = new Date(at ?? Date.now());
+
   const hour = Number(
-    new Intl.DateTimeFormat("en-GB", {
+    new Intl.DateTimeFormat("en-ZA", {
       timeZone: "Africa/Johannesburg",
       hour: "2-digit",
       hourCycle: "h23",
-    }).format(date),
+    }).format(Number.isFinite(date.getTime()) ? date : new Date())
   );
 
   const period =
-    hour < 5 ? "night" :
-    hour < 12 ? "morning" :
-    hour < 17 ? "afternoon" :
-    hour < 21 ? "evening" :
-    "night";
+    hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
 
-  if (clockedOut) {
-    return period === "night"
-      ? "You’re clocked out. Rest well tonight."
-      : `You’re clocked out. Enjoy the rest of your ${period}.`;
+  if (isClockOut) {
+    const farewell = period === "morning" ? "day" : period;
+    return `Clocked out. Have a nice ${farewell}!`;
   }
 
-  return period === "night"
-    ? "You’re clocked in. Have a productive night shift."
-    : `You’re clocked in. Have a productive ${period}.`;
+ if (hour >= 17 || hour < 6) {
+  return "Clocked in. Have a productive night shift!";
+}
+
+const workPeriod = period === "morning" ? "day" : period;
+return `Clocked in. Have a productive ${workPeriod}!`;
 }

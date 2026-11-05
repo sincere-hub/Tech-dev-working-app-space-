@@ -97,7 +97,7 @@ if (
     return (
       <>
         <div className="suite-intro">
-          <p className="eyebrow">LEGION WORKPLACE</p>
+          <p className="eyebrow">TECHDEV WORKPLACE</p>
           <h1>Workplace tools</h1>
           <p>Choose an area, then open the tool you need.</p>
           <div className="suite-connection-note">

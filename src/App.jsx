@@ -229,15 +229,6 @@ function WorkspaceContentLoading({ isOnline }) {
           </div>
         </div>
         <div className="page-content">
-{profile?.id === userId && (
-  <AttendanceAutomation
-    key={userId}
-    userId={userId}
-    role={profile.role}
-    openEntryId={openEntry?.id || ""}
-    onChanged={() => loadWorkspace(session.user)}
-  />
-)}
           <div className="workspace-skeleton-heading">
             <div className="workspace-skeleton skeleton-heading-kicker" />
             <div className="workspace-skeleton skeleton-heading-title" />
@@ -1162,22 +1153,32 @@ function openActivityItem(activity) {
   const completedTasks = personalTasks.filter(task => task.status === "done").length;
   const completedPercent = personalTasks.length ? Math.round(completedTasks / personalTasks.length * 100) : 0;
 
- async function toggleClock() {
+async function toggleClock() {
   const result = await mutate(() =>
     supabase.rpc("td_attendance_clock", {
       p_clock_in: !openEntry,
     })
   );
 
-  if (result) {
+  if (!result) return;
+
+  if (result.open_entry) {
     setToast(
-      result.open_entry
-        ? "Clocked in successfully."
-        : result.latest_entry?.auto_clocked_out
-          ? "You were automatically clocked out at your cutoff time."
-          : "Clocked out successfully."
+      clockMessage(
+        false,
+        result.open_entry.clocked_in_at ?? result.server_now
+      )
     );
+    return;
   }
+
+  const entry = result.latest_entry;
+
+  setToast(
+    entry?.auto_clocked_out
+      ? "You were automatically clocked out at your cutoff time."
+      : clockMessage(true, entry?.clocked_out_at ?? result.server_now)
+  );
 }
 
   async function updateTask(task, status) {
@@ -2047,8 +2048,9 @@ async function signOut() {
           avatarUploadsEnabled={avatarUploadsEnabled}featureSaving={featureSaving}onTogglePhotoUploads={toggleAvatarUploads}
           avatarSrc={avatarSrc}onUpload={uploadAvatar}
            name={displayName}email={session?.user?.email || ""}role={profile?.role}onSignOut={signOut}closeSignal={`${activeView}:${mobileMenuOpen}`}/></div>
-        </header><div className="page-content">
-{profile?.id === userId && (
+        </header>
+<div className="page-content">
+  {profile?.id === userId && (
   <AttendanceAutomation
     key={userId}
     userId={userId}
@@ -2056,8 +2058,8 @@ async function signOut() {
     openEntryId={openEntry?.id || ""}
     onChanged={() => loadWorkspace(session.user)}
   />
-)}
-{activeView !== "overview" && (
+  )}
+  {activeView !== "overview" && (
   <div className="page-navigation">
     <button
       type="button"

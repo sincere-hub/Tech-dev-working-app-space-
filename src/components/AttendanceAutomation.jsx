@@ -164,10 +164,11 @@ function AdminSettings({ onClose, onSaved }) {
         if (!initialized.current) {
           initialized.current = true;
 
-          setCompany({
-            enabled: value.settings.enabled,
-            cutoff: value.settings.cutoff.slice(0, 5),
-            revision: value.settings.revision,
+       setCompany({
+         enabled: value.settings.enabled,
+         cutoff: value.settings.cutoff.slice(0, 5),
+         clockInFrom: value.settings.clock_in_from?.slice(0, 5) || "",
+         revision: value.settings.revision,
           });
         }
       } catch (failure) {
@@ -226,7 +227,8 @@ function AdminSettings({ onClose, onSaved }) {
       return;
     }
 
-    if (action !== "company" && !selected) return;
+   const opening = action === "opening";
+   if (!opening && action !== "company" && !selected) return;
 
     if (
       action === "company" &&
@@ -254,40 +256,21 @@ function AdminSettings({ onClose, onSaved }) {
     );
 
     try {
-      const result = await request(
-        "td_attendance_save",
-        {
-          p_action: action,
-
-          p_expected_revision:
-            action === "company"
-              ? company.revision
-              : context.settings.revision,
-
-          p_enabled:
-            action === "company"
-              ? company.enabled
-              : null,
-
-          p_cutoff:
-            action === "clear"
-              ? null
-              : action === "company"
-                ? company.cutoff
-                : employeeTime,
-
-          p_employee:
-            action === "company"
-              ? null
-              : selected.id,
-
-          p_day:
-            action === "company"
-              ? null
-              : day || context.work_date,
-        },
-        controller.signal
-      );
+      const result = opening
+  ? await request("td_attendance_save_opening", {
+      p_expected_revision: company.revision,
+      p_clock_in_from: company.clockInFrom || null,
+    }, controller.signal)
+  : await request("td_attendance_save", {
+      p_action: action,
+      p_expected_revision:
+        action === "company" ? company.revision : context.settings.revision,
+      p_enabled: action === "company" ? company.enabled : null,
+      p_cutoff:
+        action === "clear" ? null : action === "company" ? company.cutoff : employeeTime,
+      p_employee: action === "company" ? null : selected.id,
+      p_day: action === "company" ? null : (day || context.work_date),
+    }, controller.signal);
 
       if (!result?.saved) {
         throw new Error(
@@ -300,13 +283,12 @@ function AdminSettings({ onClose, onSaved }) {
       initialized.current = false;
       setSelected(null);
 
-      setNotice(
-        action === "company"
-          ? "Company attendance settings saved."
-          : action === "clear"
-            ? "Employee will follow the company cutoff on this date."
-            : "Employee cutoff saved for the selected date."
-      );
+  setNotice(
+    opening ? "Daily clock-in time saved."
+    : action === "company" ? "Company attendance settings saved."
+    : action === "clear" ? "Employee will follow the company cutoff on this date."
+    : "Employee cutoff saved for the selected date."
+  );
 
       setRefresh(value => value + 1);
       onSaved?.();
@@ -422,6 +404,35 @@ function AdminSettings({ onClose, onSaved }) {
             </button>
           </fieldset>
         )}
+
+{company && <fieldset disabled={saving || loading}>
+  <legend><Clock3 size={18} /> Daily clock-in opening</legend>
+
+  <label className="td-att-field">
+    Earliest clock-in time (SAST)
+    <input
+      type="time"
+      step="60"
+      value={company.clockInFrom}
+      onChange={event => {
+        const clockInFrom = event.target.value;
+        setCompany(value => ({ ...value, clockInFrom }));
+      }}
+    />
+  </label>
+
+  <p className="td-att-muted">
+    Applies every day. Clear the time and save to remove the opening restriction.
+  </p>
+
+  <button
+    type="button"
+    className="td-att-primary"
+    onClick={() => save("opening")}
+  >
+    {saving ? "Saving…" : "Save clock-in time"}
+  </button>
+</fieldset>}
 
         {context && (
           <fieldset disabled={saving}>
@@ -759,6 +770,23 @@ export default function AttendanceAutomation({
       clock.current.at
     : 0;
 
+    const openingAt = status?.clock_in_opens_at;
+    const pastCutoff =
+    status?.cutoff_at && serverNow >= Date.parse(status.cutoff_at);
+
+  const waitingToOpen =
+  !status?.open_entry && openingAt && serverNow < Date.parse(openingAt);
+
+const scheduleMessage = !status
+  ? "Checking attendance…"
+  : pastCutoff
+    ? "Attendance is closed for today. You can still use the app."
+    : waitingToOpen
+      ? `Clock-in is not open yet. You can clock in from ${attendanceTime(openingAt)} SAST.`
+      : status.enabled
+        ? `Automatic clock-out: ${attendanceTime(status.cutoff_at)} SAST`
+        : "Automatic clock-out is off.";
+
   const key = warningKey(
     userId,
     status,
@@ -822,17 +850,7 @@ export default function AttendanceAutomation({
       >
         <Clock3 size={17} />
 
-        <span>
-          {status?.enabled
-            ? status.can_clock_in
-              ? `Automatic clock-out: ${attendanceTime(
-                  status.cutoff_at
-                )} SAST`
-              : "Attendance is closed for today. You can still use the app."
-            : status
-              ? "Automatic clock-out is off."
-              : "Checking attendance…"}
-        </span>
+        <span role="status">{scheduleMessage}</span>
 
         {role === "admin" && (
           <button

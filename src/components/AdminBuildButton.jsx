@@ -35,11 +35,11 @@ export default function AdminBuildButton({
       </span>
 
       <span className="drawer-build-copy">
-        <small>LEGION WORKSPACE</small>
+        <small>TECHDEV WORKSPACE</small>
         <strong>Build {APP_BUILD_NUMBER}</strong>
       </span>
 
-      <ChevronRight size={15} aria-hidden="true" />
+      <ChevronRight size={1} aria-hidden="true" />
     </button>
   );
 }

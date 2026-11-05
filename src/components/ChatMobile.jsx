@@ -14,23 +14,27 @@ export function useChatViewport(root) {
 
     if (!node) return;
 
-    const view = window.visualViewport;
+    const viewport = window.visualViewport;
     const bar = document.querySelector(".topbar");
     const nav = document.querySelector(".mobile-nav");
 
     let frame = 0;
-    let keyboard = false;
+    let width = window.innerWidth;
 
     let baseline = Math.max(
       window.innerHeight,
-      view?.height || 0
+      viewport?.height || 0
     );
 
-    let desktopTop =
-      node.getBoundingClientRect().top +
-      window.scrollY;
+    let barHeight =
+      bar?.getBoundingClientRect().height ||
+      bar?.offsetHeight ||
+      0;
 
-    let width = node.clientWidth;
+    let navHeight =
+      nav?.getBoundingClientRect().height ||
+      nav?.offsetHeight ||
+      0;
 
     function setPixels(name, value) {
       const next = `${Math.round(value)}px`;
@@ -47,88 +51,73 @@ export function useChatViewport(root) {
         "(max-width: 759px)"
       ).matches;
 
-      const offset = view?.offsetTop || 0;
-      const height = view?.height || window.innerHeight;
-      const end = offset + height;
+      if (!mobile) {
+        node.style.removeProperty("--td-chat-top");
+        node.style.removeProperty("--td-chat-height");
 
-      const focused =
+        node.classList.remove(
+          "td-chat-keyboard-open"
+        );
+
+        return;
+      }
+
+      const visibleHeight =
+        viewport?.height || window.innerHeight;
+
+      if (window.innerWidth !== width) {
+        width = window.innerWidth;
+
+        baseline = Math.max(
+          window.innerHeight,
+          visibleHeight
+        );
+
+        barHeight =
+          bar?.getBoundingClientRect().height ||
+          bar?.offsetHeight ||
+          0;
+
+        navHeight =
+          nav?.getBoundingClientRect().height ||
+          nav?.offsetHeight ||
+          0;
+      }
+
+      baseline = Math.max(
+        baseline,
+        window.innerHeight,
+        visibleHeight
+      );
+
+      const editing =
         node.contains(document.activeElement) &&
         document.activeElement?.matches(
           "input,textarea,[contenteditable='true']"
         );
 
-      if (!focused) {
-        baseline = Math.max(
-          window.innerHeight,
-          height
-        );
-      }
-
-      const difference = baseline - height;
-
-      keyboard = Boolean(
-        mobile &&
-        focused &&
-        (
-          keyboard
-            ? difference > 80
-            : difference > 140
-        )
+      const keyboard = Boolean(
+        editing &&
+        Math.abs((viewport?.scale || 1) - 1) < 0.05 &&
+        baseline - visibleHeight > 140
       );
 
-      if (node.clientWidth !== width) {
-        width = node.clientWidth;
-
-        desktopTop =
-          node.getBoundingClientRect().top +
-          window.scrollY;
-      }
-
-      const top = mobile
-        ? Math.min(
-            end,
-            Math.max(
-              offset,
-              bar?.getBoundingClientRect().bottom ||
-                offset
-            )
-          )
-        : Math.max(
-            offset,
-            desktopTop - window.scrollY
-          );
-
-      const navRect = nav?.getBoundingClientRect();
-
-      const bottom =
-        mobile &&
-        !keyboard &&
-        navRect?.height &&
-        navRect.top > top &&
-        navRect.top < end
-          ? navRect.top
-          : end;
-
-      setPixels("--td-chat-top", top);
+      setPixels("--td-chat-top", barHeight);
 
       setPixels(
         "--td-chat-height",
         Math.max(
           0,
-          bottom - top - (mobile ? 0 : 16)
+          visibleHeight -
+            barHeight -
+            (keyboard ? 0 : navHeight)
         )
       );
 
-      if (
-        node.classList.contains(
-          "td-chat-keyboard-open"
-        ) !== keyboard
-      ) {
-        node.classList.toggle(
-          "td-chat-keyboard-open",
-          keyboard
-        );
-      }
+      node.classList.toggle(
+        "td-chat-keyboard-open",
+        keyboard
+      );
     }
 
     function schedule() {
@@ -137,45 +126,21 @@ export function useChatViewport(root) {
       }
     }
 
-    const observer =
-      typeof ResizeObserver === "undefined"
-        ? null
-        : new ResizeObserver(schedule);
-
-    if (bar) observer?.observe(bar);
-    if (nav) observer?.observe(nav);
-
     window.addEventListener("resize", schedule);
-
-    window.addEventListener("scroll", schedule, {
-      passive: true,
-    });
-
-    view?.addEventListener("resize", schedule);
-    view?.addEventListener("scroll", schedule);
-
-    document.addEventListener("focusin", schedule);
-    document.addEventListener("focusout", schedule);
+    viewport?.addEventListener("resize", schedule);
 
     schedule();
 
     return () => {
       cancelAnimationFrame(frame);
-      observer?.disconnect();
 
-      window.removeEventListener("resize", schedule);
-      window.removeEventListener("scroll", schedule);
-
-      view?.removeEventListener("resize", schedule);
-      view?.removeEventListener("scroll", schedule);
-
-      document.removeEventListener(
-        "focusin",
+      window.removeEventListener(
+        "resize",
         schedule
       );
 
-      document.removeEventListener(
-        "focusout",
+      viewport?.removeEventListener(
+        "resize",
         schedule
       );
 
@@ -207,71 +172,86 @@ export function useReplyContext(
   rows,
   revision,
 ) {
-  const ids = rows
-    .filter(row => !row.local)
-    .map(row => row.id)
-    .join(",");
+  const ids = [...new Set(
+    rows
+      .filter(row => !row.local && row.id)
+      .map(row => row.id),
+  )].sort().join(",");
 
-  const key =
-    `${userId}:${roomId}:${ids}:${revision}`;
+  // Keep existing quotes during a refresh.
+  const scope = JSON.stringify([userId, roomId]);
 
   const [state, setState] = useState({
-    key: "",
+    scope: "",
     rows: [],
     error: "",
   });
 
   useEffect(() => {
-    if (!ids) return;
+    if (!userId || !roomId || !ids) return;
 
     let alive = true;
 
-    chatCall(
-      userId,
-      "td_chat_reply_context_v1",
-      {
-        p_room: roomId,
-        p_messages: ids.split(","),
-      },
-    )
+    chatCall(userId, "td_chat_reply_context_v1", {
+      p_room: roomId,
+      p_messages: ids.split(","),
+    })
       .then(data => {
+        if (!Array.isArray(data)) {
+          throw new Error(
+            "Reply previews could not load.",
+          );
+        }
+
         if (alive) {
           setState({
-            key,
-            rows: data || [],
+            scope,
+            rows: data,
             error: "",
           });
         }
       })
       .catch(failure => {
-        if (alive) {
-          setState({
-            key,
-            rows: [],
-            error:
-              failure.message ||
-              "Reply previews could not load",
-          });
-        }
+        if (!alive) return;
+
+        setState(previous => ({
+          scope,
+          rows:
+            previous.scope === scope
+              ? previous.rows
+              : [],
+          error:
+            failure.message ||
+            "Reply previews could not load.",
+        }));
       });
 
     return () => {
       alive = false;
     };
-  }, [userId, roomId, ids, key]);
+  }, [userId, roomId, ids, revision, scope]);
+
+  const visibleIds = new Set(
+    ids ? ids.split(",") : [],
+  );
 
   return {
+    loading: Boolean(ids && state.scope !== scope),
     byId: new Map(
-      state.key === key
-        ? state.rows.map(row => [
-            row.message_id,
-            row,
-          ])
+      state.scope === scope
+        ? state.rows
+            .filter(row =>
+              visibleIds.has(row.message_id),
+            )
+            .map(row => [
+              row.message_id,
+              row,
+            ])
         : [],
     ),
 
     error:
-      ids && state.key === key
+      ids && state.scope === scope
         ? state.error
         : "",
   };
