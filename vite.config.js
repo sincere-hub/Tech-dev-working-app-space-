@@ -1,8 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import techdevPerformance from "./techdev-performance.mjs";
 
 export default defineConfig({
-  plugins: [react()],
+ plugins: [react(), techdevPerformance()],
   build: {
     rollupOptions: {
       output: {

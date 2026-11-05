@@ -50,6 +50,7 @@ import TaskAssignment from "./components/TaskAssignment.jsx";
 import TeamTaskBoard from "./components/TeamTaskBoard.jsx";
 import CallProvider from "./components/CallProvider.jsx";
 import AttendanceAutomation from "./components/AttendanceAutomation.jsx";
+import { watchWorkspaceChanges } from "./lib/workspaceRefresh.js";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -594,11 +595,10 @@ useEffect(() => {
     navigator.onLine &&
     document.documentElement.dataset.techdevOffline !== "true"
 );
-  const [startupComplete, setStartupComplete] = useState(false);
   const authUserIdRef = useRef(null);
   const workspaceGeneration = useRef(0);
   const reconnectInFlight = useRef(false);
-const connectionStatus = useRef(isOnline);
+  const connectionStatus = useRef(isOnline);
 
 useEffect(() => {
   connectionStatus.current = isOnline;
@@ -993,14 +993,6 @@ function openActivityItem(activity) {
     };
   }, []);
 
-  useEffect(() => {
-  const timer = window.setTimeout(() => {
-    setStartupComplete(true);
-  }, 1400);
-
-  return () => window.clearTimeout(timer);
-}, []);
-
  useEffect(() => {
   function handleOffline() {
     setIsOnline(false);
@@ -1089,18 +1081,20 @@ function openActivityItem(activity) {
 }, [loadWorkspace]);
 
   useEffect(() => {
-    if (!session?.user) return undefined;
-    let live = true;
-    setLoading(true);
-    loadWorkspace(session.user).finally(() => { if (live) setLoading(false); });
-    const channel = supabase.channel(`workspace-${session.user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public" }, () => loadWorkspace(session.user))
-      .subscribe();
-    return () => {
-      live = false;
-      supabase.removeChannel(channel);
-    };
-  }, [session?.user?.id, loadWorkspace]);
+  if (!session?.user) return undefined;
+
+  setLoading(true);
+  const stop = watchWorkspaceChanges(
+    supabase,
+    session.user,
+    loadWorkspace
+  );
+
+  return () => {
+    stop();
+    workspaceGeneration.current += 1;
+  };
+}, [session?.user?.id, loadWorkspace]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -1988,20 +1982,21 @@ async function signOut() {
     setError(getErrorMessage(signOutError));
   }
 }
-  if (!supabaseConfigured) return <ConfigScreen />;
-  if (!startupComplete) {
+if (!supabaseConfigured) return <ConfigScreen />;
+
+if (!isOnline) {
+  return <OfflineWorkspace viewerId={session?.user?.id} />;
+}
+
+if (session && loading) {
+  return <WorkspaceContentLoading isOnline={isOnline} />;
+}
+
+if (!session && loading) {
   return <StartupScreen isOnline={isOnline} />;
 }
-  if (!isOnline) {
-  return (
-    <OfflineWorkspace
-      viewerId={session?.user?.id}
-    />
-  );
-}
-  if (session && loading) return <WorkspaceContentLoading isOnline={isOnline} />;
-  if (!session && (loading || !startupComplete)) return <StartupScreen isOnline={isOnline} />;
-  if (!session) return <AuthScreen />;
+
+if (!session) return <AuthScreen />;
   if (passwordRecovery) return <PasswordRecovery onComplete={() => { setPasswordRecovery(false); setToast("Your password has been updated."); }} />;
 
   const taskSections = isManager ? data.tasks : data.tasks.filter(task => task.assignee_id === userId || task.assignee_id === null);
@@ -2074,7 +2069,7 @@ async function signOut() {
   </div>
 )}
           {error && <div className="error-banner" role="alert"><span>{error}</span>{session && <button className="retry-action" onClick={() => loadWorkspace(session.user)}>Retry</button>}<button onClick={() => setError("")} aria-label="Dismiss error"><X size={16} /></button></div>}
-          {dataLoading && <div className="sync-banner"><LoaderCircle className="spin" size={14} /> Syncing the latest workspace data…</div>}
+          <span className="sr-only" role="status">{dataLoading ? "Syncing the latest workspace data…" : ""}</span>
           <fieldset className="workspace-controls" disabled={mutating}>
           {activeView === "overview" && <Overview
             name={firstName}

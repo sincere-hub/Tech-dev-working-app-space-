@@ -24,7 +24,6 @@ import RecordInteraction from "./RecordInteraction.jsx";
 import { safeExternalUrl } from "../lib/reporting.js";
 import {workplaceModules,canAccessWorkplaceModule,getWorkplaceGroupsForRole,} from "../lib/workplaceModules.js";
 import EmployeeAvatar from "./EmployeeAvatar.jsx";
-import InternalChat from "./InternalChat.jsx";
 import DocsWorkspace from "./DocsWorkspace.jsx";
 import OkrWorkspace from "./OkrWorkspace.jsx";
 import MeetingWorkspace from "./MeetingWorkspace.jsx";
@@ -33,6 +32,8 @@ import DeveloperToolHeading, {
   DeveloperToolIcon,
 } from "./DeveloperToolHeading.jsx";
 import "./internal-search.css";
+
+const InternalChat = lazy(() => import("./InternalChat.jsx"));
 
 const groupIcons = {
   platform: Code2,
@@ -399,6 +400,15 @@ if (
 }
 if (selectedModule.id === "collaboration.chat") {
   return (
+  <Suspense fallback={
+  <section
+    className="card panel-card"
+    role="status"
+    style={{ minHeight: "min(60dvh, 24rem)" }}
+  >
+    Opening internal chat…
+  </section>
+}>
     <InternalChat
       key={userId}
       module={selectedModule}
@@ -411,6 +421,7 @@ if (selectedModule.id === "collaboration.chat") {
       onInteract={onInteract}
       onDelete={onDelete}
     />
+    </Suspense>
   );
 }
 
