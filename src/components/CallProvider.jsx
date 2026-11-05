@@ -91,7 +91,7 @@ async function request(
 export function ChatCallButtons({ room }) {
   const calls = useContext(Calls);
 
-  if (!calls) return null;
+  if (!calls || room.kind === "company") return null;
 
   return (
     <div className="td-chat-call-buttons">
