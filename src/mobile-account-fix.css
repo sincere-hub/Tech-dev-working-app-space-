@@ -1,0 +1,103 @@
+/* Keep the avatar in the same spot when the account menu opens. */
+.app-shell .topbar .topbar-right > .account-menu {
+  position: relative;
+  flex: 0 0 44px;
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+}
+
+.app-shell .topbar .account-menu > .account-trigger {
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+}
+
+/* Open the panel under the avatar without stretching the header. */
+.app-shell .topbar .account-menu[open] > .account-panel {
+  position: absolute;
+  inset: calc(100% + 8px) 0 auto auto;
+  z-index: 2;
+  box-sizing: border-box;
+  width: min(352px, calc(100vw - 24px));
+  min-width: 0;
+  max-width: none;
+  max-height: calc(100dvh - 160px);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  margin: 0;
+  padding: 16px;
+}
+
+.app-shell .topbar .account-panel > .account-label {
+  white-space: nowrap;
+}
+
+.app-shell .topbar .account-panel > :is(.account-name, .account-email) {
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 759px) {
+  .app-shell .topbar:has(> .topbar-right) {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-inline: 12px;
+    overflow: visible;
+  }
+
+  .app-shell .topbar > :is(.topbar-left, .topbar-right) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .app-shell .topbar > .topbar-left {
+    flex: 1 1 0;
+  }
+
+  .app-shell .topbar > .topbar-right {
+    flex: 0 0 auto;
+  }
+
+  .app-shell .topbar :is(.desktop-primary-nav, .desktop-page-name) {
+    display: none;
+  }
+
+  .app-shell .topbar .topbar-left > .menu-trigger,
+  .app-shell .topbar .topbar-right > .icon-button {
+    box-sizing: border-box;
+    flex: 0 0 44px;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .app-shell .topbar .topbar-left > .brand-compact {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+
+  .app-shell .topbar .brand-compact > .brand-mark {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .app-shell .topbar .brand-compact > .brand-wordmark-image {
+    display: block;
+    flex: 0 1 auto;
+    width: 110px;
+    min-width: 0;
+    height: auto;
+  }
+}

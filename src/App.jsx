@@ -51,6 +51,7 @@ import TeamTaskBoard from "./components/TeamTaskBoard.jsx";
 import CallProvider from "./components/CallProvider.jsx";
 import AttendanceAutomation from "./components/AttendanceAutomation.jsx";
 import { watchWorkspaceChanges } from "./lib/workspaceRefresh.js";
+import "./mobile-account-fix.css";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
