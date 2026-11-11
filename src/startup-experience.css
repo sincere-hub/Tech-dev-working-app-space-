@@ -1,0 +1,93 @@
+.td-startup-wordmark {
+  position: relative;
+  width: min(68vw, 310px);
+  margin-inline: auto;
+}
+
+.td-startup-wordmark > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: td-wordmark-in 140ms ease 6.9s both;
+}
+
+.td-startup-pixels {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  pointer-events: none;
+  animation: td-pixels-out 1ms linear 7.04s forwards;
+}
+
+.td-startup-pixels > span {
+  background: var(--wordmark) var(--px) var(--py) / 2000% 400% no-repeat;
+  animation: td-pixel-in 720ms cubic-bezier(.18, .76, .28, 1)
+    calc(6s + var(--delay)) both;
+}
+
+@keyframes td-pixel-in {
+  0% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(.35);
+  }
+  22% { opacity: 1; }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes td-wordmark-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes td-pixels-out {
+  to { visibility: hidden; }
+}
+
+.td-startup-tagline {
+  animation: td-wordmark-in 160ms ease 6.92s both;
+}
+
+.td-startup-skip {
+  padding: 8px 12px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  opacity: .8;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .td-startup-wordmark > img,
+  .td-startup-tagline {
+    animation: none;
+  }
+
+  .td-startup-pixels {
+    display: none;
+  }
+}
+dialog.td-intro-overlay {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #081326;
+  color: #f3f7ff;
+}
+
+dialog.td-intro-overlay::backdrop {
+  background: #081326;
+}

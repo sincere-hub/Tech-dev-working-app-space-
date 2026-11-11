@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownToLine,
   ArrowRight,
@@ -52,6 +52,11 @@ import CallProvider from "./components/CallProvider.jsx";
 import AttendanceAutomation from "./components/AttendanceAutomation.jsx";
 import { watchWorkspaceChanges } from "./lib/workspaceRefresh.js";
 import "./mobile-account-fix.css";
+import {
+  StartupWordmark,
+  useStartupAvatar,
+  clearStartupAvatarCache,
+} from "./startup-experience.jsx";
 
 const navigation = [
   { id: "overview", label: "Home", icon: LayoutDashboard },
@@ -255,27 +260,38 @@ function WorkspaceContentLoading({ isOnline }) {
   );
 }
 
-function StartupScreen({ isOnline }) {
+function StartupScreen({ isOnline, onSkip }) {
   return (
-    <main className={`startup-screen${isOnline ? "" : " startup-offline"}`} role="status" aria-live="polite">
-      <div className="startup-emblem"><BrandMark animated /></div>
-      <div className="startup-brand">
-  <img
-    className="startup-wordmark"
-    src={`${import.meta.env.BASE_URL}techdev-wordmark.svg`}
-    alt="Tech Dev"
-    draggable="false"
-  />
+    <main className={`startup-screen${isOnline ? "" : " startup-offline"}`}>
+      <div className="startup-emblem">
+        <BrandMark animated />
+      </div>
 
-  <img
-    className="startup-slogan"
-    src={`${import.meta.env.BASE_URL}techdev-slogan.svg`}
-    alt="Empower your digital journey"
-    draggable="false"
-  />
-</div>
-      <p>{isOnline ? "Preparing your workspace" : "Waiting for your connection"}</p>
-      {!isOnline && <span className="startup-network-note">Your workspace will reconnect automatically.</span>}
+      <div className="startup-brand">
+        <StartupWordmark />
+        <img
+          className="startup-slogan td-startup-tagline"
+          src={`${import.meta.env.BASE_URL}techdev-slogan.svg`}
+          alt="Empower your digital journey"
+          draggable={false}
+        />
+      </div>
+
+      <p role="status">
+        {isOnline ? "Preparing your workspace" : "Waiting for your connection"}
+      </p>
+
+      {!isOnline && (
+        <span className="startup-network-note">
+          Your workspace will reconnect automatically.
+        </span>
+      )}
+
+      {onSkip && (
+        <button type="button" className="td-startup-skip" onClick={onSkip}>
+          Skip intro
+        </button>
+      )}
     </main>
   );
 }
@@ -541,40 +557,11 @@ useEffect(() => {
     supabase.removeChannel(channel);
   };
 }, [session?.user?.id]);
-  const [avatarSrc, setAvatarSrc] = useState("");
-
-useEffect(() => {
-  let live = true;
-  setAvatarSrc("");
-
-  const owner = session?.user?.id;
-  const path = session?.user?.user_metadata?.avatar_path;
-
-  if (
-    !owner || typeof path !== "string" ||
-    !path.startsWith(`${owner}/`)
-  ) return;
-
-  async function refreshPhoto() {
-    try {
-      const { data: image, error } = await supabase.storage
-        .from("employee-avatars")
-        .createSignedUrl(path, 3600);
-
-      if (live && !error) setAvatarSrc(image.signedUrl);
-    } catch {
-      // Show initials if the photo cannot load.
-    }
-  }
-
-  refreshPhoto();
-  const timer = window.setInterval(refreshPhoto, 45 * 60 * 1000);
-
-  return () => {
-    live = false;
-    window.clearInterval(timer);
-  };
-}, [session?.user?.id, session?.user?.user_metadata?.avatar_path]);
+ const avatarSrc = useStartupAvatar(
+  supabase,
+  session?.user?.id,
+  session?.user?.user_metadata?.avatar_path
+);
   const [profile, setProfile] = useState(null);
   const [data, setData] = useState({ employees: [], tasks: [], announcements: [], timeEntries: [], shifts: [], leaveRequests: [], shiftRequests: [], payslips: [], workplaceRecords: [], interactions: [] });
   const [devTestsOpen, setDevTestsOpen] = useState(false);
@@ -586,7 +573,7 @@ useEffect(() => {
   const [dataLoading, setDataLoading] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
-  const [now, setNow] = useState(Date.now());
+  const now = useVisibleClock(60_000);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mutating, setMutating] = useState(false);
   const mutationInFlight = useRef(false);
@@ -1098,11 +1085,6 @@ function openActivityItem(activity) {
 }, [session?.user?.id, loadWorkspace]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
     if (!toast) return undefined;
     const timer = window.setTimeout(() => setToast(""), 3200);
     return () => window.clearTimeout(timer);
@@ -1131,13 +1113,6 @@ function openActivityItem(activity) {
 
   const openEntry = data.timeEntries.find(entry => entry.employee_id === userId && !entry.clocked_out_at);
   const personalTasks = data.tasks.filter(task => task.assignee_id === userId);
-  const week = getWeekRange(new Date(now));
-  const weeklySeconds = data.timeEntries
-    .filter(entry => entry.employee_id === userId && new Date(entry.clocked_in_at) >= week.start && new Date(entry.clocked_in_at) < week.end)
-    .reduce((sum, entry) => {
-      const end = entry.clocked_out_at ? new Date(entry.clocked_out_at).getTime() : now;
-      return sum + Math.max(0, Math.floor((end - new Date(entry.clocked_in_at).getTime()) / 1000));
-    }, 0);
   const todaySeconds = data.timeEntries
     .filter(entry => entry.employee_id === userId && entry.clocked_out_at && dateKey(new Date(entry.clocked_in_at)) === today)
     .reduce((sum, entry) => sum + Math.max(0, Math.floor((new Date(entry.clocked_out_at).getTime() - new Date(entry.clocked_in_at).getTime()) / 1000)), 0);
@@ -2089,7 +2064,7 @@ if (!session) return <AuthScreen />;
             onDownload={downloadPayslip}
           />}
           {activeView === "tasks" && <TasksView tasks={taskSections} isManager={isManager} employees={data.employees} employeeId={userId} onTask={updateTask} onClaim={claimTask} onSubmit={submitTask} />}
-          {activeView === "attendance" && <AttendanceView entries={isManager ? data.timeEntries : data.timeEntries.filter(entry => entry.employee_id === userId)} employees={data.employees} employeeId={userId} openEntry={openEntry} seconds={todaySeconds} weeklySeconds={weeklySeconds} onClock={toggleClock} />}
+          {activeView === "attendance" && <AttendanceView entries={isManager ? data.timeEntries : data.timeEntries.filter(entry => entry.employee_id === userId)} employees={data.employees} employeeId={userId} openEntry={openEntry} seconds={todaySeconds} onClock={toggleClock} />}
           {activeView === "leave" && <LeaveView isManager={isManager} employeeId={userId} requests={employeeRequests} shiftRequests={employeeShiftRequests} shifts={upcomingShifts} employees={data.employees} onLeave={submitLeave} onShiftRequest={submitShiftRequest} onReview={reviewRequest} onShift={submitShift} />}
           {activeView === "payslips" && <PayslipsView isManager={isManager} payslips={data.payslips.filter(slip => isManager || slip.employee_id === userId)} employees={data.employees} employeeId={userId} onDownload={downloadPayslip} onCreate={submitPayslip} />}
 {activeView === "manager" &&
@@ -2336,9 +2311,45 @@ function Card({ children, className = "", title, subtitle, action }) {
   return <section className={`card panel-card ${className}`}><div className="panel-heading"><div>{title && <h2>{title}</h2>}{subtitle && <p>{subtitle}</p>}</div>{action}</div>{children}</section>;
 }
 
+function useVisibleClock(intervalMs) {
+  const [now, setNow] = useState(Date.now);
+
+  useEffect(() => {
+    let timer;
+
+    function schedule() {
+      if (!document.hidden) {
+        timer = window.setTimeout(tick, intervalMs - Date.now() % intervalMs);
+      }
+    }
+
+    function tick() {
+      if (document.hidden) return;
+      setNow(Date.now());
+      schedule();
+    }
+
+    function onVisibilityChange() {
+      window.clearTimeout(timer);
+      if (!document.hidden) tick();
+    }
+
+    schedule();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [intervalMs]);
+
+  return now;
+}
+
 function ClockCard({ openEntry, seconds, onClock, compact = false }) {
-  const currentSeconds = seconds + (openEntry ? Math.max(0, Math.floor((Date.now() - new Date(openEntry.clocked_in_at).getTime()) / 1000)) : 0);
-  return <section className={`clock-card${compact ? " clock-card-compact" : ""}`}><div className="clock-orbit" /><div className="clock-card-top"><div><p className="clock-eyebrow">YOUR WORKDAY</p><strong className="clock-time">{formatTime(Date.now())}</strong><span className="clock-date">{formatDate(new Date(), { weekday: "long", month: "long", day: "numeric" })}</span></div><span className={`clock-state${openEntry ? " clock-state-live" : ""}`}><i />{openEntry ? "Clocked in" : "Not clocked in"}</span></div><div className="clock-card-bottom"><div><span className="clock-hours-label">Hours worked today</span><strong className="clock-hours">{formatDuration(currentSeconds)}</strong></div><button className="clock-action" onClick={onClock}>{openEntry ? "Clock out" : "Clock in"} <ArrowRight size={15} /></button></div></section>;
+  const now = useVisibleClock(openEntry ? 1_000 : 60_000);
+  const currentSeconds = seconds + (openEntry ? Math.max(0, Math.floor((now - new Date(openEntry.clocked_in_at).getTime()) / 1000)) : 0);
+  return <section className={`clock-card${compact ? " clock-card-compact" : ""}`}><div className="clock-orbit" /><div className="clock-card-top"><div><p className="clock-eyebrow">YOUR WORKDAY</p><strong className="clock-time">{formatTime(Date.now())}</strong><span className="clock-date">{formatDate(new Date(now), { weekday: "long", month: "long", day: "numeric" })}</span></div><span className={`clock-state${openEntry ? " clock-state-live" : ""}`}><i />{openEntry ? "Clocked in" : "Not clocked in"}</span></div><div className="clock-card-bottom"><div><span className="clock-hours-label">Hours worked today</span><strong className="clock-hours">{formatDuration(currentSeconds)}</strong></div><button className="clock-action" onClick={onClock}>{openEntry ? "Clock out" : "Clock in"} <ArrowRight size={15} /></button></div></section>;
 }
 
 function Overview({ name, tasks, allTaskCount, completed, percent, openEntry, seconds, announcements, payslips, onClock, onTask, onView }) {
@@ -2546,8 +2557,25 @@ function TasksView({ tasks, isManager, employees, employeeId, onTask, onClaim, o
   </>
 }
 
-function AttendanceView({ entries, employees, employeeId, openEntry, seconds, weeklySeconds, onClock }) {
+function AttendanceView({ entries, employees, employeeId, openEntry, seconds, onClock }) {
+  const now = useVisibleClock(
+    entries.some(entry => !entry.clocked_out_at) ? 1_000 : 60_000
+  );
   const mine = entries.filter(entry => entry.employee_id === employeeId);
+  const week = getWeekRange(new Date(now));
+
+  const weeklySeconds = mine.reduce((sum, entry) => {
+    const start = new Date(entry.clocked_in_at).getTime();
+    if (!(start >= week.start.getTime() && start < week.end.getTime())) {
+      return sum;
+    }
+
+    const end = entry.clocked_out_at
+      ? new Date(entry.clocked_out_at).getTime()
+      : now;
+
+    return sum + Math.max(0, Math.floor((end - start) / 1_000));
+  }, 0);
   return <>
     <PageHeading eyebrow="TIME & ATTENDANCE" title="Your time" description="Record your workday and review your hours." action={<span className="metric-chip">{formatDuration(weeklySeconds)} this week</span>} />
     <ClockCard openEntry={openEntry} seconds={seconds} onClock={onClock} compact />
@@ -2747,4 +2775,48 @@ function Field({ label, children }) {
   return <label className="field"><span>{label}</span>{children}</label>;
 }
 
-export default App;
+function IntroOverlay() {
+  const dialogRef = useRef(null);
+  const [visible, setVisible] = useState(true);
+
+  useLayoutEffect(() => {
+    const dialog = dialogRef.current;
+    dialog.showModal();
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    const timer = window.setTimeout(() => {
+      dialog.close();
+      setVisible(false);
+    }, reducedMotion ? 600 : 7200);
+
+    return () => {
+      window.clearTimeout(timer);
+      if (dialog.open) dialog.close();
+    };
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <dialog
+      ref={dialogRef}
+      className="td-intro-overlay"
+      aria-label="Tech Dev startup"
+      onCancel={event => event.preventDefault()}
+    >
+      <StartupScreen isOnline={navigator.onLine} />
+    </dialog>
+  );
+}
+
+export default function AppWithIntro(props) {
+  return (
+    <>
+      <App {...props} />
+      <IntroOverlay />
+    </>
+  );
+}
