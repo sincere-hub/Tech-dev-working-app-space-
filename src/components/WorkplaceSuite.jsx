@@ -32,9 +32,11 @@ import DeveloperToolHeading, {
   DeveloperToolIcon,
 } from "./DeveloperToolHeading.jsx";
 import "./internal-search.css";
+import InternalDeveloperPlatform from "./InternalDeveloperPlatform.jsx";
+import DeveloperStagingRequests from "./DeveloperStagingRequests.jsx";
+import PipelineRuns from "./PipelineRuns.jsx";
 
 const InternalChat = lazy(() => import("./InternalChat.jsx"));
-
 const groupIcons = {
   platform: Code2,
   collaboration: MessageSquare,
@@ -94,6 +96,24 @@ if (
     </section>
   );
 }
+if (selectedModule?.id === "platform.cicd") {
+  return <PipelineRuns />;
+}
+  if (selectedModule?.id === "platform.internal-platform") {
+    return (
+      <InternalDeveloperPlatform
+        module={selectedModule}
+        records={records}
+        employees={employees}
+        interactions={interactions}
+        userId={userId}
+        onInteract={onInteract}
+        onSave={(event, record) => onCreate(selectedModule, event, record)}
+        onDelete={onDelete}
+        onRefresh={onRefreshDesign}
+      />
+    );
+  }
   if (!selectedModule) {
     return (
       <>
@@ -106,6 +126,7 @@ if (
             <span>Legion records and workflows are stored in your Supabase workspace. External service connections are identified in each module and are not represented as live integrations.</span>
           </div>
         </div>
+        {role !== "admin" && <DeveloperStagingRequests key={userId} userId={userId} />}
         <div className="suite-groups">
           {visibleGroups.map(group => {
             const Icon = groupIcons[group.id] || Boxes;

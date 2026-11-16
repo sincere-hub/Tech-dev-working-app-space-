@@ -1,0 +1,17 @@
+.brand-mark.td-brand-css-motion {
+  display: inline-grid;
+  place-items: center;
+  transform-origin: center;
+  animation: td-brand-spin 7s linear infinite;
+}
+
+@keyframes td-brand-spin {
+  from { rotate: 0turn; }
+  to   { rotate: 1turn; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark.td-brand-css-motion {
+    animation: none;
+  }
+}

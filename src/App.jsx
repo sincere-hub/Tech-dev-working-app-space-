@@ -1331,7 +1331,101 @@ async function deleteAnnouncement(announcement) {
     if (result) { form.reset(); setToast("Payslip published to the employee account."); }
   }
 
-  async function submitWorkplaceRecord(module, event) {
+    async function saveInternalPlatformItem(event, record) {
+    event.preventDefault();
+
+    if (profile?.role !== "admin" || !session?.user?.id) {
+      throw new Error("Only admins can manage platform items.");
+    }
+
+    const moduleId = "platform.internal-platform";
+    if (record && record.module_id !== moduleId) {
+      throw new Error("Invalid platform item.");
+    }
+
+    const form = new FormData(event.currentTarget);
+    const read = name => String(form.get(name) ?? "").trim();
+
+    const title = read("title");
+    const type = read("platform_type");
+    const status = read("status");
+    const owner = read("platform_owner");
+    const resource = read("resource_url");
+    const environment = read("platform_environment");
+
+    if (!title || title.length > 180) {
+      throw new Error("Enter a valid item name.");
+    }
+
+    if (!["Service", "Environment request", "Scaffolding template"].includes(type)) {
+      throw new Error("Select a valid item type.");
+    }
+
+    if (![
+      "open", "in_progress", "blocked", "pending_approval",
+      "approved", "rejected", "done", "published", "archived",
+    ].includes(status)) {
+      throw new Error("Select a valid status.");
+    }
+
+    if (resource && !safeExternalUrl(resource)) {
+      throw new Error("Use an HTTPS link without embedded credentials.");
+    }
+
+    if (owner
+      && owner !== record?.metadata?.internal_platform?.owner_id
+      && !data.employees.some(person => person.id === owner)) {
+      throw new Error("Select an owner from this workspace.");
+    }
+
+    const changes = {
+      title,
+      description: read("description"),
+      status,
+      visibility: record?.visibility || "private",
+      due_date: read("due_date") || null,
+      metadata: {
+        ...record?.metadata,
+        resource_url: resource,
+        internal_platform: {
+          type,
+          owner_id: owner || null,
+          environment,
+          reference: read("platform_reference"),
+        },
+      },
+    };
+
+    const result = await mutate(() => {
+      const table = supabase.from("workplace_records");
+
+      if (record) {
+        return table.update({ ...changes, updated_at: new Date().toISOString() })
+          .eq("id", record.id)
+          .eq("module_id", moduleId)
+          .eq("updated_at", record.updated_at)
+          .select("id")
+          .single();
+      }
+
+      return table.insert({
+        ...changes,
+        module_id: moduleId,
+        created_by: session.user.id,
+      }).select("id").single();
+    });
+
+    if (result) {
+      setToast(record ? "Platform item updated." : "Platform item added.");
+    }
+
+    return result;
+  }
+
+  async function submitWorkplaceRecord(module, event, platformRecord = null) {
+    if (module.id === "platform.internal-platform") {
+      return saveInternalPlatformItem(event, platformRecord);
+    }
     event.preventDefault();
     const form = event.currentTarget;
     const values = new FormData(form);
@@ -1347,10 +1441,10 @@ async function deleteAnnouncement(announcement) {
       metadata: { field_value: String(values.get("module_value") || "").trim(), resource_url: resourceUrl },
       created_by: session.user.id,
     }));
-   if (result) {
-  form.reset();
-  setToast(
-    module.id === "collaboration.chat"
+ if (result) {
+      form.reset();
+      setToast(
+      module.id === "collaboration.chat"
       ? "Message sent."
       : "Workspace record saved."
   );
