@@ -35,6 +35,11 @@ import "./internal-search.css";
 import InternalDeveloperPlatform from "./InternalDeveloperPlatform.jsx";
 import DeveloperStagingRequests from "./DeveloperStagingRequests.jsx";
 import PipelineRuns from "./PipelineRuns.jsx";
+import BuildSystems from "./BuildSystems.jsx";
+import CodeReview from "./CodeReview.jsx";
+import TestingWorkspace from "./TestingWorkspace.jsx";
+import ReleaseWorkspace, { TestingFeatureGate } from "./ReleaseWorkspace.jsx";
+import OperationsWorkspace from "./OperationsWorkspace.jsx";
 
 const InternalChat = lazy(() => import("./InternalChat.jsx"));
 const groupIcons = {
@@ -96,8 +101,44 @@ if (
     </section>
   );
 }
+if (selectedModule?.id === "platform.code-review") {
+  return <CodeReview key={userId} />;
+}
+    if (selectedModule?.id === "platform.testing") {
+    return (
+      <TestingFeatureGate key={userId}>
+        <TestingWorkspace
+          records={records}
+          canCreate={isManager}
+          onCreate={event => onCreate(selectedModule, event)}
+        />
+      </TestingFeatureGate>
+    );
+  }
+
+  if (selectedModule?.id === "platform.deployments") {
+    return <ReleaseWorkspace key={userId} records={records} />;
+  }
+  if (selectedModule?.id === "platform.operations") {
+    return (
+      <OperationsWorkspace
+        key={userId}
+        records={records}
+        employees={employees}
+        interactions={interactions}
+        userId={userId}
+        onInteract={onInteract}
+        onStatus={onStatus}
+        onCreate={event => onCreate(selectedModule, event)}
+      />
+    );
+  }
+  
 if (selectedModule?.id === "platform.cicd") {
   return <PipelineRuns />;
+}
+if (selectedModule?.id === "platform.build-systems") {
+  return <BuildSystems key={userId} />;
 }
   if (selectedModule?.id === "platform.internal-platform") {
     return (

@@ -3,7 +3,11 @@ import { ArrowUpRight, GitBranch, RefreshCw } from "lucide-react";
 import { supabase } from "../lib/supabase.js";
 import "./developer-catalog.css";
 
-const labels = {
+const activeStatuses = new Set([
+  "queued", "in_progress", "pending", "requested", "waiting",
+]);
+
+const statusLabels = {
   success: "Passed",
   failure: "Failed",
   in_progress: "Running",
@@ -37,16 +41,21 @@ export default function PipelineRuns() {
           signal: controller.signal,
         });
 
+        if (controller.signal.aborted) return;
+
         if (error) {
           const detail = await error.context?.json?.().catch(() => null);
           throw new Error(detail?.error || "Could not load GitHub Actions runs.");
         }
-        if (controller.signal.aborted) return;
 
-        setRepositories(data?.repositories || []);
-        if (data?.detailError) throw new Error(data.detailError);
+        setRepositories(Array.isArray(data?.repositories) ? data.repositories : []);
+
+        if (data?.detailError) {
+          throw new Error(data.detailError + " For private repos, check Actions: Read access.");
+        }
+
         if (!data?.empty && !Array.isArray(data?.runs)) {
-          throw new Error("Redeploy developer-catalog with the CI/CD update.");
+          throw new Error("Redeploy developer-catalog with the pipeline update.");
         }
 
         setState({ data });
@@ -63,14 +72,12 @@ export default function PipelineRuns() {
 
   const { data, loading, error } = state;
   const runs = data?.runs || [];
+
   const visible = runs.filter(run => {
     const result = resultOf(run);
-    if (filter === "active") {
-      return !run.conclusion &&
-        ["queued", "in_progress", "pending", "requested", "waiting"].includes(run.status);
-    }
+    if (filter === "active") return !run.conclusion && activeStatuses.has(run.status);
     if (filter === "failure") return ["failure", "timed_out"].includes(result);
-    return filter === "all" || filter === result;
+    return filter === "all" || result === filter;
   });
 
   return (
@@ -81,8 +88,9 @@ export default function PipelineRuns() {
             <GitBranch size={15} aria-hidden="true" /> GITHUB ACTIONS
           </p>
           <h2>CI/CD Pipelines</h2>
-          <p>Check recent workflow runs and open their logs.</p>
+          <p>Check recent workflow runs and open the logs for any result.</p>
         </div>
+
         <button
           type="button"
           className="outline-button"
@@ -109,7 +117,9 @@ export default function PipelineRuns() {
               ))}
             </select>
           </label>
-        ) : data?.slug ? <strong>{data.slug}</strong> : null}
+        ) : data?.slug ? (
+          <strong>{data.slug}</strong>
+        ) : null}
 
         <label className="td-code-repository">
           <span>Result</span>
@@ -132,6 +142,7 @@ export default function PipelineRuns() {
           <ul className="td-code-items">
             {visible.map(run => {
               const result = resultOf(run);
+
               return (
                 <li key={run.id}>
                   <div>
@@ -148,9 +159,11 @@ export default function PipelineRuns() {
                       </small>
                     )}
                   </div>
+
                   <span className="td-code-kind td-pipeline-status" data-result={result}>
-                    {labels[result] || result.replaceAll("_", " ")}
+                    {statusLabels[result] || result.replaceAll("_", " ")}
                   </span>
+
                   <a href={run.url} target="_blank" rel="noreferrer">
                     View logs
                     <span className="td-code-sr"> for {run.name}</span>
@@ -160,6 +173,7 @@ export default function PipelineRuns() {
               );
             })}
           </ul>
+
           {!visible.length && (
             <p>{runs.length ? "No recent runs match this filter." : "No workflow runs yet."}</p>
           )}

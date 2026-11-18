@@ -6,10 +6,10 @@ export const workplaceGroups = [
     modules: [
       { id: "platform.internal-platform", title: "Internal developer platform", description: "Maintain the service catalog, environment requests, and scaffolding templates.", action: "Add platform item", provider: "Cloud and source-control providers are not connected." },
       { id: "platform.cicd", title: "CI/CD pipelines", description: "Record pipeline runs, outcomes, owners, and links to external build systems.", action: "Record pipeline run", provider: "Live pipeline events require a CI provider integration." },
-      { id: "platform.build-systems", title: "Build systems", description: "Track build jobs, build health, and investigation notes.", action: "Record build", provider: "Live build telemetry is not connected." },
+      { id: "platform.build-systems", title: "Build systems", description: "Inspect recent GitHub build jobs, step results, durations, and logs.",},
       { id: "platform.code-review", title: "Code review & code search", description: "Track review requests and searchable engineering references.", action: "Add review or reference", provider: "Repository content and code-review providers are not connected." },
       { id: "platform.testing", title: "Testing", description: "Track test plans, runs, results, and follow-up work.", action: "Record test run" },
-      { id: "platform.deployments", title: "Deployment, rollback & feature flags", description: "Maintain release records, rollback notes, and feature-flag inventories.", action: "Add release or flag", provider: "This records releases; it does not deploy or roll back external services." },
+      { id: "platform.deployments", title: "Deployment, rollback & feature flags", description: "Check Render releases, open rollback controls, and manage feature flags.",},
       { id: "platform.operations", title: "Monitoring, incidents & on-call", description: "Track operational signals, incidents, and on-call handoffs.", action: "Log operational item", provider: "Live monitoring, paging, and incident integrations are not connected." },
     ],
   },
