@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { accessibleRepositories, github, GitHubError } from "./github-repositories.ts";
+import { handleReviewRequest } from "./review-tools.mjs";
 
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -143,7 +144,12 @@ async function discover(slug: string, token: string) {
   };
 }
 
-Deno.serve(async req => {
+Deno.serve(async (req: Request) => {
+  const codeReviewResponse = await handleReviewRequest(req);
+
+  if (codeReviewResponse) {
+    return codeReviewResponse;
+  }
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers });
   if (req.method !== "POST") return response(405, { error: "Use POST." });
 

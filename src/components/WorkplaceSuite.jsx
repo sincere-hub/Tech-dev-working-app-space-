@@ -40,6 +40,8 @@ import CodeReview from "./CodeReview.jsx";
 import TestingWorkspace from "./TestingWorkspace.jsx";
 import ReleaseWorkspace, { TestingFeatureGate } from "./ReleaseWorkspace.jsx";
 import OperationsWorkspace from "./OperationsWorkspace.jsx";
+import OnboardingWorkspace from "./OnboardingWorkspace.jsx";
+import BenefitsWorkspace from "./BenefitsWorkspace.jsx";
 
 const InternalChat = lazy(() => import("./InternalChat.jsx"));
 const groupIcons = {
@@ -133,7 +135,29 @@ if (selectedModule?.id === "platform.code-review") {
       />
     );
   }
-  
+    if (selectedModule?.id === "people.onboarding") {
+    return (
+      <OnboardingWorkspace
+        key={userId}
+        employees={employees}
+        userId={userId}
+        isManager={isManager}
+        records={records}
+        onNavigate={onNavigate}
+      />
+    );
+  }
+    if (selectedModule?.id === "people.benefits") {
+    return (
+      <BenefitsWorkspace
+        key={userId}
+        employees={employees}
+        userId={userId}
+        isManager={isManager}
+        records={records}
+      />
+    );
+  }
 if (selectedModule?.id === "platform.cicd") {
   return <PipelineRuns />;
 }

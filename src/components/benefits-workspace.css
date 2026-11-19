@@ -1,0 +1,382 @@
+.td-benefits {
+  --bf-ink: #19314d;
+  --bf-muted: #4c6178;
+  --bf-line: #cbd9e8;
+
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: clamp(14px, 3vw, 28px);
+  border: 1px solid var(--bf-line);
+  border-radius: 22px;
+  color: var(--bf-ink);
+  color-scheme: light;
+  background:
+    radial-gradient(ellipse at 100% 0%, #d9eeff, transparent 55%),
+    linear-gradient(145deg, #eaf1ff, #f6faff 55%, #e9effa);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.td-benefits :is(h2, h3, h4, p) { margin: 0; }
+.td-benefits :is(h3, h4, strong) { color: var(--bf-ink); }
+.td-benefits :is(p, small, .bf-muted) { color: var(--bf-muted); }
+.td-benefits h3 { font-size: 19px; line-height: 1.4; }
+.td-benefits h4 { margin-top: 12px; font-size: 14px; }
+.td-benefits p { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.td-benefits .bf-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: clamp(20px, 4vw, 34px);
+  border: 1px solid #315b83;
+  border-radius: 17px;
+  background:
+    radial-gradient(ellipse at 100% 0, #24689b80, transparent 65%),
+    linear-gradient(115deg, #102238, #214a75);
+}
+
+.td-benefits .bf-hero h2 {
+  margin: 7px 0;
+  color: #fff;
+  font-size: clamp(25px, 3vw, 35px);
+  line-height: 1.2;
+  letter-spacing: -.03em;
+}
+
+.td-benefits .bf-hero p { color: #dbe9f6; }
+.td-benefits .bf-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .1em;
+}
+.td-benefits .bf-hero .bf-eyebrow { color: #a3ddf9; }
+
+.td-benefits .bf-panel,
+.td-benefits .bf-stats > div {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--bf-line);
+  border-radius: 14px;
+  background: linear-gradient(140deg, #fff, #f5f9ff);
+  box-shadow: 0 4px 12px #1733530c;
+}
+
+.td-benefits .bf-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.td-benefits .bf-stats > div { display: grid; gap: 5px; }
+.td-benefits .bf-stats span { color: var(--bf-muted); font-size: 12px; }
+.td-benefits .bf-stats strong {
+  font-size: 27px;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.td-benefits .bf-toolbar,
+.td-benefits .bf-buttons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.td-benefits .bf-toolbar { justify-content: space-between; }
+
+.td-benefits .bf-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 5px;
+  border: 1px solid var(--bf-line);
+  border-radius: 12px;
+  background: #e7eef8;
+}
+.td-benefits .bf-switch button {
+  min-height: 44px;
+  padding: 8px 13px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #344f6c;
+  font: inherit;
+  cursor: pointer;
+}
+.td-benefits .bf-switch button[aria-pressed="true"] {
+  background: #fff;
+  color: #183e67;
+  font-weight: 750;
+  box-shadow: 0 2px 5px #18385517;
+}
+
+.td-benefits :is(.bf-primary, .bf-outline) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.td-benefits .bf-primary {
+  background: linear-gradient(115deg, #1d4579, #28679e);
+  color: #fff;
+}
+.td-benefits .bf-outline {
+  background: #eef5ff;
+  border-color: #b2c7dd;
+  color: #224d77;
+}
+.td-benefits .bf-hero .bf-outline {
+  background: #ffffff12;
+  color: #fff;
+  border-color: #8caccb;
+}
+.td-benefits button:hover:not(:disabled) { filter: brightness(.96); }
+.td-benefits button:disabled { opacity: .65; cursor: default; }
+
+.td-benefits .bf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 14px;
+}
+.td-benefits .bf-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.td-benefits .bf-card header,
+.td-benefits .bf-request > header {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.td-benefits .bf-card .bf-buttons { margin-top: auto; padding-top: 6px; }
+
+.td-benefits .bf-pill {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: #e5eefb;
+  color: #234f7b;
+  font-size: 12px;
+  font-weight: 700;
+}
+.td-benefits .bf-pill[data-state="reviewing"] {
+  background: #fff0d4;
+  color: #79500f;
+}
+.td-benefits .bf-pill[data-state="answered"],
+.td-benefits .bf-pill[data-state="closed"] {
+  background: #e4f4ec;
+  color: #235f43;
+}
+
+.td-benefits summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 700;
+}
+.td-benefits summary::after {
+  content: "+";
+  margin-left: 12px;
+  color: #245b8f;
+}
+.td-benefits details[open] > summary::after { content: "−"; }
+.td-benefits summary::-webkit-details-marker { display: none; }
+
+.td-benefits a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #185792;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+.td-benefits fieldset {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.td-benefits form { padding-top: 12px; }
+.td-benefits .bf-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.td-benefits .bf-wide { grid-column: 1 / -1; }
+
+.td-benefits label {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--bf-ink);
+}
+.td-benefits :is(input:not([type="checkbox"]), textarea, select) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #afc2d5;
+  border-radius: 9px;
+  background: #fbfdff;
+  color: var(--bf-ink);
+  font: inherit;
+}
+.td-benefits textarea { min-height: 85px; resize: vertical; }
+.td-benefits .bf-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+}
+.td-benefits .bf-checkbox input {
+  width: 20px;
+  height: 20px;
+  accent-color: #235c92;
+}
+
+.td-benefits .bf-person { display: flex; align-items: center; gap: 10px; }
+.td-benefits .bf-person > div { display: grid; }
+.td-benefits .bf-person .employee-avatar {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 38px;
+}
+.td-benefits .bf-request { display: grid; gap: 10px; }
+.td-benefits .bf-reply {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #c5d9eb;
+  border-left: 3px solid #3977aa;
+  border-radius: 10px;
+  background: #eef5fd;
+}
+.td-benefits .bf-error,
+.td-benefits .bf-notice {
+  padding: 12px 15px;
+  border-radius: 10px;
+  background: #fcecee;
+  color: #8f2935;
+}
+.td-benefits .bf-notice { background: #e5f3ec; color: #245c45; }
+.td-benefits .bf-empty {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  padding: 34px 18px;
+  text-align: center;
+}
+.td-benefits :is(button, a, input, select, textarea, summary):focus-visible {
+  outline: 3px solid #4585bc;
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .td-benefits .bf-fields { grid-template-columns: minmax(0, 1fr); }
+  .td-benefits :is(input:not([type="checkbox"]), textarea, select) {
+    font-size: 16px;
+  }
+  .td-benefits .bf-panel,
+  .td-benefits .bf-stats > div { padding: 16px; }
+}
+.td-benefits .bf-allowances {
+  display: grid;
+  gap: 16px;
+  border-color: #b8cfe7;
+  background: linear-gradient(135deg, #f8fbff, #eaf4ff);
+}
+
+.td-benefits .bf-allowance-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.td-benefits .bf-allowance-card h4 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.td-benefits .bf-balance {
+  display: grid;
+  gap: 3px;
+  padding: 14px 0;
+  border-block: 1px solid #dae5f1;
+}
+
+.td-benefits .bf-balance > span {
+  color: #4c6178;
+  font-size: 12px;
+}
+
+.td-benefits .bf-balance > strong {
+  color: #1b527e;
+  font-size: clamp(24px, 3vw, 31px);
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+
+.td-benefits .bf-balance-breakdown {
+  display: grid;
+  gap: 5px;
+}
+
+.td-benefits .bf-balance-breakdown > span {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 7px;
+  font-size: 12px;
+  color: #4c6178;
+}
+
+.td-benefits .bf-support-request {
+  display: grid;
+  gap: 10px;
+}
+
+.td-benefits .bf-pill[data-state="approved"] {
+  background: #e4f4ec;
+  color: #235f43;
+}
+
+.td-benefits .bf-pill[data-state="pending"] {
+  background: #fff0d4;
+  color: #79500f;
+}
+
+.td-benefits .bf-pill[data-state="declined"] {
+  background: #fbe8eb;
+  color: #8f2935;
+}
+
+.td-benefits .bf-pill[data-state="cancelled"] {
+  background: #e9eef5;
+  color: #41566c;
+}

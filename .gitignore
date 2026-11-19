@@ -4,4 +4,5 @@ dist/
 .env.*
 !.env.example
 .vercel/
+*.pem
 preview-targets.local.json
