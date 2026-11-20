@@ -96,6 +96,7 @@ export const employeeCreatableModuleIds = workplaceModules
   .map(module => module.id);
 
   const employeeVisibleModules = new Set([
+  "people.performance",
   "collaboration.chat", "collaboration.docs", "collaboration.activity",
   "collaboration.search", "collaboration.projects", "collaboration.meetings",
   "people.onboarding", "people.directory", "people.payroll",

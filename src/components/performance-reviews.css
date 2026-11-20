@@ -1,0 +1,361 @@
+.td-reviews {
+  --pr-ink: #19314d;
+  --pr-muted: #4c6178;
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: clamp(14px, 3vw, 28px);
+  border: 1px solid #cbd9e8;
+  border-radius: 22px;
+  color: var(--pr-ink);
+  color-scheme: light;
+  background:
+    radial-gradient(ellipse at 100% 0%, #d9eeff, transparent 55%),
+    linear-gradient(145deg, #eaf1ff, #f6faff 55%, #e9effa);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.td-reviews :is(h2, h3, h4, p) {
+  margin: 0;
+}
+
+.td-reviews :is(h3, h4, strong) {
+  color: var(--pr-ink);
+}
+
+.td-reviews :is(p, small, .pr-muted) {
+  color: var(--pr-muted);
+}
+
+.td-reviews p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.td-reviews h3 {
+  font-size: 19px;
+  line-height: 1.4;
+}
+
+.td-reviews h4 {
+  font-size: 13px;
+}
+
+.td-reviews .pr-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: clamp(20px, 4vw, 34px);
+  border: 1px solid #315b83;
+  border-radius: 17px;
+  background:
+    radial-gradient(ellipse at 100% 0, #24689b80, transparent 65%),
+    linear-gradient(115deg, #102238, #214a75);
+}
+
+.td-reviews .pr-hero h2 {
+  margin: 7px 0;
+  color: #fff;
+  font-size: clamp(25px, 3vw, 35px);
+  line-height: 1.2;
+  letter-spacing: -.03em;
+}
+
+.td-reviews .pr-hero p {
+  color: #dbe9f6;
+}
+
+.td-reviews .pr-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: .1em;
+}
+
+.td-reviews .pr-hero .pr-eyebrow {
+  color: #a3ddf9;
+}
+
+.td-reviews .pr-panel {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #cbd9e8;
+  border-radius: 14px;
+  background: linear-gradient(140deg, #fff, #f5f9ff);
+  box-shadow: 0 4px 12px #1733530c;
+}
+
+.td-reviews .pr-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.td-reviews .pr-stats .pr-panel {
+  gap: 5px;
+}
+
+.td-reviews .pr-stats span {
+  color: var(--pr-muted);
+  font-size: 12px;
+}
+
+.td-reviews .pr-stats strong {
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.td-reviews :is(.pr-toolbar, .pr-actions, .pr-person) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.td-reviews .pr-toolbar {
+  justify-content: space-between;
+}
+
+.td-reviews .pr-person > div {
+  display: grid;
+}
+
+.td-reviews .pr-person .employee-avatar {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+}
+
+.td-reviews :is(.pr-primary, .pr-outline) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.td-reviews .pr-primary {
+  background: linear-gradient(115deg, #1d4579, #28679e);
+  color: #fff;
+}
+
+.td-reviews .pr-outline {
+  background: #eef5ff;
+  border-color: #b2c7dd;
+  color: #224d77;
+}
+
+.td-reviews button:disabled {
+  opacity: .6;
+  cursor: default;
+}
+
+.td-reviews button:hover:not(:disabled) {
+  filter: brightness(.96);
+}
+
+.td-reviews fieldset {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+.td-reviews .pr-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.td-reviews .pr-wide {
+  grid-column: 1 / -1;
+}
+
+.td-reviews label {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-width: 0;
+  color: var(--pr-ink);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.td-reviews :is(input:not([type="hidden"]), textarea, select) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #afc2d5;
+  border-radius: 9px;
+  background: #fbfdff;
+  color: var(--pr-ink);
+  font: inherit;
+}
+
+.td-reviews textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.td-reviews .pr-layout {
+  display: grid;
+  grid-template-columns: minmax(210px, 270px) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.td-reviews .pr-list,
+.td-reviews .pr-detail {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.td-reviews .pr-review-choice {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #cbd9e8;
+  border-radius: 12px;
+  background: #f7faff;
+  color: var(--pr-muted);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.td-reviews .pr-review-choice[aria-pressed="true"] {
+  border-color: #4386ba;
+  box-shadow: inset 4px 0 #4386ba;
+  background: linear-gradient(120deg, #e2efff, #f7fbff);
+}
+
+.td-reviews .pr-status {
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: #e4edf9;
+  color: #235486;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.td-reviews .pr-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.td-reviews .pr-steps span {
+  padding: 9px;
+  border-radius: 8px;
+  background: #edf1f7;
+  color: #52637a;
+  font-size: 12px;
+}
+
+.td-reviews .pr-steps [data-done="true"] {
+  background: #e4f4ec;
+  color: #235f43;
+}
+
+.td-reviews .pr-answers {
+  display: grid;
+  gap: 20px;
+}
+
+.td-reviews .pr-answers h4 {
+  margin-bottom: 6px;
+}
+
+.td-reviews .pr-rating {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #c4d8ed;
+  border-radius: 10px;
+  background: #eaf3ff;
+}
+
+.td-reviews .pr-rating strong {
+  font-size: 24px;
+  color: #245b86;
+}
+
+.td-reviews .pr-error,
+.td-reviews .pr-success {
+  padding: 12px 15px;
+  border-radius: 10px;
+  background: #fcecee;
+  color: #8f2935;
+}
+
+.td-reviews .pr-success {
+  background: #e5f3ec;
+  color: #245c45;
+}
+
+.td-reviews .pr-empty {
+  justify-items: center;
+  padding: 34px 18px;
+  text-align: center;
+}
+
+.td-reviews summary {
+  min-height: 44px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.td-reviews :is(
+  button, a, input, select, textarea, summary
+):focus-visible {
+  outline: 3px solid #4585bc;
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .td-reviews .pr-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .td-reviews .pr-list {
+    max-height: 300px;
+    overflow: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .td-reviews .pr-fields,
+  .td-reviews .pr-stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .td-reviews :is(input, textarea, select) {
+    font-size: 16px;
+  }
+
+  .td-reviews .pr-panel {
+    padding: 16px;
+  }
+}

@@ -42,6 +42,8 @@ import ReleaseWorkspace, { TestingFeatureGate } from "./ReleaseWorkspace.jsx";
 import OperationsWorkspace from "./OperationsWorkspace.jsx";
 import OnboardingWorkspace from "./OnboardingWorkspace.jsx";
 import BenefitsWorkspace from "./BenefitsWorkspace.jsx";
+import PerformanceReviews from "./PerformanceReviews.jsx";
+import RecruitingWorkspace from "./RecruitingWorkspace.jsx";
 
 const InternalChat = lazy(() => import("./InternalChat.jsx"));
 const groupIcons = {
@@ -179,6 +181,27 @@ if (selectedModule?.id === "platform.build-systems") {
       />
     );
   }
+  if (selectedModule?.id === "people.performance") {
+  return (
+    <PerformanceReviews
+      key={userId}
+      employees={employees}
+      userId={userId}
+      role={role}
+      records={records}
+    />
+  );
+}
+if (selectedModule?.id === "people.recruiting") {
+  return (
+    <RecruitingWorkspace
+      key={userId}
+      employees={employees}
+      userId={userId}
+      role={role}
+    />
+  );
+}
   if (!selectedModule) {
     return (
       <>
