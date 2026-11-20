@@ -22,6 +22,8 @@ import {
   Sparkles,
   Users,
   X,
+  House,
+  Ellipsis,
 } from "lucide-react";
 import { supabase, supabaseConfigured, ssoDomain, allowSignup } from "./lib/supabase.js";
 import WorkplaceSuite from "./components/WorkplaceSuite.jsx";
@@ -57,9 +59,11 @@ import {
   useStartupAvatar,
   clearStartupAvatarCache,
 } from "./startup-experience.jsx";
+import { CalmHome, CalmTasks } from "./components/CalmWorkspace.jsx";
+import AppearanceSettings from "./components/AppearanceSettings.jsx";
 
 const navigation = [
-  { id: "overview", label: "Home", icon: LayoutDashboard },
+  { id: "overview", label: "Home", icon: House },
   { id: "tasks", label: "My tasks", icon: CheckCheck },
   { id: "attendance", label: "Time & attendance", icon: Clock3 },
   { id: "leave", label: "Leave & schedule", icon: CalendarDays },
@@ -2080,7 +2084,7 @@ if (!session) return <AuthScreen />;
   const firstName = displayName.split(" ")[0];
 
   return (
-    <div className="app-shell organised-shell">
+    <div className="app-shell organised-shell calm-workspace">
 <EmployeeProfilesProvider
   userId={userId}
   role={profile?.role || "employee"}
@@ -2115,15 +2119,21 @@ if (!session) return <AuthScreen />;
            name={displayName}email={session?.user?.email || ""}role={profile?.role}onSignOut={signOut}closeSignal={`${activeView}:${mobileMenuOpen}`}/></div>
         </header>
 <div className="page-content">
-  {profile?.id === userId && (
-  <AttendanceAutomation
-    key={userId}
-    userId={userId}
-    role={profile.role}
-    openEntryId={openEntry?.id || ""}
-    onChanged={() => loadWorkspace(session.user)}
-  />
-  )}
+
+ {profile?.id === userId && (
+  <details className="calm-attendance-tools">
+    <summary>Attendance settings &amp; status</summary>
+
+    <AttendanceAutomation
+      key={userId}
+      userId={userId}
+      role={profile.role}
+      openEntryId={openEntry?.id || ""}
+      onChanged={() => loadWorkspace(session.user)}
+    />
+  </details>
+)}
+
   {activeView !== "overview" && (
   <div className="page-navigation">
     <button
@@ -2143,7 +2153,7 @@ if (!session) return <AuthScreen />;
           <fieldset className="workspace-controls" disabled={mutating}>
           {activeView === "overview" && <Overview
             name={firstName}
-            tasks={visibleTasks}
+            tasks={personalTasks}
             allTaskCount={personalTasks.length}
             completed={completedTasks}
             percent={completedPercent}
@@ -2220,7 +2230,14 @@ if (!session) return <AuthScreen />;
       </main>
       <nav className="mobile-nav" aria-label="Mobile navigation" inert={mobileMenuOpen ? true : undefined}>
         {navigation.filter(item => ["overview", "tasks", "attendance"].includes(item.id)).map(item => <NavItem key={item.id} item={item} active={activeView === item.id} onClick={() => navigate(item.id)} mobile />)}
-        <button className={`mobile-nav-item${mobileMenuOpen ? " active" : ""}`} onClick={toggleNavigation} aria-label="More tools" aria-expanded={mobileMenuOpen}><Menu size={20} /><span>More</span></button>
+        <button className={`mobile-nav-item${mobileMenuOpen ? " active" : ""}`}
+           onClick={toggleNavigation}
+           aria-label="More tools"
+            aria-expanded={mobileMenuOpen}
+           >
+      <Ellipsis size={20} />
+  <span>More</span>
+ </button>
       </nav>
       {devTestsOpen &&
   profile?.id === userId &&
@@ -2329,6 +2346,7 @@ async function choosePhoto(event) {
         <strong className="account-name">{name}</strong>
         <span className="account-email">{email}</span>
         <span className="account-role">{role || "employee"}</span>
+        <AppearanceSettings />
 
 {role === "admin" && (
   <label className="account-feature-toggle">
@@ -2446,16 +2464,31 @@ function ClockCard({ openEntry, seconds, onClock, compact = false }) {
   return <section className={`clock-card${compact ? " clock-card-compact" : ""}`}><div className="clock-orbit" /><div className="clock-card-top"><div><p className="clock-eyebrow">YOUR WORKDAY</p><strong className="clock-time">{formatTime(Date.now())}</strong><span className="clock-date">{formatDate(new Date(now), { weekday: "long", month: "long", day: "numeric" })}</span></div><span className={`clock-state${openEntry ? " clock-state-live" : ""}`}><i />{openEntry ? "Clocked in" : "Not clocked in"}</span></div><div className="clock-card-bottom"><div><span className="clock-hours-label">Hours worked today</span><strong className="clock-hours">{formatDuration(currentSeconds)}</strong></div><button className="clock-action" onClick={onClock}>{openEntry ? "Clock out" : "Clock in"} <ArrowRight size={15} /></button></div></section>;
 }
 
-function Overview({ name, tasks, allTaskCount, completed, percent, openEntry, seconds, announcements, payslips, onClock, onTask, onView }) {
-  const nextTasks = tasks.filter(task => task.status !== "done").slice(0, 3);
-  return <>
-    <PageHeading eyebrow="MY WORKDAY" title={`Hello, ${name}`} description="Everything you need for today." />
-    <div className="home-hero"><ClockCard openEntry={openEntry} seconds={seconds} onClock={onClock} /><section className="home-actions card"><h2>Quick actions</h2><div>{[{ id: "payslips", label: "My payslips", caption: payslips.length ? "Latest statement available" : "Pay statements", icon: FileText }, { id: "leave", label: "Leave & shifts", caption: "Plan your workday", icon: CalendarDays }, { id: "notices", label: "Company notices", caption: `${announcements.length ? "Latest updates" : "Team announcements"}`, icon: Bell }].map(item => { const Icon = item.icon; return <button key={item.id} onClick={() => onView(item.id)}><span className="quick-icon"><Icon size={21} /></span><span><strong>{item.label}</strong><small>{item.caption}</small></span><ArrowRight size={17} /></button>; })}</div></section></div>
-    <div className="home-details"><Card title="Next on your list" subtitle={`${completed} of ${allTaskCount} tasks completed`} action={<button className="text-action" onClick={() => onView("tasks")}>View all <ArrowRight size={14} /></button>}>
-      {nextTasks.length ? nextTasks.map(task => <TaskRow key={task.id} task={task} onChange={onTask} />) : <EmptyState icon={CheckCheck} title="You’re up to date" text="Find available work in My tasks." />}
-      {!!allTaskCount && <div className="progress-section"><div className="progress-track" role="progressbar" aria-label="My task completion" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}><span style={{ width: `${percent}%` }} /></div></div>}
-    </Card><Card title="Latest company update" action={<button className="text-action" onClick={() => onView("notices")}>All notices <ArrowRight size={14} /></button>}>{announcements[0] ? <AnnouncementRow announcement={announcements[0]} /> : <EmptyState icon={Megaphone} title="Nothing new yet" text="Company announcements will appear here." />}</Card></div>
-  </>;
+function Overview({
+  name,
+  tasks,
+  openEntry,
+  seconds,
+  announcements,
+  onClock,
+  onTask,
+  onView,
+}) {
+  return (
+    <CalmHome
+      name={name}
+      tasks={tasks}
+      announcements={announcements}
+      onTask={onTask}
+      onView={onView}
+    >
+      <ClockCard
+        openEntry={openEntry}
+        seconds={seconds}
+        onClock={onClock}
+      />
+    </CalmHome>
+  );
 }
 
 function TaskRow({ task, employee, onChange, onClaim, managerMode = false }) {
@@ -2630,25 +2663,52 @@ function ActivityFeedView({ records, onOpen }) {
   );
 }
 
-function TasksView({ tasks, isManager, employees, employeeId, onTask, onClaim, onSubmit }) {
-  const assigned = isManager ? tasks : tasks.filter(task => task.assignee_id === employeeId || task.assignee_id === null);
-  return <>
-    <PageHeading eyebrow={isManager ? "TEAM WORK" : "YOUR WORK"} title={isManager ? "Team tasks" : "My tasks"} description={isManager ? "Create clear assignments and follow progress across the team." : "Keep priorities clear and make progress one task at a time."} />
-{isManager && (
-  <TaskAssignment
-    employees={employees}
-    onSubmit={onSubmit}
-  />
-)}
-    <TeamTaskBoard
-  tasks={assigned}
-  employees={employees}
-  employeeId={employeeId}
-  isManager={isManager}
-  onTask={onTask}
-  onClaim={onClaim}
- />
-  </>
+function TasksView({
+  tasks,
+  isManager,
+  employees,
+  employeeId,
+  onTask,
+  onClaim,
+  onSubmit,
+}) {
+  const assigned = isManager
+    ? tasks
+    : tasks.filter(
+        task =>
+          task.assignee_id === employeeId ||
+          task.assignee_id === null
+      );
+
+  return (
+    <CalmTasks
+      tasks={assigned}
+      isManager={isManager}
+      employees={employees}
+      employeeId={employeeId}
+      onTask={onTask}
+      onClaim={onClaim}
+    >
+      {isManager && (
+        <details className="calm-manager-create">
+          <summary>Assign a task</summary>
+          <TaskAssignment
+            employees={employees}
+            onSubmit={onSubmit}
+          />
+        </details>
+      )}
+
+      <TeamTaskBoard
+        tasks={assigned}
+        employees={employees}
+        employeeId={employeeId}
+        isManager={isManager}
+        onTask={onTask}
+        onClaim={onClaim}
+      />
+    </CalmTasks>
+  );
 }
 
 function AttendanceView({ entries, employees, employeeId, openEntry, seconds, onClock }) {

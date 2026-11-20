@@ -2,7 +2,11 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import "./styles.css";
+import "./calm-workspace.css";
 import { registerOfflineShell } from "./lib/offlineWorkspace.js";
+import "./styles.css";
+import "./calm-workspace.css";
+import "./workspace-appearance.css";
 
 class AppBoundary extends React.Component {
   state = { failed: false };

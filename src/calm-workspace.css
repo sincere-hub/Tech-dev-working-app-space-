@@ -1,0 +1,1244 @@
+/* Import this file AFTER styles.css in main.jsx. */
+
+.app-shell.organised-shell.calm-workspace {
+  --calm-ink: #202c39;
+  --calm-muted: #657382;
+  --calm-line: #e2e8ed;
+  --calm-accent: #087f72;
+  --ink: #202c39;
+  --muted: #657382;
+  --line: #e2e8ed;
+
+  min-height: 100dvh;
+  background: #f8fafc;
+  color: var(--calm-ink);
+  font-family: "DM Sans", system-ui, sans-serif;
+}
+
+.app-shell.organised-shell.calm-workspace::before,
+.app-shell.organised-shell.calm-workspace::after {
+  content: none;
+  display: none;
+}
+
+.app-shell.organised-shell.calm-workspace > .main-area {
+  margin: 0;
+  padding-bottom: 0;
+  min-width: 0;
+  background: transparent;
+}
+
+.app-shell.organised-shell.calm-workspace .page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+  width: min(1120px, 100%);
+  min-width: 0;
+  margin: 0 auto;
+  padding: 34px clamp(22px, 4vw, 48px) 48px;
+  background: transparent;
+}
+
+.app-shell.organised-shell.calm-workspace .workspace-controls {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Header */
+
+.app-shell.organised-shell.calm-workspace .topbar {
+  height: 80px;
+  min-height: 80px;
+  padding: 0 clamp(22px, 4vw, 48px);
+  gap: 24px;
+  border-bottom: 1px solid var(--calm-line);
+  background: #f8fafcf5;
+  color: var(--calm-ink);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.app-shell.organised-shell.calm-workspace .topbar-left {
+  min-width: 0;
+  gap: 18px;
+}
+
+.app-shell.organised-shell.calm-workspace .topbar-right {
+  margin-left: auto;
+  gap: 10px;
+}
+
+.app-shell.organised-shell.calm-workspace .topbar .brand {
+  gap: 9px;
+  min-width: 0;
+}
+
+.app-shell.organised-shell.calm-workspace .topbar .brand-mark {
+  width: 31px;
+  height: 31px;
+  flex: 0 0 31px;
+}
+
+.app-shell.organised-shell.calm-workspace
+.topbar .brand-wordmark-image {
+  display: block;
+  width: 132px;
+  height: auto;
+  filter: brightness(.18);
+}
+
+.app-shell.organised-shell.calm-workspace .desktop-page-name {
+  display: none;
+}
+
+.app-shell.organised-shell.calm-workspace .topbar .icon-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #3e5060;
+  box-shadow: none;
+}
+
+.app-shell.organised-shell.calm-workspace
+.topbar .icon-button:hover {
+  background: #eaf0f2;
+}
+
+.app-shell.organised-shell.calm-workspace
+.desktop-primary-nav .side-nav-item {
+  border: 0;
+  background: transparent;
+  color: var(--calm-muted);
+  box-shadow: none;
+}
+
+.app-shell.organised-shell.calm-workspace
+.desktop-primary-nav .side-nav-item.active {
+  background: #e4f2ee;
+  color: var(--calm-accent);
+}
+
+.app-shell.organised-shell.calm-workspace .topbar .account-menu {
+  position: relative;
+  flex: 0 0 42px;
+  width: 42px;
+  min-width: 42px;
+  max-width: 42px;
+}
+
+.app-shell.organised-shell.calm-workspace
+.topbar .account-menu > .account-trigger {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #d9eee8;
+  color: #24544b;
+  box-shadow: none;
+  font-weight: 700;
+}
+
+.app-shell.organised-shell.calm-workspace
+.topbar .account-menu[open] > .account-panel {
+  position: absolute;
+  inset: calc(100% + 12px) 0 auto auto;
+  width: min(352px, calc(100vw - 32px));
+  min-width: 0;
+  max-height: calc(100dvh - 160px);
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--calm-line);
+  border-radius: 18px;
+  background: #fff !important;
+  color: var(--calm-ink);
+  box-shadow: 0 12px 40px #21343f1a;
+  color-scheme: light;
+}
+
+.app-shell.organised-shell.calm-workspace
+.account-panel :is(.account-name, .account-notifications > strong) {
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace
+.account-panel :is(
+  .account-label,
+  .account-email,
+  .account-role,
+  .account-feature-toggle,
+  .account-notifications > p
+) {
+  color: var(--calm-muted);
+}
+
+.app-shell.organised-shell.calm-workspace
+.account-panel :is(button, .account-role) {
+  border-color: var(--calm-line);
+  background: #edf4f3;
+  color: #245b52;
+  box-shadow: none;
+}
+
+.app-shell.organised-shell.calm-workspace .page-heading h1 {
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace
+.page-heading :is(.eyebrow, .page-description) {
+  color: var(--calm-muted);
+}
+
+.app-shell.organised-shell.calm-workspace .page-navigation {
+  margin: 0;
+}
+
+.app-shell.organised-shell.calm-workspace .page-back-button {
+  min-height: 40px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--calm-muted);
+  box-shadow: none;
+}
+
+/* Attendance controls remain available below the main content. */
+
+.app-shell.organised-shell.calm-workspace .calm-attendance-tools {
+  order: 10;
+  padding: 14px 0;
+  border-top: 1px solid var(--calm-line);
+  color: var(--calm-muted);
+  font-size: 12px;
+}
+
+.app-shell.organised-shell.calm-workspace
+.calm-attendance-tools > summary {
+  width: fit-content;
+  min-height: 36px;
+  cursor: pointer;
+}
+
+.app-shell.organised-shell.calm-workspace .td-att-status {
+  margin: 10px 0 0;
+  padding: 14px;
+  border-color: var(--calm-line);
+  background: #eef3f5;
+  color: #4e6373;
+  font-size: 12px;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-att-status .td-att-secondary {
+  border-color: #c9d8dd;
+  background: #fff;
+  color: #34566b;
+}
+
+/* Home and personal tasks */
+
+.calm-workspace :is(.calm-home, .calm-tasks) {
+  width: 100%;
+  min-width: 0;
+  color: var(--calm-ink);
+  color-scheme: light;
+}
+
+.calm-workspace :is(.calm-home, .calm-tasks)
+:is(h1, h2, h3, p, ul) {
+  margin: 0;
+}
+
+.calm-workspace .calm-heading {
+  display: grid;
+  gap: 9px;
+  margin-bottom: 28px;
+}
+
+.calm-workspace .calm-heading h1 {
+  font: 750 clamp(30px, 3.2vw, 42px)/1.1
+    "DM Sans", system-ui, sans-serif;
+  letter-spacing: -.045em;
+  color: var(--calm-ink);
+}
+
+.calm-workspace .calm-heading p {
+  color: var(--calm-muted);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.calm-workspace .calm-heading p:first-child:not(:last-child) {
+  font-size: 14px;
+}
+
+.calm-workspace .calm-home-layout {
+  display: grid;
+  grid-template-columns: minmax(0, .95fr) minmax(0, 1.2fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.calm-workspace .calm-clock-slot,
+.calm-workspace .calm-home-sections {
+  min-width: 0;
+}
+
+.calm-workspace .calm-home-sections {
+  display: grid;
+  gap: 28px;
+}
+
+.calm-workspace .calm-section {
+  min-width: 0;
+}
+
+.calm-workspace .calm-section > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 7px;
+}
+
+.calm-workspace .calm-section h2 {
+  color: var(--calm-ink);
+  font-size: 19px;
+  letter-spacing: -.025em;
+}
+
+.calm-workspace :is(.calm-section > header > button, .calm-link) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--calm-accent);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.calm-workspace .calm-task-list {
+  padding: 0;
+  list-style: none;
+}
+
+.calm-workspace .calm-task {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--calm-line);
+  background: transparent;
+}
+
+.calm-workspace .calm-task-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.calm-workspace .calm-check {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+}
+
+.calm-workspace .calm-check::before {
+  position: absolute;
+  content: "";
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid #81919d;
+  border-radius: 50%;
+}
+
+.calm-workspace .calm-check > svg {
+  position: relative;
+  z-index: 1;
+}
+
+.calm-workspace .calm-check[aria-pressed="true"]::before {
+  border-color: var(--calm-accent);
+  background: var(--calm-accent);
+}
+
+.calm-workspace .calm-task-open {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+  min-height: 50px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--calm-ink);
+  text-align: left;
+}
+
+.calm-workspace .calm-task-open > span {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.calm-workspace .calm-task-open strong {
+  color: var(--calm-ink);
+  font-size: 15px;
+  line-height: 1.45;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.calm-workspace .calm-task-open small {
+  color: var(--calm-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.calm-workspace .calm-task-open .calm-in-progress {
+  color: var(--calm-accent);
+}
+
+.calm-workspace .calm-task-open > svg {
+  flex-shrink: 0;
+  color: #81909b;
+}
+
+.calm-workspace .calm-task-open > .is-open {
+  transform: rotate(180deg);
+}
+
+.calm-workspace .calm-task.is-done .calm-task-open strong {
+  color: #72808c;
+  text-decoration: line-through;
+}
+
+.calm-workspace .calm-task-detail {
+  display: grid;
+  gap: 12px;
+  margin: 12px 0 0 53px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #edf3f4;
+}
+
+.calm-workspace .calm-task-detail p {
+  color: #485d6b;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.calm-workspace .calm-task-detail > small {
+  color: var(--calm-muted);
+}
+
+.calm-workspace .calm-task-detail label {
+  display: grid;
+  gap: 6px;
+  color: #445767;
+  font-size: 12px;
+}
+
+.calm-workspace .calm-task-detail select {
+  width: 100%;
+  max-width: 240px;
+  min-height: 44px;
+  padding: 9px 12px;
+  border: 1px solid #c6d5da;
+  border-radius: 9px;
+  background: #fff;
+  color: var(--calm-ink);
+  font: inherit;
+}
+
+.calm-workspace .calm-task-person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #4a6270;
+}
+
+.calm-workspace .calm-task-person .employee-avatar {
+  width: 28px;
+  height: 28px;
+}
+
+.calm-workspace .calm-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  justify-self: start;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--calm-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.calm-workspace .calm-announcement {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.calm-workspace .calm-announcement > span:nth-child(2) {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  flex: 1;
+}
+
+.calm-workspace .calm-announcement strong {
+  color: var(--calm-ink);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.calm-workspace .calm-notice-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  width: 42px;
+  height: 44px;
+  border-radius: 12px;
+  background: #e0f1ec;
+  color: #27675e;
+}
+
+.calm-workspace .calm-notice-preview {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  color: var(--calm-muted);
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.calm-workspace .calm-announcement > svg {
+  flex: 0 0 15px;
+  margin-top: 6px;
+  color: #8a98a3;
+}
+
+.calm-workspace .calm-tasks {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+.calm-workspace .calm-tabs {
+  display: flex;
+  gap: 20px;
+  overflow: auto;
+  padding: 0 0 1px;
+  border-bottom: 1px solid var(--calm-line);
+  scrollbar-width: thin;
+}
+
+.calm-workspace .calm-tabs button {
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 8px 3px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--calm-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.calm-workspace .calm-tabs button[aria-pressed="true"] {
+  color: var(--calm-accent);
+  border-bottom-color: var(--calm-accent);
+}
+
+.calm-workspace .calm-list-caption {
+  padding: 20px 0 8px;
+  color: var(--calm-muted);
+  font-size: 12px;
+}
+
+.calm-workspace .calm-empty {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 27px 0;
+  color: #80938c;
+}
+
+.calm-workspace .calm-empty :is(h2, h3) {
+  color: var(--calm-ink);
+  font-size: 17px;
+}
+
+.calm-workspace :is(.calm-muted, .calm-empty p) {
+  color: var(--calm-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.calm-workspace .calm-end-note {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 70px 0 30px;
+  color: #7c8d97;
+  font-size: 14px;
+}
+
+.calm-workspace .calm-error {
+  padding-top: 10px;
+  color: #a44242;
+  font-size: 13px;
+}
+
+.calm-workspace .calm-manager-create {
+  margin: 24px 0;
+  border-bottom: 1px solid var(--calm-line);
+}
+
+.calm-workspace .calm-manager-create > summary {
+  min-height: 44px;
+  padding: 12px 0;
+  color: var(--calm-accent);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+/* Clock card */
+
+.app-shell.organised-shell.calm-workspace .clock-card {
+  min-height: 240px;
+  padding: 24px;
+  border: 0;
+  border-radius: 19px;
+  background:
+    radial-gradient(ellipse at 100% 0, #0a7f7160, transparent 70%),
+    linear-gradient(120deg, #004d47, #08675c);
+  box-shadow: none;
+  color: #fff;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-card::before,
+.app-shell.organised-shell.calm-workspace .clock-card::after {
+  content: none;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-card-top {
+  display: block;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-card-top > div {
+  display: grid;
+  gap: 6px;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-eyebrow {
+  margin: 0;
+  color: #e2f5ef;
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-time {
+  color: #fff;
+  font-size: clamp(32px, 4vw, 44px);
+  line-height: 1.15;
+  letter-spacing: -.025em;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-date {
+  color: #d2eae2;
+  font-size: 12px;
+}
+
+.app-shell.organised-shell.calm-workspace .calm-home .clock-date {
+  display: none;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-state {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 15px;
+  padding: 5px 10px;
+  border: 0;
+  border-radius: 50px;
+  background: #e0f3eb;
+  color: #184e43;
+  font-size: 11px;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-state i {
+  background: #839b91;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-state-live i {
+  background: #18ad79;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-state i::before,
+.app-shell.organised-shell.calm-workspace .clock-state i::after {
+  content: none;
+  animation: none;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #d8f4ed40;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-hours-label {
+  color: #d8eee6;
+  font-size: 11px;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-hours {
+  color: #fff;
+  font-size: 26px;
+  line-height: 1.25;
+}
+
+.app-shell.organised-shell.calm-workspace
+.clock-card button.clock-action {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 11px;
+  background: #d9f0e8;
+  color: #194e44;
+  box-shadow: none;
+  font-size: 13px;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-action::before {
+  content: none;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-orbit {
+  top: -155px;
+  right: -130px;
+  opacity: .45;
+  box-shadow:
+    0 0 0 35px #c6f3e50c,
+    0 0 0 70px #c6f3e508;
+}
+
+/* More tools */
+
+.app-shell.organised-shell.calm-workspace .navigation-drawer {
+  background: #f8fafc;
+  color: var(--calm-ink);
+  box-shadow: 12px 0 50px #163f411f;
+}
+
+.app-shell.organised-shell.calm-workspace .drawer-header h2 {
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace :is(
+  .drawer-header .eyebrow,
+  .drawer-section-label,
+  .drawer-profile span,
+  .drawer-empty
+) {
+  color: var(--calm-muted);
+}
+
+.app-shell.organised-shell.calm-workspace
+.navigation-drawer .icon-button {
+  background: #edf2f3;
+  color: #526b77;
+  border: 0;
+}
+
+.app-shell.organised-shell.calm-workspace .drawer-search {
+  border-color: var(--calm-line);
+  background: #eef3f5;
+  color: #5f7782;
+}
+
+.app-shell.organised-shell.calm-workspace .drawer-search input {
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace
+.drawer-search input::placeholder {
+  color: #758895;
+}
+
+.app-shell.organised-shell.calm-workspace :is(
+  .drawer-pages button,
+  .drawer-group summary,
+  .drawer-group button,
+  .drawer-profile strong
+) {
+  color: #334b5a;
+  background: transparent;
+}
+
+.app-shell.organised-shell.calm-workspace
+.drawer-pages button[aria-current],
+.app-shell.organised-shell.calm-workspace
+.drawer-group button[aria-current] {
+  background: #e0eee9;
+  color: #076c60;
+}
+
+.app-shell.organised-shell.calm-workspace
+:is(.drawer-group, .drawer-profile) {
+  border-color: var(--calm-line);
+}
+
+.app-shell.organised-shell.calm-workspace
+.drawer-group summary > span {
+  background: transparent;
+  color: #516775;
+}
+
+.app-shell.organised-shell.calm-workspace
+.drawer-group summary > span:last-child {
+  background: #e8eef1;
+}
+
+/* Existing attendance records and manager controls */
+
+.app-shell.organised-shell.calm-workspace .td-time-records {
+  border: 1px solid var(--calm-line);
+  background: #fff;
+  box-shadow: none;
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-time-records :is(.panel-heading, table, thead, tbody, th, td) {
+  border-color: var(--calm-line);
+  background: #fff;
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-time-records :is(.panel-heading h2, tbody td:first-child) {
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-time-records :is(.panel-heading p, th) {
+  color: var(--calm-muted);
+}
+
+.app-shell.organised-shell.calm-workspace .metric-chip {
+  border-color: #d5e4df;
+  background: #eaf3ef;
+  color: #336357;
+}
+
+.app-shell.organised-shell.calm-workspace
+:is(.td-task-board, .td-assign-task) {
+  border-color: var(--calm-line);
+  background: #fff;
+  color: var(--calm-ink);
+  box-shadow: none;
+  color-scheme: light;
+}
+
+.app-shell.organised-shell.calm-workspace :is(
+  .tdtb-header,
+  .tdtb-progress-area,
+  .tdtb-columns,
+  .tdtb-row,
+  .tdtb-footer,
+  .tdaf-header,
+  .tdaf-form,
+  .tdaf-footer
+) {
+  border-color: var(--calm-line);
+  background: transparent;
+}
+
+.app-shell.organised-shell.calm-workspace :is(
+  .tdtb-task-copy h3,
+  .tdtb-header h2,
+  .tdaf-header h2,
+  .tdaf-field > span
+) {
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace :is(
+  .tdtb-eyebrow,
+  .tdtb-subtitle,
+  .tdtb-date,
+  .tdtb-person,
+  .tdtb-label,
+  .tdtb-progress-label,
+  .tdtb-progress-label strong,
+  .tdtb-footer,
+  .tdaf-header p,
+  .tdaf-footer
+) {
+  color: var(--calm-muted);
+}
+
+.app-shell.organised-shell.calm-workspace :is(
+  .tdtb-total,
+  .tdtb-priority,
+  .tdtb-status,
+  .tdtb-select,
+  .tdtb-claim,
+  .tdtb-check,
+  .tdaf-icon
+) {
+  border-color: #d1dfdf;
+  background: #eef4f2;
+  color: #36645a;
+}
+
+.app-shell.organised-shell.calm-workspace .tdtb-priority > i {
+  display: none;
+}
+
+.app-shell.organised-shell.calm-workspace .tdtb-details p {
+  color: #445a68;
+}
+
+.app-shell.organised-shell.calm-workspace .tdtb-progress {
+  background: #e5ecea;
+}
+
+.app-shell.organised-shell.calm-workspace .tdtb-progress > span {
+  background: #4b9b86;
+}
+
+.app-shell.organised-shell.calm-workspace
+.tdaf-field :is(input, textarea, select) {
+  border-color: #ccd9de;
+  background: #f8fafb;
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace .tdaf-submit {
+  border: 0;
+  background: #087f72;
+  color: #fff;
+  box-shadow: none;
+}
+
+/* Chat colours; existing message behaviour is preserved. */
+
+.app-shell.organised-shell.calm-workspace .td-chat {
+  border-color: var(--calm-line);
+  background: #fff;
+  color: var(--calm-ink);
+  box-shadow: none;
+  color-scheme: light;
+}
+
+.app-shell.organised-shell.calm-workspace .td-chat :is(
+  .td-chat-sidebar,
+  .td-chat-room,
+  .td-chat-room-header,
+  .td-chat-feed,
+  .td-chat-welcome,
+  .td-chat-composer,
+  .td-chat-pagination,
+  .td-chat-disclosure,
+  .td-chat-sidebar-footer
+) {
+  border-color: var(--calm-line);
+  background: #f8fafc;
+  color: var(--calm-muted);
+}
+
+.app-shell.organised-shell.calm-workspace .td-chat :is(
+  h1,
+  h2,
+  .td-chat-contact-main strong,
+  .td-chat-bubble > strong,
+  .td-chat-room-title
+) {
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace .td-chat :is(
+  .td-chat-top small,
+  .td-chat-contact-main > span,
+  .td-chat-contact-meta time,
+  .td-chat-room-title > span,
+  .td-chat-welcome p,
+  .td-chat-welcome > span,
+  .td-chat-empty,
+  .td-chat-composer > small,
+  .td-chat-bubble time
+) {
+  color: var(--calm-muted);
+}
+
+.app-shell.organised-shell.calm-workspace .td-chat :is(
+  .td-chat-icon,
+  .td-chat-tabs button,
+  .td-chat-pagination button
+) {
+  border-color: var(--calm-line);
+  background: #eef3f4;
+  color: #49646e;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat .td-chat-tabs button[aria-pressed="true"],
+.app-shell.organised-shell.calm-workspace
+.td-chat .td-chat-contact.is-active {
+  border-color: #c8dfd9;
+  background: #e2f0eb;
+  color: #176556;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat .td-chat-contact:hover {
+  background: #edf4f2;
+}
+
+.app-shell.organised-shell.calm-workspace .td-chat :is(
+  .td-chat-search,
+  .td-chat-compose-row,
+  .td-chat-menu > div
+) {
+  border-color: #d3e0e4;
+  background: #fff;
+  color: #49646e;
+  box-shadow: none;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat :is(input, textarea) {
+  background: transparent;
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat :is(input, textarea)::placeholder {
+  color: #788b96;
+}
+
+.app-shell.organised-shell.calm-workspace .td-chat .td-chat-bubble {
+  border-color: #dce6ea;
+  background: #edf2f5;
+  color: var(--calm-ink);
+  box-shadow: none;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat .is-mine > .td-chat-bubble {
+  border-color: #cee2db;
+  background: #e1f0e9;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat .td-chat-bubble > p {
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat .td-chat-menu > div button {
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat :is(.td-chat-send, .td-chat-voice-control > button) {
+  border-color: #087f72;
+  background: #087f72;
+  color: #fff;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat :is(.td-chat-day span, .td-reply-composer, .td-reply-quote) {
+  border-color: #c9dfd6;
+  background: #e4efea;
+  color: #3c665a;
+  box-shadow: none;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat .td-reply-quote > strong {
+  color: #24685c;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat .td-reply-quote > span {
+  color: #4b665d;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-chat .td-chat-bubble footer button {
+  color: #4e6a61;
+}
+
+/* Focus, feedback and mobile navigation */
+
+.app-shell.organised-shell.calm-workspace
+:is(button, a, input, select, textarea, summary):focus-visible {
+  outline: 3px solid #138c794d;
+  outline-offset: 3px;
+}
+
+.app-shell.organised-shell.calm-workspace .toast {
+  border-color: #bdd9d1;
+  background: #e5f3ed;
+  color: #1d5547;
+  box-shadow: 0 6px 24px #1c554419;
+}
+
+@media (max-width: 900px) {
+  .app-shell.organised-shell.calm-workspace .topbar {
+    height: 72px;
+    min-height: 72px;
+    padding: 0 22px;
+    gap: 10px;
+  }
+
+  .app-shell.organised-shell.calm-workspace
+  .topbar .menu-trigger,
+  .app-shell.organised-shell.calm-workspace
+  .desktop-primary-nav {
+    display: none;
+  }
+
+  .app-shell.organised-shell.calm-workspace .topbar-left {
+    flex: 1;
+    gap: 0;
+  }
+
+  .app-shell.organised-shell.calm-workspace .page-content {
+    padding: 24px 22px
+      calc(105px + env(safe-area-inset-bottom));
+  }
+
+  .app-shell.organised-shell.calm-workspace .mobile-nav {
+    position: fixed;
+    inset: auto 0 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: start;
+    z-index: 20;
+    height: auto;
+    min-height: 72px;
+    padding: 7px 12px
+      calc(8px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--calm-line);
+    background: #f8fafc !important;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  .app-shell.organised-shell.calm-workspace .mobile-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-width: 0;
+    min-height: 54px;
+    padding: 5px;
+    border: 0;
+    background: transparent;
+    color: #73818e !important;
+    font-size: 11px;
+  }
+
+  .app-shell.organised-shell.calm-workspace
+  .mobile-nav-item.active {
+    color: var(--calm-accent) !important;
+    background: transparent;
+  }
+
+  .app-shell.organised-shell.calm-workspace .mobile-nav-item svg {
+    width: 23px;
+    height: 23px;
+  }
+}
+
+@media (max-width: 700px) {
+  .calm-workspace .calm-home-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 26px;
+  }
+
+  .calm-workspace .calm-heading {
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .calm-workspace .calm-heading h1 {
+    font-size: 32px;
+  }
+
+  .calm-workspace .calm-home-sections {
+    gap: 24px;
+  }
+
+  .calm-workspace .calm-task-detail select {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-shell.organised-shell.calm-workspace .topbar {
+    padding-inline: 16px;
+  }
+
+  .app-shell.organised-shell.calm-workspace
+  .topbar .brand-wordmark-image {
+    width: 110px;
+  }
+
+  .app-shell.organised-shell.calm-workspace .page-content {
+    padding-inline: 16px;
+  }
+
+  .app-shell.organised-shell.calm-workspace .clock-card {
+    padding: 20px;
+  }
+
+  .app-shell.organised-shell.calm-workspace .clock-card-bottom {
+    flex-wrap: wrap;
+  }
+}

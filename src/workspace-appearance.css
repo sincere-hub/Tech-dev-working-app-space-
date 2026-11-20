@@ -1,0 +1,562 @@
+/* Richer clock card */
+
+.app-shell.organised-shell.calm-workspace .clock-card {
+  border: 1px solid #54c9ab40;
+
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      #3ed2b226,
+      transparent 65%
+    ),
+    linear-gradient(
+      118deg,
+      #032d29 0%,
+      #06594b 35%,
+      #0b7864 68%,
+      #0b3f5c 100%
+    );
+
+  box-shadow:
+    0 12px 28px #064c3d17,
+    inset 0 1px 0 #c3ffec26;
+}
+
+/* Clock in/out button */
+
+.app-shell.organised-shell.calm-workspace
+.clock-card button.clock-action {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid #effff5a6;
+
+  background: linear-gradient(
+    115deg,
+    #c6f0dc,
+    #eafff3 52%,
+    #caeee7
+  );
+
+  color: #124839;
+
+  box-shadow:
+    inset 0 1px 0 #fff8,
+    0 3px 10px #002b2726;
+}
+
+/* Diagonal light sweep */
+
+.app-shell.organised-shell.calm-workspace
+.clock-card button.clock-action::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  left: -55%;
+  width: 45%;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #ffffffc4,
+    transparent
+  );
+
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-160%) skewX(-22deg);
+  animation: td-clock-shear 5s ease-in-out infinite;
+}
+
+@keyframes td-clock-shear {
+  0%,
+  55% {
+    transform: translateX(-160%) skewX(-22deg);
+    opacity: 0;
+  }
+
+  62% {
+    opacity: .85;
+  }
+
+  88% {
+    transform: translateX(520%) skewX(-22deg);
+    opacity: .65;
+  }
+
+  100% {
+    transform: translateX(520%) skewX(-22deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell.organised-shell.calm-workspace
+  .clock-card button.clock-action::before {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* Appearance setting */
+
+.app-shell.organised-shell.calm-workspace .td-appearance {
+  padding: 18px 0;
+  margin: 16px 0 0;
+  border-top: 1px solid var(--calm-line);
+  border-bottom: 1px solid var(--calm-line);
+  color: var(--calm-ink);
+}
+
+.app-shell.organised-shell.calm-workspace .td-appearance h3 {
+  margin: 0 0 14px;
+  color: var(--calm-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.app-shell.organised-shell.calm-workspace .td-appearance-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.app-shell.organised-shell.calm-workspace .td-appearance-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  color: var(--calm-accent);
+}
+
+.app-shell.organised-shell.calm-workspace .td-appearance-copy {
+  display: grid;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-appearance-copy strong {
+  color: var(--calm-ink);
+  font-size: 14px;
+}
+
+.app-shell.organised-shell.calm-workspace
+.td-appearance-copy small {
+  color: var(--calm-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.app-shell.organised-shell.calm-workspace
+input.td-theme-switch {
+  appearance: none;
+  -webkit-appearance: none;
+  position: relative;
+  flex: 0 0 46px;
+  width: 46px;
+  min-width: 46px;
+  max-width: 46px;
+  height: 28px;
+  min-height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #aab8bf;
+  border-radius: 99px;
+  background: #cbd5da;
+  cursor: pointer;
+}
+
+.app-shell.organised-shell.calm-workspace
+input.td-theme-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px #112b3426;
+}
+
+.app-shell.organised-shell.calm-workspace
+input.td-theme-switch:checked {
+  border-color: #087f72;
+  background: #087f72;
+}
+
+.app-shell.organised-shell.calm-workspace
+input.td-theme-switch:checked::after {
+  transform: translateX(18px);
+}
+
+/* Dark theme palette */
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace {
+  --calm-ink: #e6edf3;
+  --calm-muted: #a5b3c0;
+  --calm-line: #2c3b48;
+  --calm-accent: #75d6ba;
+  --ink: #e6edf3;
+  --muted: #a5b3c0;
+  --line: #2c3b48;
+
+  background: #111d28;
+  color: #e6edf3;
+  color-scheme: dark;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .calm-home,
+  .calm-tasks,
+  .td-chat,
+  .td-time-records,
+  .td-task-board,
+  .td-assign-task
+) {
+  color-scheme: dark;
+}
+
+/* Header, navigation and profile */
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(.topbar, .mobile-nav, .navigation-drawer) {
+  background: #111d28 !important;
+  border-color: var(--calm-line);
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+.topbar .brand-wordmark-image {
+  filter: none;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(.topbar .icon-button, .mobile-nav-item) {
+  color: #b2c1cb !important;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+.mobile-nav-item.active {
+  color: #75d6ba !important;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .topbar .icon-button:hover,
+  .td-chat .td-chat-contact:hover,
+  .td-chat .td-chat-menu > div button:hover
+) {
+  background: #233b43;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(.calm-action, .calm-check[aria-pressed="true"]) {
+  color: #123c31;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+.topbar .account-menu > .account-trigger {
+  background: #23443f;
+  color: #bcebdc;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+.topbar .account-menu[open] > .account-panel {
+  background: #182833 !important;
+  color-scheme: dark;
+}
+
+/* Task details, settings and inputs */
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .account-panel button,
+  .account-role,
+  .calm-task-detail,
+  .calm-task-detail select,
+  .drawer-search,
+  .navigation-drawer .icon-button,
+  .td-att-status,
+  .td-att-status .td-att-secondary,
+  .tdaf-field input,
+  .tdaf-field textarea,
+  .tdaf-field select
+) {
+  background: #1c303b;
+  border-color: #354954;
+  color: #d6e4ea;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .calm-task-open small,
+  .calm-task-detail p,
+  .calm-task-detail label,
+  .calm-task-person,
+  .calm-notice-preview,
+  .calm-muted,
+  .calm-end-note,
+  .drawer-group summary > span,
+  .drawer-profile span
+) {
+  color: var(--calm-muted);
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .drawer-pages button,
+  .drawer-group button,
+  .drawer-group summary,
+  .drawer-profile strong
+) {
+  color: var(--calm-ink);
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .calm-notice-icon,
+  .metric-chip,
+  .desktop-primary-nav .side-nav-item.active,
+  .drawer-pages button[aria-current],
+  .drawer-group button[aria-current]
+) {
+  border-color: #34574e;
+  background: #213f38;
+  color: #a8e3cf;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(.calm-in-progress, .calm-task-open .calm-in-progress) {
+  color: #75d6ba;
+}
+
+/* Attendance and manager task board */
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .td-time-records,
+  .td-time-records .panel-heading,
+  .td-time-records table,
+  .td-time-records thead,
+  .td-time-records tbody,
+  .td-time-records th,
+  .td-time-records td,
+  .td-task-board,
+  .td-assign-task
+) {
+  border-color: var(--calm-line);
+  background: #152530;
+  color: var(--calm-ink);
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .tdtb-total,
+  .tdtb-priority,
+  .tdtb-status,
+  .tdtb-select,
+  .tdtb-claim,
+  .tdtb-check,
+  .tdaf-icon
+) {
+  border-color: #34574e;
+  background: #213f38;
+  color: #b9e4d5;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+.tdtb-details p {
+  color: var(--calm-muted);
+}
+
+/* Chat */
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace .td-chat,
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace .td-chat
+:is(
+  .td-chat-sidebar,
+  .td-chat-room,
+  .td-chat-room-header,
+  .td-chat-feed,
+  .td-chat-welcome,
+  .td-chat-composer,
+  .td-chat-pagination,
+  .td-chat-disclosure,
+  .td-chat-sidebar-footer
+) {
+  border-color: var(--calm-line);
+  background: #152530;
+  color: var(--calm-muted);
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace .td-chat
+:is(
+  .td-chat-search,
+  .td-chat-compose-row,
+  .td-chat-menu > div,
+  .td-chat-bubble,
+  .td-chat-icon,
+  .td-chat-tabs button,
+  .td-chat-pagination button
+) {
+  border-color: #354954;
+  background: #1c303b;
+  color: #d5e4eb;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace .td-chat
+:is(
+  .is-mine > .td-chat-bubble,
+  .td-chat-contact.is-active,
+  .td-chat-tabs button[aria-pressed="true"],
+  .td-chat-day span,
+  .td-reply-composer,
+  .td-reply-quote
+) {
+  border-color: #34574e;
+  background: #213f38;
+  color: #b9e4d5;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace .td-chat
+:is(
+  .td-reply-quote > strong,
+  .td-reply-quote > span,
+  .td-chat-bubble footer button
+) {
+  color: #b9d8cb;
+}
+
+/* Feedback */
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(.calm-error, .td-chat-error) {
+  color: #ffb7b7;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace .toast {
+  border-color: #34574e;
+  background: #213f38;
+  color: #d3f0e3;
+}
+
+/* Dedicated HR tools, when present */
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .td-benefits,
+  .td-onboarding,
+  .td-expenses,
+  .td-reviews,
+  .td-recruiting
+) {
+  --bf-ink: #e6edf3;
+  --bf-muted: #a5b3c0;
+  --bf-line: #354954;
+  --ob-ink: #e6edf3;
+  --ob-muted: #a5b3c0;
+  --ob-line: #354954;
+  --ex-ink: #e6edf3;
+  --ex-muted: #a5b3c0;
+  --pr-ink: #e6edf3;
+  --pr-muted: #a5b3c0;
+  --rc-ink: #e6edf3;
+  --rc-muted: #a5b3c0;
+
+  border-color: #354954;
+  background: #14232e;
+  color: #e6edf3;
+  color-scheme: dark;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .bf-panel,
+  .ob-panel,
+  .ex-panel,
+  .pr-panel,
+  .rc-panel,
+  .ob-task,
+  .ob-draft > details,
+  .bf-reply,
+  .ex-note,
+  .rc-column,
+  .rc-candidate,
+  .pr-review-choice,
+  .pr-steps span
+) {
+  border-color: #354954;
+  background: #1a2d38;
+  color: #e6edf3;
+  box-shadow: none;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .td-benefits,
+  .td-onboarding,
+  .td-expenses,
+  .td-reviews,
+  .td-recruiting
+)
+:is(
+  input:not([type="checkbox"]):not([type="hidden"]),
+  select,
+  textarea
+) {
+  border-color: #3b515d;
+  background: #182933;
+  color: #e6edf3;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace
+:is(
+  .bf-outline,
+  .ob-outline,
+  .ex-outline,
+  .pr-outline,
+  .rc-outline,
+  .rc-candidate[aria-pressed="true"],
+  .pr-review-choice[aria-pressed="true"]
+) {
+  border-color: #41695c;
+  background: #213f38;
+  color: #c0eadc;
+}
