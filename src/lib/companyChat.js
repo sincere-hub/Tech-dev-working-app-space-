@@ -228,7 +228,7 @@ export function useChatInbox(userId) {
             for (let offset = 0; ; offset += 500) {
               const page = await chatRequest(
                 supabase
-                  .rpc("td_chat_inbox")
+                  .rpc("td_chat_inbox_v2")
                   .range(offset, offset + 499),
               );
 
@@ -288,6 +288,7 @@ const rooms = await attachChatInboxIndicators(
       "td_chat_messages",
       "td_chat_receipts",
       "td_chat_blocks",
+      "td_chat_hidden_messages",
     ]) {
 
       channel.on(
@@ -353,7 +354,7 @@ export function useChatPage(
   useEffect(() => {
     let alive = true;
 
-    chatCall(userId, "td_chat_page_v2", {
+    chatCall(userId, "td_chat_page_v3", {
       p_room: roomId,
       p_before_in: before?.created_at || null,
       p_before_id: before?.id || null,
@@ -526,7 +527,7 @@ async function attachChatInboxIndicators(
   ) {
     const rows = await chatCall(
       userId,
-      "td_chat_inbox_signals_v1",
+      "td_chat_inbox_signals_v2",
       {
         p_rooms: rooms
           .slice(offset, offset + 500)

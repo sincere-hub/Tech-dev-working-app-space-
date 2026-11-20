@@ -1,3 +1,4 @@
+import { ChatDeleteMenu, ChatMediaMessage, ChatMediaUpload, ChatMessageText, ChatStatuses } from "./ChatSharing.jsx";
 import {
   Fragment,
   useCallback,
@@ -536,6 +537,7 @@ const room = inbox.rooms.find(
               {label}
             </button>
           ))}
+<ChatStatuses userId={userId} employees={employees} />
         </div>
 {admin && (
   <ChatAiAdminButton
@@ -757,7 +759,7 @@ const room = inbox.rooms.find(
                       "Former employee"}
                   </strong>
                   <p>
-                    <MentionText
+                    <ChatMessageText
                       text={message.body}
                       employees={employees}
                     />
@@ -1457,14 +1459,15 @@ const quote = message.local
     userId={userId}
   />
 )}
-                      {message.kind === "voice" &&
+                      {message.attachment && !message.deleted_at && (<ChatMediaMessage userId={userId} attachment={message.attachment} />)}
+{message.kind === "voice" &&
                       !message.deleted_at ? (
                         <VoiceMessage
                           message={message}
                         />
                       ) : (
                         <p>
-                          <MentionText
+                          <ChatMessageText
                             text={message.body}
                             employees={employees}
                           />
@@ -1505,24 +1508,12 @@ const quote = message.local
                                   </button>
                                 )}
 
-                              {(mine || admin) && (
-                                <button
-                                  type="button"
-                                  aria-label="Delete message"
-                                  onClick={() =>
-                                    setDetails({
-                                      kind: "delete",
-                                      message,
-                                    })
-                                  }
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              )}
+                              
                             </>
                           )}
 
-                        <time
+                        {!message.local && <ChatDeleteMenu userId={userId} message={message} canDeleteEveryone={mine || admin} onDeleteEveryone={() => setDetails({ kind: "delete", message })} onChanged={refresh} />}
+<time
                           dateTime={message.created_at}
                         >
                           {message.edited_at
@@ -1666,6 +1657,7 @@ if (draft.trim() && !busy) {
           </div>
 
           <div className="td-chat-compose-row">
+<ChatMediaUpload userId={userId} roomId={room.room_id} disabled={busy} onSent={() => { nearBottom.current = true; setPages([null]); refresh(); }} />
             <button
               type="button"
               className="td-chat-icon"

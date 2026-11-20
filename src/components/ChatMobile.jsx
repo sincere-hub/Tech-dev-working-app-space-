@@ -192,7 +192,7 @@ export function useReplyContext(
 
     let alive = true;
 
-    chatCall(userId, "td_chat_reply_context_v1", {
+    chatCall(userId, "td_chat_reply_context_v2", {
       p_room: roomId,
       p_messages: ids.split(","),
     })
