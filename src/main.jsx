@@ -1,12 +1,13 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
-import "./styles.css";
-import "./calm-workspace.css";
+import MotionPerformance from "./components/MotionPerformance.jsx";
 import { registerOfflineShell } from "./lib/offlineWorkspace.js";
 import "./styles.css";
 import "./calm-workspace.css";
 import "./workspace-appearance.css";
+import "./dashboard-layout.css";
+import "./components/motion-performance.css";
 
 class AppBoundary extends React.Component {
   state = { failed: false };
@@ -16,5 +17,5 @@ class AppBoundary extends React.Component {
     return this.props.children;
   }
 }
-createRoot(document.getElementById("root")).render(<AppBoundary><App /></AppBoundary>);
+createRoot(document.getElementById("root")).render(<AppBoundary><MotionPerformance /><App /></AppBoundary>);
 registerOfflineShell();

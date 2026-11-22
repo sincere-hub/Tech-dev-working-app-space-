@@ -1,0 +1,18 @@
+[
+  {
+    "file": "src/App.jsx",
+    "existed": true
+  },
+  {
+    "file": "src/main.jsx",
+    "existed": true
+  },
+  {
+    "file": "src/components/NavigationDrawer.jsx",
+    "existed": true
+  },
+  {
+    "file": "src/dashboard-layout.css",
+    "existed": false
+  }
+]

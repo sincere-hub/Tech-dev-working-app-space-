@@ -19,6 +19,7 @@ export default function NavigationDrawer({
   role,
   avatarSrc,
   onOpenDevTests,
+  onOpenProfile,
 }) {
   const panel = useRef(null);
   const scrollArea = useRef(null);
@@ -26,6 +27,22 @@ export default function NavigationDrawer({
 
   const [query, setQuery] = useState("");
   const [expanded, setExpanded] = useState({});
+  const [phoneMenu, setPhoneMenu] = useState(() =>
+    typeof window !== "undefined" &&
+    Boolean(window.matchMedia?.("(max-width: 767px)").matches)
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia?.("(max-width: 767px)");
+    if (!media) return;
+
+    const update = () => setPhoneMenu(media.matches);
+    update();
+
+    media.addEventListener("change", update);
+
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   const allGroups = getWorkplaceGroupsForRole(role);
   const pageIds = new Set(items.map(item => item.id));
@@ -137,7 +154,7 @@ export default function NavigationDrawer({
   const search = query.trim().toLowerCase();
 
   const matches = items.filter(item =>
-    item.label.toLowerCase().includes(search)
+    item.id !== "profile" && item.label.toLowerCase().includes(search)
   );
 
   const groups = allGroups
@@ -145,6 +162,7 @@ export default function NavigationDrawer({
       ...group,
 
       modules: group.modules.filter(module =>
+        (!phoneMenu || module.id !== "collaboration.chat") &&
         (
           !module.nativeView ||
           ["directory", "search"].includes(
@@ -369,9 +387,11 @@ export default function NavigationDrawer({
         </div>
 
         <footer className="drawer-profile">
-          <span
+          <button
+            type="button"
             className="drawer-avatar"
-            aria-hidden="true"
+            aria-label="Open your profile"
+            onClick={onOpenProfile}
           >
             <span>
               {(name || "Employee")
@@ -394,7 +414,7 @@ export default function NavigationDrawer({
                 }}
               />
             )}
-          </span>
+          </button>
 
           <div>
             <strong>{name}</strong>

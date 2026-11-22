@@ -1,0 +1,26 @@
+[
+  {
+    "file": "src/components/EmployeeWorkGraph.jsx",
+    "existed": true
+  },
+  {
+    "file": "src/components/NavigationDrawer.jsx",
+    "existed": true
+  },
+  {
+    "file": "src/dashboard-layout.css",
+    "existed": true
+  },
+  {
+    "file": "src/lib/availabilityChart.js",
+    "existed": false
+  },
+  {
+    "file": "src/components/AttendanceAvailabilityChart.jsx",
+    "existed": false
+  },
+  {
+    "file": "src/components/attendance-availability-chart.css",
+    "existed": false
+  }
+]

@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import "./startup-experience.css";
 
 const wordmark = `${import.meta.env.BASE_URL}techdev-wordmark.svg`;
-const columns = 20;
-const rows = 4;
+const columns = 12;
+const rows = 2;
 
 export function StartupWordmark() {
   return (

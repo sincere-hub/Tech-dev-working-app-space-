@@ -1,0 +1,286 @@
+.app-shell.organised-shell.calm-workspace .td-dashboard{max-width:900px;margin:auto;display:grid;gap:24px}
+.app-shell.organised-shell.calm-workspace .td-dashboard-heading h1{margin:0;font-size:clamp(28px,4vw,40px);color:var(--calm-ink)}
+.app-shell.organised-shell.calm-workspace .td-dashboard-heading p{margin:8px 0 0;color:var(--calm-muted)}
+.app-shell.organised-shell.calm-workspace .clock-card{position:relative;isolation:isolate;overflow:hidden;border:1px solid #54e3a85c;border-radius:26px;padding:clamp(24px,5vw,44px);background:radial-gradient(ellipse at 10% 0%,#65ed8d 0%,transparent 52%),radial-gradient(ellipse at 100% 100%,#052f2a 0%,transparent 70%),linear-gradient(130deg,#18af58,#087d49 55%,#03573c);color:#fff;box-shadow:0 18px 45px #076f482a}
+.app-shell.organised-shell.calm-workspace .clock-card .clock-time{font-size:clamp(38px,7vw,70px);color:#fff}
+.app-shell.organised-shell.calm-workspace .clock-card .clock-date,.app-shell.organised-shell.calm-workspace .clock-card .clock-eyebrow,.app-shell.organised-shell.calm-workspace .clock-card .clock-hours-label{color:#e1ffed}
+.app-shell.organised-shell.calm-workspace .clock-card .clock-orbit{display:none}
+.app-shell.organised-shell.calm-workspace .clock-card::before,.app-shell.organised-shell.calm-workspace .clock-card::after{content:"";position:absolute;width:210px;height:210px;border:4px solid #00edf7;border-radius:50%;right:-20px;top:15%;pointer-events:none;z-index:-1;opacity:0;animation:none}
+.app-shell.organised-shell.calm-workspace .clock-card.is-clocked-in::before{animation:td-attendance-radiate 3s ease-out infinite}
+.app-shell.organised-shell.calm-workspace .clock-card.is-clocked-in::after{animation:td-attendance-radiate 3s ease-out 1.5s infinite}
+@keyframes td-attendance-radiate{0%{transform:scale(.35);opacity:.85}100%{transform:scale(2.5);opacity:0}}
+.app-shell.organised-shell.calm-workspace .clock-state{background:#033f2b88;color:white}
+.app-shell.organised-shell.calm-workspace .clock-state i{background:#d5e7df;animation:none;box-shadow:none}
+.app-shell.organised-shell.calm-workspace .clock-state-live i{background:#00edf7;box-shadow:0 0 16px #00edf7}
+.app-shell.organised-shell.calm-workspace .clock-action{background:#fff;color:#065b3c;border:0;border-radius:14px;min-height:48px;padding:12px 22px;font-weight:700}
+.app-shell.organised-shell.calm-workspace .td-dashboard-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.app-shell.organised-shell.calm-workspace .td-dashboard-cards button{display:flex;flex-direction:column;align-items:flex-start;gap:16px;padding:22px 18px;min-width:0;border:1px solid var(--calm-line);border-radius:16px;background:linear-gradient(145deg,#fff,#edf5ff);color:#103c73;box-shadow:0 5px 15px #16365808;font:inherit;font-weight:650;cursor:pointer}
+.app-shell.organised-shell.calm-workspace .td-dashboard-cards button>svg:last-child{align-self:flex-end}
+.app-shell.organised-shell.calm-workspace .td-profile-trigger{display:grid;place-items:center;position:relative;overflow:hidden;width:44px;height:44px;border:2px solid #c3ded9;border-radius:50%;background:#e1f4ee;color:#075d43;cursor:pointer;font-weight:700}
+.app-shell.organised-shell.calm-workspace .td-profile-trigger img{width:100%;height:100%;object-fit:cover}
+.app-shell.organised-shell.calm-workspace .td-profile-page .account-panel{display:grid;position:static;inset:auto;width:100%;max-width:700px;margin:auto;box-sizing:border-box;padding:24px;opacity:1;visibility:visible;transform:none;pointer-events:auto}
+.app-shell.organised-shell.calm-workspace .td-bottom-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:fixed;bottom:0;left:0;right:0;z-index:50;gap:2px;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom));background:#fffffffa;border-top:1px solid #dce5ed;box-shadow:0 -4px 20px #16365808}
+.app-shell.organised-shell.calm-workspace .td-bottom-nav .mobile-nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:54px;padding:5px 2px;border:0;border-radius:10px;background:transparent;color:#647184;font-size:11px;line-height:1.15;text-align:center;cursor:pointer}
+.app-shell.organised-shell.calm-workspace .td-bottom-nav .mobile-nav-item.active{color:#0759d6;background:#eaf2ff}
+.app-shell.organised-shell.calm-workspace .page-content{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+@media(max-width:600px){.app-shell.organised-shell.calm-workspace .page-content{padding:20px 16px calc(100px + env(safe-area-inset-bottom))}.app-shell.organised-shell.calm-workspace .td-dashboard-cards{gap:9px}.app-shell.organised-shell.calm-workspace .td-dashboard-cards button{padding:17px 12px;font-size:13px}.app-shell.organised-shell.calm-workspace .clock-card-top{flex-wrap:wrap;gap:15px}.app-shell.organised-shell.calm-workspace .clock-card-bottom{gap:16px;flex-wrap:wrap}}
+@media(prefers-reduced-motion:reduce){.app-shell.organised-shell.calm-workspace .clock-card.is-clocked-in::before,.app-shell.organised-shell.calm-workspace .clock-card.is-clocked-in::after{animation:none;opacity:.25}}
+/* Keep the drawer above the fixed navigation and the profile in document flow. */
+.app-shell.organised-shell.calm-workspace .drawer-layer{z-index:100}
+.app-shell.organised-shell.calm-workspace .td-profile-page{width:100%;min-width:0}
+.app-shell.organised-shell.calm-workspace .td-profile-page .account-panel{max-height:none;overflow:visible;background:#fff;color:var(--calm-ink);border:1px solid var(--calm-line);border-radius:20px;gap:10px}
+.app-shell.organised-shell.calm-workspace .td-profile-page h1{margin:0 0 12px}
+.app-shell.organised-shell.calm-workspace .td-profile-page :is(.account-name,.account-email,.account-role){position:static}
+:root[data-techdev-theme="dark"] .app-shell.organised-shell.calm-workspace .td-profile-page .account-panel{background:#182833;color:#edf5f7;color-scheme:dark}
+:root[data-techdev-theme="dark"] .app-shell.organised-shell.calm-workspace .td-dashboard-cards button{background:linear-gradient(145deg,#1b3245,#172835);color:#d5edff;border-color:#31485b}
+:root[data-techdev-theme="dark"] .app-shell.organised-shell.calm-workspace .td-bottom-nav{background:#13222ff7;border-color:#31485b}
+:root[data-techdev-theme="dark"] .app-shell.organised-shell.calm-workspace .td-bottom-nav .mobile-nav-item{color:#b6c8d7}
+:root[data-techdev-theme="dark"] .app-shell.organised-shell.calm-workspace .td-bottom-nav .mobile-nav-item.active{background:#183a5e;color:#8edaff}
+.app-shell.organised-shell.calm-workspace .td-profile-trigger>span{grid-area:1/1}
+.app-shell.organised-shell.calm-workspace .td-profile-trigger img{position:absolute;inset:0}
+.app-shell.organised-shell.calm-workspace .clock-card button.clock-action::before{content:none;animation:none}
+.app-shell.organised-shell.calm-workspace .drawer-profile button.drawer-avatar{padding:0;border:0;cursor:pointer}
+.app-shell.organised-shell.calm-workspace .td-bottom-nav .mobile-nav-item:focus-visible,.app-shell.organised-shell.calm-workspace .td-dashboard-cards button:focus-visible,.app-shell.organised-shell.calm-workspace .td-profile-trigger:focus-visible{outline:3px solid #008bd8;outline-offset:3px}
+/* One persistent primary navigation, rather than duplicate desktop buttons. */
+.app-shell.organised-shell.calm-workspace .desktop-primary-nav{display:none}
+
+/* TD_CLOCK_FIX_START */
+
+/* Strong green gradient. */
+.app-shell.organised-shell.calm-workspace .clock-card {
+  background:
+    radial-gradient(
+      ellipse at 5% 0%,
+      #70ee9a99,
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse at 100% 85%,
+      #002e28cc,
+      transparent 65%
+    ),
+    linear-gradient(
+      125deg,
+      #138442 0%,
+      #10a551 32%,
+      #08783f 65%,
+      #023b2e 100%
+    );
+  box-shadow:
+    inset 0 1px 0 #b5ffd755,
+    inset 0 -25px 70px #002e2833,
+    0 15px 35px #064c3d26;
+}
+
+/* Remove radiation from the card background completely. */
+.app-shell.organised-shell.calm-workspace .clock-card::before,
+.app-shell.organised-shell.calm-workspace .clock-card::after,
+.app-shell.organised-shell.calm-workspace .clock-card.is-clocked-in::before,
+.app-shell.organised-shell.calm-workspace .clock-card.is-clocked-in::after {
+  content: none;
+  animation: none;
+  opacity: 0;
+}
+
+/* Decorative ring rotates without radiating. */
+.app-shell.organised-shell.calm-workspace .clock-card .clock-orbit {
+  display: block;
+  position: absolute;
+  top: -70px;
+  right: -30px;
+  z-index: 0;
+  width: 280px;
+  height: 280px;
+  border: 2px solid #c7ffe331;
+  border-top-color: #c7ffe3b3;
+  border-right-color: #58efb16b;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow:
+    0 0 0 28px #d6ffe90a,
+    0 0 0 57px #d6ffe908;
+  pointer-events: none;
+  animation: td-clock-orbit-turn 15s linear infinite;
+}
+
+@keyframes td-clock-orbit-turn {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Small status dot next to Clocked in / Not clocked in. */
+.app-shell.organised-shell.calm-workspace .clock-card .clock-state {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  overflow: visible;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-card .clock-state i {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  min-width: 8px;
+  border-radius: 50%;
+  background: #d5e7df;
+  box-shadow: none;
+  animation: none;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-card .clock-state i::before,
+.app-shell.organised-shell.calm-workspace .clock-card .clock-state i::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border: 2px solid #00f1ff;
+  border-radius: 50%;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  animation: none;
+}
+
+/* Cyan radiation exists only while clocked in. */
+.app-shell.organised-shell.calm-workspace .clock-card .clock-state-live i {
+  background: #00f1ff;
+  box-shadow: 0 0 9px #00f1ff88;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-card .clock-state-live i::before {
+  animation: td-status-dot-wave 2s ease-out infinite;
+}
+
+.app-shell.organised-shell.calm-workspace .clock-card .clock-state-live i::after {
+  animation: td-status-dot-wave 2s ease-out 1s infinite;
+}
+
+@keyframes td-status-dot-wave {
+  from {
+    transform: scale(.65);
+    opacity: .9;
+  }
+  to {
+    transform: scale(2.7);
+    opacity: 0;
+  }
+}
+
+/* Force equal avatar dimensions so it stays round. */
+.app-shell.organised-shell.calm-workspace .topbar .td-profile-trigger {
+  box-sizing: border-box;
+  flex: 0 0 44px;
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  align-self: center;
+}
+
+/* Richer gradients on Payslips, Notices and Shifts. */
+.app-shell.organised-shell.calm-workspace .td-dashboard-cards button {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #dcecff 48%,
+    #bddeff 100%
+  );
+  border-color: #b9d5ef;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 7px 18px #1b548e14;
+}
+
+.app-shell.organised-shell.calm-workspace .td-dashboard-cards button:nth-child(2) {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #d6f3ee 48%,
+    #a9e5db 100%
+  );
+  border-color: #abd9d0;
+}
+
+.app-shell.organised-shell.calm-workspace .td-dashboard-cards button:nth-child(3) {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #e7e2ff 48%,
+    #d0c4ff 100%
+  );
+  border-color: #cec3ec;
+}
+
+/* Preserve dark appearance. */
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace .td-dashboard-cards button {
+  background: linear-gradient(135deg, #233c59, #132438);
+  color: #e3f1ff;
+  border-color: #3b5877;
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace .td-dashboard-cards button:nth-child(2) {
+  background: linear-gradient(135deg, #1b4b46, #102f2d);
+}
+
+:root[data-techdev-theme="dark"]
+.app-shell.organised-shell.calm-workspace .td-dashboard-cards button:nth-child(3) {
+  background: linear-gradient(135deg, #3c345e, #25203c);
+}
+
+/* PC: hamburger menu, no bottom navigation. */
+@media (min-width: 768px) {
+  .app-shell.organised-shell.calm-workspace .td-bottom-nav {
+    display: none;
+  }
+
+  .app-shell.organised-shell.calm-workspace .topbar .menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 42px;
+  }
+
+  .app-shell.organised-shell.calm-workspace .topbar-left {
+    gap: 16px;
+  }
+
+  .app-shell.organised-shell.calm-workspace .desktop-primary-nav {
+    display: none;
+  }
+
+  .app-shell.organised-shell.calm-workspace .page-content {
+    padding-bottom: 40px;
+  }
+}
+
+/* Phone: keep the five bottom buttons. */
+@media (max-width: 767px) {
+  .app-shell.organised-shell.calm-workspace .td-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .app-shell.organised-shell.calm-workspace .page-content {
+    padding-bottom: calc(105px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-shell.organised-shell.calm-workspace .clock-card .clock-orbit,
+  .app-shell.organised-shell.calm-workspace .clock-card .clock-state-live i::before,
+  .app-shell.organised-shell.calm-workspace .clock-card .clock-state-live i::after {
+    animation: none;
+  }
+}
+
+/* TD_CLOCK_FIX_END */

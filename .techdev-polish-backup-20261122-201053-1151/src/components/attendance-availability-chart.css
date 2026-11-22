@@ -1,0 +1,98 @@
+
+.td-availability-chart {
+  padding: 20px;
+  margin: 20px 0;
+  border: 1px solid #cfd9e2;
+  border-radius: 16px;
+  background: #fff;
+  color: #283e54;
+  overflow: hidden;
+}
+.td-availability-chart h4 {
+  margin: 0 0 14px;
+  font-size: 20px;
+}
+.td-availability-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.td-availability-legend span {
+  padding: 5px 12px;
+  border-radius: 5px;
+  background: #04ddec;
+  color: #05384b;
+  font-weight: 700;
+}
+.td-availability-legend span + span {
+  background: #e53949;
+  color: white;
+}
+.td-availability-scroll {
+  overflow-x: auto;
+}
+.td-availability-scroll svg {
+  display: block;
+  width: 100%;
+  min-width: 620px;
+  height: auto;
+  overflow: visible;
+}
+.td-availability-chart svg text {
+  fill: currentColor;
+  font-size: 12px;
+}
+.td-availability-red {
+  fill: none;
+  stroke: #e53949;
+  stroke-width: 2.5;
+  filter: drop-shadow(0 3px 4px #e5394922);
+}
+.td-availability-blue {
+  fill: none;
+  stroke: #0786ed;
+  stroke-width: 3;
+  filter: drop-shadow(0 3px 4px #0786ed44);
+}
+.td-availability-blue.is-live {
+  filter: drop-shadow(0 0 5px #00deff);
+  animation: td-report-cyan-glow 2.4s ease-in-out infinite;
+}
+.td-availability-live-point {
+  fill: #00e8ff;
+  stroke: #087ee0;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 7px #00e8ff);
+}
+.td-availability-chart rect[role="button"] {
+  cursor: pointer;
+}
+.td-availability-chart rect[role="button"]:focus {
+  outline: 2px solid #7d53ce;
+  outline-offset: 4px;
+}
+.td-availability-note {
+  font-size: 12px;
+  line-height: 1.6;
+  opacity: .8;
+}
+.td-availability-selection {
+  min-height: 24px;
+  font-size: 13px;
+}
+@keyframes td-report-cyan-glow {
+  50% {
+    filter: drop-shadow(0 0 10px #00e8ff);
+  }
+}
+:root[data-techdev-theme="dark"] .td-availability-chart {
+  background: #142434;
+  color: #d8e8f7;
+  border-color: #3c5368;
+}
+@media (prefers-reduced-motion: reduce) {
+  .td-availability-blue.is-live {
+    animation: none;
+  }
+}

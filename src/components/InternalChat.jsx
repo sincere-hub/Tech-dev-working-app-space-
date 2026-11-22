@@ -1,4 +1,4 @@
-import { ChatDeleteMenu, ChatMediaMessage, ChatMediaUpload, ChatMessageText, ChatStatuses } from "./ChatSharing.jsx";
+import { ChatDeleteMenu, ChatMediaMessage, ChatMediaUpload, ChatMessageText } from "./ChatSharing.jsx";
 import {
   Fragment,
   useCallback,
@@ -537,7 +537,7 @@ const room = inbox.rooms.find(
               {label}
             </button>
           ))}
-<ChatStatuses userId={userId} employees={employees} />
+
         </div>
 {admin && (
   <ChatAiAdminButton

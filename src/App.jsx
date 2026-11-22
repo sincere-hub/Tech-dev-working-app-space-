@@ -17,6 +17,8 @@ import {
   LogOut,
   Megaphone,
   Menu,
+  MessageCircle,
+  UserRound,
   Plus,
   ShieldCheck,
   Sparkles,
@@ -28,6 +30,7 @@ import {
 import { supabase, supabaseConfigured, ssoDomain, allowSignup } from "./lib/supabase.js";
 import WorkplaceSuite from "./components/WorkplaceSuite.jsx";
 import NavigationDrawer from "./components/NavigationDrawer.jsx";
+import DashboardWorkCycle from "./components/DashboardWorkCycle.jsx";
 import InsightsView from "./components/InsightsView.jsx";
 import { safeExternalUrl } from "./lib/reporting.js";
 import {workplaceModules,canAccessWorkplaceModule,} from "./lib/workplaceModules.js";
@@ -59,11 +62,13 @@ import {
   useStartupAvatar,
   clearStartupAvatarCache,
 } from "./startup-experience.jsx";
-import { CalmHome, CalmTasks } from "./components/CalmWorkspace.jsx";
+import { CalmTasks } from "./components/CalmWorkspace.jsx";
 import AppearanceSettings from "./components/AppearanceSettings.jsx";
 
+
 const navigation = [
-  { id: "overview", label: "Home", icon: House },
+  { id: "overview", label: "Dashboard", icon: LayoutDashboard },
+  { id: "profile", label: "Profile", icon: UserRound },
   { id: "tasks", label: "My tasks", icon: CheckCheck },
   { id: "attendance", label: "Time & attendance", icon: Clock3 },
   { id: "leave", label: "Leave & schedule", icon: CalendarDays },
@@ -617,6 +622,9 @@ useEffect(() => {
   onUnavailable: () =>
     setToast("This tool is not available for your role."),
 });
+
+function openProfile() { navigate("profile"); }
+  function openChat() { navigate("suite", "collaboration.chat"); }
 
 usePushNavigation({
   ready: Boolean(
@@ -2080,11 +2088,11 @@ if (!session) return <AuthScreen />;
   const employeeRequests = data.leaveRequests.filter(request => isManager || request.employee_id === userId);
   const employeeShiftRequests = data.shiftRequests.filter(request => isManager || request.employee_id === userId);
   const upcomingShifts = data.shifts.filter(shift => isManager || shift.employee_id === userId);
-  const heading = visibleNavigation.find(item => item.id === activeView)?.label || (activeView === "activity" ? "Company activity" : "Overview");
+  const heading = activeView === "profile" ? "Profile" : visibleNavigation.find(item => item.id === activeView)?.label || (activeView === "activity" ? "Company activity" : "Dashboard");
   const firstName = displayName.split(" ")[0];
 
   return (
-    <div className="app-shell organised-shell calm-workspace">
+    <div className={`app-shell organised-shell calm-workspace td-dashboard-layout view-${activeView}`}>
 <EmployeeProfilesProvider
   userId={userId}
   role={profile?.role || "employee"}
@@ -2107,20 +2115,20 @@ if (!session) return <AuthScreen />;
   name={displayName}
   role={profile?.role}
   avatarSrc={avatarSrc}
+  onOpenProfile={openProfile}
   onOpenDevTests={() => setDevTestsOpen(true)}
 />
       <main className="main-area" inert={mobileMenuOpen ? true : undefined}>
         <header className="topbar">
           <div className="topbar-left"><button className="icon-button menu-trigger" aria-label="Open menu" aria-expanded={mobileMenuOpen} aria-controls="workspace-menu" onClick={toggleNavigation}><Menu size={21} /></button><Brand compact /><span className="desktop-page-name">{heading}</span></div>
           <nav className="desktop-primary-nav" aria-label="Primary navigation">{navigation.filter(item => ["overview", "tasks", "attendance"].includes(item.id)).map(item => <NavItem key={item.id} item={item} active={activeView === item.id} onClick={() => navigate(item.id)} />)}</nav>
-          <div className="topbar-right"><button className="icon-button" aria-label="Company notices" onClick={() => navigate("notices")}><Bell size={18} /></button><AccountMenu userId={userId}
-          avatarUploadsEnabled={avatarUploadsEnabled}featureSaving={featureSaving}onTogglePhotoUploads={toggleAvatarUploads}
-          avatarSrc={avatarSrc}onUpload={uploadAvatar}
-           name={displayName}email={session?.user?.email || ""}role={profile?.role}onSignOut={signOut}closeSignal={`${activeView}:${mobileMenuOpen}`}/></div>
+          <div className="topbar-right"><button type="button" className="top-avatar td-profile-trigger" aria-label="Open your profile" onClick={openProfile}>
+ <span>{initials(displayName)}</span>{avatarSrc && <img key={avatarSrc} src={avatarSrc} alt="" onError={event => { event.currentTarget.hidden = true; }} />}
+ </button></div>
         </header>
 <div className="page-content">
 
- {profile?.id === userId && (
+ {["overview", "attendance"].includes(activeView) && profile?.id === userId && (
   <details className="calm-attendance-tools">
     <summary>Attendance settings &amp; status</summary>
 
@@ -2151,7 +2159,13 @@ if (!session) return <AuthScreen />;
           {error && <div className="error-banner" role="alert"><span>{error}</span>{session && <button className="retry-action" onClick={() => loadWorkspace(session.user)}>Retry</button>}<button onClick={() => setError("")} aria-label="Dismiss error"><X size={16} /></button></div>}
           <span className="sr-only" role="status">{dataLoading ? "Syncing the latest workspace data…" : ""}</span>
           <fieldset className="workspace-controls" disabled={mutating}>
+          {activeView === "profile" && <AccountMenu userId={userId} avatarUploadsEnabled={avatarUploadsEnabled}
+ featureSaving={featureSaving} onTogglePhotoUploads={toggleAvatarUploads}
+ avatarSrc={avatarSrc} onUpload={uploadAvatar} name={displayName}
+ email={session?.user?.email || ""} role={profile?.role} onSignOut={signOut}
+ closeSignal={`${activeView}:${mobileMenuOpen}`} asPage />}
           {activeView === "overview" && <Overview
+            employeeId={userId}
             name={firstName}
             tasks={personalTasks}
             allTaskCount={personalTasks.length}
@@ -2228,17 +2242,12 @@ if (!session) return <AuthScreen />;
           </fieldset>
         </div>
       </main>
-      <nav className="mobile-nav" aria-label="Mobile navigation" inert={mobileMenuOpen ? true : undefined}>
-        {navigation.filter(item => ["overview", "tasks", "attendance"].includes(item.id)).map(item => <NavItem key={item.id} item={item} active={activeView === item.id} onClick={() => navigate(item.id)} mobile />)}
-        <button className={`mobile-nav-item${mobileMenuOpen ? " active" : ""}`}
-           onClick={toggleNavigation}
-           aria-label="More tools"
-            aria-expanded={mobileMenuOpen}
-           >
-      <Ellipsis size={20} />
-  <span>More</span>
- </button>
-      </nav>
+      <nav className="mobile-nav td-bottom-nav" aria-label="Main navigation" inert={mobileMenuOpen ? true : undefined}>
+ <NavItem item={{id:"overview",label:"Dashboard",icon:LayoutDashboard}} active={activeView === "overview" && !mobileMenuOpen} onClick={() => navigate("overview")} mobile />
+ <NavItem item={{id:"tasks",label:"Tasks",icon:CheckCheck}} active={activeView === "tasks" && !mobileMenuOpen} onClick={() => navigate("tasks")} mobile />
+ <NavItem item={{id:"attendance",label:"Time & attendance",icon:Clock3}} active={activeView === "attendance" && !mobileMenuOpen} onClick={() => navigate("attendance")} mobile />
+ <NavItem item={{id:"chat",label:"Chat",icon:MessageCircle}} active={activeView === "suite" && suiteModule === "collaboration.chat" && !mobileMenuOpen} onClick={openChat} mobile />
+ </nav>
       {devTestsOpen &&
   profile?.id === userId &&
   profile?.role === "admin" && (
@@ -2256,7 +2265,7 @@ if (!session) return <AuthScreen />;
   );
 }
 function AccountMenu({
-   userId, name, email, role, onSignOut, closeSignal, avatarSrc, onUpload, avatarUploadsEnabled, featureSaving, onTogglePhotoUploads
+   userId, name, email, role, onSignOut, closeSignal, avatarSrc, onUpload, avatarUploadsEnabled, featureSaving, onTogglePhotoUploads, asPage = false
 }) {
   const menuRef = useRef(null);
   const photoInput = useRef(null);
@@ -2311,10 +2320,11 @@ async function choosePhoto(event) {
     };
   }, []);
 
+  const AccountContainer = asPage ? "div" : "details";
   return (
-    <details
+    <AccountContainer
       ref={menuRef}
-      className="account-menu"
+      className={asPage ? "account-menu td-profile-page" : "account-menu"}
       onBlur={event => {
         if (
           event.relatedTarget &&
@@ -2324,7 +2334,7 @@ async function choosePhoto(event) {
         }
       }}
     >
-      <summary
+      {!asPage && <summary
   className="top-avatar account-trigger"
   aria-label="My account"
 >
@@ -2339,9 +2349,10 @@ async function choosePhoto(event) {
   ) : (
     initials(name)
   )}
-</summary>
+</summary>}
 
       <section className="account-panel" aria-label="Account details">
+        {asPage && <h1>Profile</h1>}
         <p className="account-label">MY ACCOUNT</p>
         <strong className="account-name">{name}</strong>
         <span className="account-email">{email}</span>
@@ -2398,12 +2409,12 @@ async function choosePhoto(event) {
          userId={userId}
          disabled={photoBusy}
          onSignOut={async () => {
-         menuRef.current.open = false;
+         if (menuRef.current) menuRef.current.open = false;
          await onSignOut();
   }}
 />
       </section>
-    </details>
+    </AccountContainer>
   );
 }
 function initials(name) {
@@ -2412,7 +2423,7 @@ function initials(name) {
 
 function NavItem({ item, active, onClick, mobile = false }) {
   const Icon = item.icon;
-  return <button className={`${mobile ? "mobile-nav-item" : "side-nav-item"}${active ? " active" : ""}`} aria-current={active ? "page" : undefined} onClick={onClick}><Icon size={18} /><span>{mobile ? item.id === "overview" ? "Home" : item.id === "attendance" ? "Time" : item.id === "payslips" ? "Pay" : item.id === "manager" ? "Manage" : item.id === "suite" ? "Suite" : item.id === "leave" ? "Leave" : "Tasks" : item.label}</span></button>;
+  return <button className={`${mobile ? "mobile-nav-item" : "side-nav-item"}${active ? " active" : ""}`} aria-current={active ? "page" : undefined} onClick={onClick}><Icon size={18} /><span>{item.label}</span></button>;
 }
 
 function PageHeading({ eyebrow, title, description, action }) {
@@ -2461,34 +2472,18 @@ function useVisibleClock(intervalMs) {
 function ClockCard({ openEntry, seconds, onClock, compact = false }) {
   const now = useVisibleClock(openEntry ? 1_000 : 60_000);
   const currentSeconds = seconds + (openEntry ? Math.max(0, Math.floor((now - new Date(openEntry.clocked_in_at).getTime()) / 1000)) : 0);
-  return <section className={`clock-card${compact ? " clock-card-compact" : ""}`}><div className="clock-orbit" /><div className="clock-card-top"><div><p className="clock-eyebrow">YOUR WORKDAY</p><strong className="clock-time">{formatTime(Date.now())}</strong><span className="clock-date">{formatDate(new Date(now), { weekday: "long", month: "long", day: "numeric" })}</span></div><span className={`clock-state${openEntry ? " clock-state-live" : ""}`}><i />{openEntry ? "Clocked in" : "Not clocked in"}</span></div><div className="clock-card-bottom"><div><span className="clock-hours-label">Hours worked today</span><strong className="clock-hours">{formatDuration(currentSeconds)}</strong></div><button className="clock-action" onClick={onClock}>{openEntry ? "Clock out" : "Clock in"} <ArrowRight size={15} /></button></div></section>;
+  return <section className={`clock-card${openEntry ? " is-clocked-in" : ""}${compact ? " clock-card-compact" : ""}`}><div className="clock-orbit" /><div className="clock-card-top"><div><p className="clock-eyebrow">YOUR WORKDAY</p><strong className="clock-time">{formatTime(now)}</strong><span className="clock-date">{formatDate(new Date(now), { weekday: "long", month: "long", day: "numeric" })}</span></div><span className={`clock-state${openEntry ? " clock-state-live" : ""}`}><i />{openEntry ? "Clocked in" : "Not clocked in"}</span></div><div className="clock-card-bottom"><div><span className="clock-hours-label">Hours worked today</span><strong className="clock-hours">{formatDuration(currentSeconds)}</strong></div><button className="clock-action" onClick={onClock}>{openEntry ? "Clock out" : "Clock in"} <ArrowRight size={15} /></button></div></section>;
 }
 
-function Overview({
-  name,
-  tasks,
-  openEntry,
-  seconds,
-  announcements,
-  onClock,
-  onTask,
-  onView,
-}) {
-  return (
-    <CalmHome
-      name={name}
-      tasks={tasks}
-      announcements={announcements}
-      onTask={onTask}
-      onView={onView}
-    >
-      <ClockCard
-        openEntry={openEntry}
-        seconds={seconds}
-        onClock={onClock}
-      />
-    </CalmHome>
-  );
+function Overview({ name, employeeId, timeEntries = [], openEntry, seconds, onClock, onView }) {
+ return <section className="td-dashboard" aria-labelledby="dashboard-title">
+  <header className="td-dashboard-heading"><h1 id="dashboard-title">Dashboard</h1><p>Welcome, {name}</p></header>
+  <ClockCard openEntry={openEntry} seconds={seconds} onClock={onClock}/>
+  <div className="td-dashboard-cards">
+   {[{id:"payslips",label:"Payslips",Icon:FileText},{id:"notices",label:"Notices",Icon:Megaphone},{id:"leave",label:"Shifts",Icon:CalendarDays}].map(({id,label,Icon}) => <button type="button" key={id} onClick={() => onView(id)}><Icon size={25}/><span>{label}</span><ArrowRight size={16}/></button>)}
+  </div>
+  <DashboardWorkCycle employeeId={employeeId} refreshKey={timeEntries.map(entry => `${entry.id}:${entry.clocked_out_at || "open"}`).join("|")}/>
+ </section>;
 }
 
 function TaskRow({ task, employee, onChange, onClaim, managerMode = false }) {

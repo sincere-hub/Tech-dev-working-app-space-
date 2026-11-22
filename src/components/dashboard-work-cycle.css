@@ -1,0 +1,85 @@
+
+.app-shell.organised-shell.calm-workspace .td-work-cycle{
+  padding:clamp(20px,4vw,28px);
+  border:1px solid var(--calm-line);
+  border-radius:22px;
+  background:linear-gradient(125deg,#fff,#edf8fa);
+  color:var(--calm-ink);
+  box-shadow:0 8px 24px #153c5c08;
+}
+.td-work-cycle>header{
+  display:flex;justify-content:space-between;
+  align-items:center;gap:16px;flex-wrap:wrap;
+}
+.td-work-cycle h2{margin:5px 0;font-size:21px}
+.td-cycle-eyebrow{
+  margin:0;font-size:10px;letter-spacing:.12em;
+  font-weight:700;color:#087b72;
+}
+.td-work-cycle>header>span{
+  font-size:12px;color:var(--calm-muted);
+}
+.td-cycle-body{
+  display:flex;align-items:center;justify-content:center;
+  gap:clamp(22px,6vw,70px);padding:22px 0 12px;
+}
+.td-cycle-visual{
+  position:relative;flex:0 0 168px;max-width:100%;
+}
+.td-cycle-visual svg{
+  display:block;width:100%;height:auto;
+}
+.td-cycle-track,.td-cycle-missed{
+  fill:none;stroke:#dce8ed;stroke-width:13;
+}
+.td-cycle-missed{stroke:#ea6072}
+.td-cycle-center{
+  position:absolute;inset:0;display:flex;
+  flex-direction:column;align-items:center;
+  justify-content:center;pointer-events:none;
+}
+.td-cycle-center strong{
+  font-size:32px;letter-spacing:-1px;
+  font-variant-numeric:tabular-nums;
+}
+.td-cycle-center span{
+  font-size:11px;color:var(--calm-muted);margin-top:4px;
+}
+.td-cycle-totals{
+  margin:0;min-width:138px;display:grid;gap:24px;
+}
+.td-cycle-totals>div{display:grid;gap:7px}
+.td-cycle-totals dt{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--calm-muted);
+}
+.td-cycle-totals dd{
+  margin:0 0 0 17px;font-size:27px;font-weight:700;
+  font-variant-numeric:tabular-nums;
+}
+.td-cycle-totals i{
+  width:9px;height:9px;border-radius:3px;background:#0abda5;
+}
+.td-cycle-totals>div+div i{background:#ea6072}
+.td-cycle-note{
+  margin:8px 0 0;font-size:11px;color:var(--calm-muted);
+  line-height:1.7;
+}
+.td-work-cycle button{font:inherit;color:inherit}
+:root[data-techdev-theme=dark]
+.app-shell.organised-shell.calm-workspace .td-work-cycle{
+  background:linear-gradient(125deg,#1c3443,#122c32);
+}
+:root[data-techdev-theme=dark] .td-cycle-eyebrow{
+  color:#70e5d2;
+}
+:root[data-techdev-theme=dark] .td-cycle-track{
+  stroke:#2a4855;
+}
+@media(max-width:400px){
+  .td-cycle-body{gap:16px}
+  .td-cycle-visual{flex-basis:140px}
+  .td-cycle-totals{min-width:110px}
+  .td-cycle-totals dt{font-size:11px}
+  .td-cycle-center strong{font-size:27px}
+}

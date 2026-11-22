@@ -134,24 +134,8 @@ rotatingGroup.appendChild(rotation);
       nodes.forEach((node, index) => {
         const route = ROUTES[index];
 
-        const filterReference =
-          node.parentElement.getAttribute("filter");
-
-        const filterId =
-          filterReference?.match(/url\(#([^)]+)\)/)?.[1];
-
-        const filter = filterId
-          ? svg.querySelector(`[id="${filterId}"]`)
-          : null;
-
-        // Make the existing glow follow the moving node.
-        if (filter) {
-          filter.setAttribute("filterUnits", "objectBoundingBox");
-          filter.setAttribute("x", "-50%");
-          filter.setAttribute("y", "-50%");
-          filter.setAttribute("width", "200%");
-          filter.setAttribute("height", "200%");
-        }
+        // Bright nodes without six moving blur/filter surfaces.
+        node.parentElement.removeAttribute("filter");
 
         node.setAttribute("cx", "0");
         node.setAttribute("cy", "0");
@@ -194,21 +178,42 @@ rotatingGroup.appendChild(rotation);
       "(prefers-reduced-motion: reduce)",
     );
 
+    let inView = true;
+
     const updateMotion = () => {
-      if (!animated || preference.matches) {
-        svg.pauseAnimations();
+      if (
+        !animated ||
+        preference.matches ||
+        document.hidden ||
+        !inView
+      ) {
+        svg.pauseAnimations?.();
       } else {
-        svg.unpauseAnimations();
+        svg.unpauseAnimations?.();
       }
     };
 
-    svg.setCurrentTime(0);
+    svg.setCurrentTime?.(0);
     updateMotion();
+
     preference.addEventListener("change", updateMotion);
+    document.addEventListener("visibilitychange", updateMotion);
+
+    const observer =
+      typeof IntersectionObserver === "function"
+        ? new IntersectionObserver(entries => {
+            inView = entries.some(entry => entry.isIntersecting);
+            updateMotion();
+          })
+        : null;
+
+    observer?.observe(container);
 
     return () => {
       preference.removeEventListener("change", updateMotion);
-      svg.pauseAnimations();
+      document.removeEventListener("visibilitychange", updateMotion);
+      observer?.disconnect();
+      svg.pauseAnimations?.();
       container.replaceChildren();
     };
   }, [animated, scope]);

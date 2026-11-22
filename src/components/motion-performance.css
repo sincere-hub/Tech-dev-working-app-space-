@@ -1,0 +1,92 @@
+
+/* Pause decorative animations in background tabs. */
+:root[data-td-motion-paused] *,
+:root[data-td-motion-paused] *::before,
+:root[data-td-motion-paused] *::after{
+  animation-play-state:paused!important;
+}
+
+/* Keep the line shadow static; pulse the small live endpoint. */
+.td-availability-chart .td-availability-blue.is-live{
+  animation:none;
+  filter:drop-shadow(0 2px 4px #00bddd66);
+}
+.td-availability-chart .td-availability-live-point{
+  filter:none;
+}
+.td-availability-live-halo{
+  fill:#02e0f2;opacity:.2;
+  animation:td-live-opacity 2.4s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes td-live-opacity{
+  50%{opacity:.05}
+}
+
+/* Smaller moving background band. */
+.app-shell.organised-shell.calm-workspace::before{
+  inset:auto;top:0;left:-50vw;min-width:0;
+  width:28vw;max-width:340px;height:100dvh;
+  animation:td-ui-band 28s linear infinite;
+  will-change:transform;contain:paint;
+}
+@keyframes td-ui-band{
+  from{transform:translate3d(0,0,0) skewX(-12deg)}
+  to{transform:translate3d(180vw,0,0) skewX(-12deg)}
+}
+.app-shell.organised-shell.calm-workspace
+.clock-card .clock-orbit,
+.app-shell.organised-shell.calm-workspace
+.clock-card .clock-orbit::before,
+.app-shell.organised-shell.calm-workspace
+.clock-card button.clock-action::before{
+  will-change:transform;
+}
+
+/* Avoid repainting a conic gradient every frame. */
+.auth-card::before{
+  animation:td-auth-border-opacity 5.5s ease-in-out infinite;
+  filter:none;
+}
+@keyframes td-auth-border-opacity{
+  50%{opacity:.5}
+}
+.auth-screen::after{
+  inset:auto;top:0;left:-50vw;width:28vw;height:100%;
+  background:linear-gradient(
+    90deg,transparent,#83bdff12,transparent
+  );
+  animation:td-ui-band 28s linear infinite;
+}
+
+/* Lighter loading placeholders. */
+.skeleton-block,
+.workspace-content-loading .workspace-skeleton{
+  animation:td-loading-opacity 1.8s ease-in-out infinite;
+  background-size:100% 100%;
+}
+@keyframes td-loading-opacity{
+  50%{opacity:.55}
+}
+
+/* Avoid continuously blurring content behind sticky controls. */
+.app-shell.organised-shell.calm-workspace .topbar,
+.app-shell.organised-shell.calm-workspace .mobile-nav{
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+  .td-availability-live-halo,
+  .app-shell.organised-shell.calm-workspace::before,
+  .auth-screen::after{
+    animation:none!important;
+    opacity:0;
+  }
+}

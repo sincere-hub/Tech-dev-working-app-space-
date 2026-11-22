@@ -15,14 +15,14 @@
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-columns: repeat(20, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
   pointer-events: none;
   animation: td-pixels-out 1ms linear 7.04s forwards;
 }
 
 .td-startup-pixels > span {
-  background: var(--wordmark) var(--px) var(--py) / 2000% 400% no-repeat;
+  background: var(--wordmark) var(--px) var(--py) / 1200% 200% no-repeat;
   animation: td-pixel-in 720ms cubic-bezier(.18, .76, .28, 1)
     calc(6s + var(--delay)) both;
 }

@@ -1,3 +1,4 @@
+import AttendanceAvailabilityChart from "./AttendanceAvailabilityChart.jsx";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 
@@ -571,7 +572,7 @@ export default function EmployeeWorkGraph({
     if (!open || !online) return;
 
     const timer = window.setInterval(
-      () => setTick(performance.now()),
+      () => { if (!document.hidden) setTick(performance.now()); },
       1000
     );
 
@@ -863,166 +864,14 @@ export default function EmployeeWorkGraph({
             </div>
           </dl>
 
-          <div className="work-history-zoom">
-            <label>
-              Time scale
 
-              <select
-                value={windowHours}
-                onChange={event => {
-                  setWindowHours(
-                    Number(
-                      event.target.value
-                    )
-                  );
-                  setWindowStart(0);
-                }}
-              >
-                <option value={24}>
-                  Full day
-                </option>
-
-                <option value={6}>
-                  6-hour detail
-                </option>
-              </select>
-            </label>
-
-            {windowHours === 6 && (
-              <label>
-                Time window
-
-                <select
-                  value={windowStart}
-                  onChange={event =>
-                    setWindowStart(
-                      Number(
-                        event.target.value
-                      )
-                    )
-                  }
-                >
-                  {[0, 6, 12, 18].map(hour => (
-                    <option
-                      key={hour}
-                      value={hour}
-                    >
-                      {hourLabel(hour)}
-                      –
-                      {hourLabel(hour + 6)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-
-            <span>
-              ● Clock-in point
-              <b>━</b> Recorded work time
-            </span>
-          </div>
-
-          <div className="work-week-table">
-            <div className="work-week-scale">
-              <strong>Day</strong>
-
-              <div className="work-week-axis">
-                {Array.from(
-                  { length: 5 },
-                  (_, index) => (
-                    <span
-                      key={index}
-                      style={{
-                        left: `${index * 25}%`,
-                      }}
-                    >
-                      {hourLabel(
-                        windowStart +
-                        index * windowHours / 4
-                      )}
-                    </span>
-                  )
-                )}
-              </div>
-            </div>
-
-            {days.map(row => (
-              <div
-                className="work-week-row"
-                key={row.index}
-              >
-                <div className="work-week-day">
-                  <strong>
-                    {dayName.format(
-                      new Date(row.dayStart)
-                    )}
-                  </strong>
-
-                  <small>
-                    {dayDate.format(
-                      new Date(row.dayStart)
-                    )}
-                  </small>
-                </div>
-
-                <div
-                  className="work-week-track"
-                  role="group"
-                  aria-label={
-                    `${dayName.format(
-                      new Date(row.dayStart)
-                    )}, ${dayDate.format(
-                      new Date(row.dayStart)
-                    )}`
-                  }
-                >
-                  {row.bars.map(bar => (
-                    <button
-                      type="button"
-                      key={bar.id}
-                      className={
-                        "work-week-bar" +
-                        (
-                          bar.active
-                            ? " work-week-bar-live"
-                            : ""
-                        ) +
-                        (
-                          selected?.id === bar.id
-                            ? " work-week-bar-selected"
-                            : ""
-                        ) +
-                        (
-                          bar.startsHere
-                            ? " work-week-bar-start"
-                            : ""
-                        )
-                      }
-                      onClick={() =>
-                        choose(
-                          current.sessions.find(
-                            item =>
-                              item.id === bar.id
-                          )
-                        )
-                      }
-                      style={{
-                        left: `${bar.left}%`,
-                        width: `${bar.width}%`,
-                      }}
-                      title={bar.label}
-                      aria-label={
-                        `Select session: ${bar.label}`
-                      }
-                      aria-pressed={
-                        selected?.id === bar.id
-                      }
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <AttendanceAvailabilityChart
+            employeeId={employeeId}
+            viewerId={viewerId}
+            from={Date.parse(current.week_start)}
+            to={Date.parse(current.week_end)}
+            serverNow={Math.floor(serverNow / 5000) * 5000} live={active} refreshKey={current.receivedAt}
+          />
 
           <p className="work-session-caption">
             {dayDate.format(
@@ -1037,7 +886,7 @@ export default function EmployeeWorkGraph({
 
             {" · South African time. "}
 
-            Graph shows the{" "}
+            Session list shows the{" "}
             {current.sessions.length}{" "}
             sessions on this page,
             by clock-in date.
@@ -1110,12 +959,7 @@ export default function EmployeeWorkGraph({
             </span>
           </div>
 
-          <p className="work-history-hint">
-            Select a session to highlight its
-            clock-in point and zoom in.
-            Use “This day only” and the clock-in
-            time filters to narrow your search.
-          </p>
+          <p className="work-history-hint">Select a recorded session to inspect its clock-in, clock-out and duration. Filters and pagination apply to this list.</p>
 
           {current.sessions.length ? (
             <ol className="work-history-list">
@@ -1160,7 +1004,7 @@ export default function EmployeeWorkGraph({
                       )}
 
                       <small>
-                        View on graph →
+                        View session details →
                       </small>
                     </span>
                   </button>
