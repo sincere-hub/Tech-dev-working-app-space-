@@ -1,0 +1,252 @@
+@media (min-width: 768px) {
+  /* Restore the complete dashboard branding. */
+  #root .app-shell .td-pc-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 12px;
+    width: 100%;
+  }
+
+  #root .app-shell .td-pc-brand-globe {
+    display: block;
+    width: 78px;
+    height: 78px;
+    flex: 0 0 78px;
+  }
+
+  #root .app-shell .td-pc-brand-globe .techdev-globe,
+  #root .app-shell .td-pc-brand-globe svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    visibility: visible;
+    opacity: 1;
+  }
+
+  #root .app-shell .td-pc-brand > img {
+    display: block;
+    width: 174px;
+    max-width: 100%;
+    height: 36px;
+    object-fit: contain;
+  }
+
+  /* Fixed viewport sizing bypasses the collapsed form wrapper. */
+  #root .app-shell.organised-shell.calm-workspace .td-chat {
+    --calm-ink: #173b29;
+    --calm-muted: #496253;
+    --calm-line: #d5e2d8;
+
+    position: fixed;
+    inset: var(--td-pc-chat-top, 136px) 12px 12px;
+    z-index: 15;
+    display: grid;
+    grid-template-columns: clamp(240px, 27vw, 360px) minmax(0, 1fr);
+    width: auto;
+    max-width: none;
+    height: auto;
+    max-height: none;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    border: 1px solid #a9c5b1;
+    border-radius: 14px;
+    background: #f4f8f5;
+    color: #173b29;
+    color-scheme: light;
+    opacity: 1;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-sidebar,
+    .td-chat-room
+  ) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    background: #f4f8f5;
+    color: #173b29;
+    border-color: #d5e2d8;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-welcome,
+    .td-chat-feed,
+    .td-chat-composer,
+    .td-chat-pagination,
+    .td-chat-disclosure,
+    .td-chat-sidebar-footer
+  ) {
+    background: #f4f8f5;
+    color: #40594a;
+    border-color: #d5e2d8;
+  }
+
+  #root .app-shell .td-chat .td-chat-welcome {
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-welcome h2,
+    .td-chat-contact-main strong,
+    .td-chat-bubble > strong
+  ) {
+    color: #173b29;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-contact-main > span,
+    .td-chat-preview-text,
+    .td-chat-contact-meta time,
+    .td-chat-welcome p,
+    .td-chat-welcome > span,
+    .td-chat-empty,
+    .td-chat-composer > small,
+    .td-chat-bubble time
+  ) {
+    color: #496253;
+  }
+
+  #root .app-shell .td-chat .td-chat-contact {
+    background: #fff;
+    color: #173b29;
+    border-color: #e0e9e2;
+  }
+
+  #root .app-shell .td-chat .td-chat-contact:is(:hover, .is-active) {
+    background: #e1efe5;
+    border-color: #80af8e;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-top,
+    .td-chat-room-header
+  ) {
+    flex: 0 0 auto;
+    background: #174b31;
+    color: #f0fff4;
+    border-color: #477b56;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-top h1,
+    .td-chat-top small,
+    .td-chat-room-header h2,
+    .td-chat-room-title,
+    .td-chat-room-title > span
+  ) {
+    color: #f0fff4;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-search,
+    .td-chat-compose-row,
+    .td-chat-message-search,
+    .td-chat-menu > div
+  ) {
+    background: #fff;
+    color: #173b29;
+    border-color: #adc8b5;
+  }
+
+  #root .app-shell .td-chat :is(input, textarea) {
+    background: #fff;
+    color: #173b29;
+    caret-color: #173b29;
+    -webkit-text-fill-color: #173b29;
+    color-scheme: light;
+  }
+
+  #root .app-shell .td-chat :is(input, textarea)::placeholder {
+    color: #526b5e;
+    -webkit-text-fill-color: #526b5e;
+    opacity: 1;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-icon,
+    .td-chat-tabs button,
+    .td-chat-pagination button
+  ) {
+    background: #fff0d9;
+    color: #65360c;
+    border-color: #e4bf8b;
+  }
+
+  #root .app-shell .td-chat .td-chat-menu > div button {
+    color: #173b29;
+  }
+
+  #root .app-shell .td-chat .td-chat-menu > div button:hover {
+    background: #e1efe5;
+  }
+
+  #root .app-shell .td-chat .td-chat-bubble {
+    background: #fff;
+    color: #173b29;
+    border-color: #d5e2d8;
+  }
+
+  #root .app-shell .td-chat .is-mine > .td-chat-bubble {
+    background: #dceee2;
+    color: #173b29;
+    border-color: #a8cdb5;
+  }
+
+  #root .app-shell .td-chat .td-chat-bubble > p,
+  #root .app-shell .td-chat .td-chat-bubble a {
+    color: #173b29;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-send,
+    .td-chat-voice-control > button
+  ) {
+    background: #226b42;
+    color: #fff;
+    border-color: #226b42;
+  }
+
+  #root .app-shell .td-chat .td-chat-list {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  #root .app-shell .td-chat .td-chat-feed-wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #root .app-shell .td-chat .td-chat-feed {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-composer,
+    .td-chat-pagination,
+    .td-chat-disclosure,
+    .td-chat-sidebar-footer
+  ) {
+    flex: 0 0 auto;
+  }
+}

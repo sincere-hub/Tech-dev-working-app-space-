@@ -8,6 +8,7 @@ import "./calm-workspace.css";
 import "./workspace-appearance.css";
 import "./dashboard-layout.css";
 import "./components/motion-performance.css";
+import "./components/desktop-dashboard.css";
 
 class AppBoundary extends React.Component {
   state = { failed: false };
@@ -19,3 +20,10 @@ class AppBoundary extends React.Component {
 }
 createRoot(document.getElementById("root")).render(<AppBoundary><MotionPerformance /><App /></AppBoundary>);
 registerOfflineShell();
+import "./pc-forest-theme.css";
+
+import "./search-chat-pc-fix.css";
+
+import "./pc-chat-brand-repair.css";
+
+import "./cycle-visibility.css";

@@ -1,0 +1,159 @@
+/* Desktop palette. Mobile keeps its existing appearance. */
+@media (min-width: 768px) {
+  #root .app-shell.organised-shell.calm-workspace {
+    --calm-ink: #173b29;
+    --calm-muted: #526b5e;
+    --calm-line: #d8e6dc;
+    --calm-accent: #226b42;
+    --ink: #173b29;
+    --muted: #526b5e;
+    --line: #d8e6dc;
+    background: linear-gradient(125deg, #123c29, #1b5537 58%, #226442);
+    color: #f0fff4;
+  }
+
+  #root .app-shell .main-area { background: transparent; }
+
+  #root .app-shell .topbar {
+    background: #174b31;
+    color: #f0fff4;
+    border-color: #ffffff24;
+  }
+
+  #root .app-shell .topbar :is(.desktop-page-name, .td-pc-profile-copy) {
+    color: #f0fff4;
+  }
+  #root .app-shell .td-pc-profile-copy span { color: #cbe9d4; }
+  #root .app-shell .topbar .brand-wordmark-image { filter: none; }
+
+  #root .app-shell .td-pc-dashboard {
+    --pc-card: #fff;
+    --pc-ink: #173b29;
+    --pc-muted: #526b5e;
+    --pc-line: #d8e6dc;
+    --pc-track: #e3ece5;
+    color: #173b29;
+  }
+
+  #root .app-shell .td-pc-overview { color: #f0fff4; }
+  #root .app-shell .td-pc-overview p,
+  #root .app-shell .td-pc-dashboard > .td-pc-caption {
+    color: #d3eddc;
+  }
+
+  /* Forest green navigation. */
+  #root .app-shell :is(.td-pc-sidebar, .navigation-drawer) {
+    background: linear-gradient(160deg, #174c30, #0e3321);
+    color: #f0fff4;
+    border-color: #ffffff24;
+  }
+  #root .app-shell .td-pc-sidebar > p { color: #cbe9d4; }
+  #root .app-shell .td-pc-sidebar button { color: #f0fff4; }
+
+  #root .app-shell .td-pc-sidebar :is(.td-pc-create, .is-active) {
+    background: linear-gradient(120deg, #ffb763, #f39738);
+    color: #432607;
+  }
+  #root .app-shell .td-pc-sidebar button:hover {
+    background: #2d6743;
+    color: #fff;
+  }
+
+  #root .app-shell .navigation-drawer :is(
+    h2, .drawer-profile strong, .drawer-pages button,
+    .drawer-group summary, .drawer-group button
+  ) { color: #f0fff4; }
+
+  #root .app-shell .navigation-drawer :is(
+    .eyebrow, .drawer-section-label, .drawer-profile span,
+    .drawer-empty, .drawer-group summary > span
+  ) { color: #cbe9d4; }
+
+  #root .app-shell .navigation-drawer :is(.drawer-group, .drawer-profile) {
+    border-color: #ffffff24;
+  }
+  #root .app-shell .navigation-drawer .drawer-group summary > span:last-child {
+    background: #285c3b;
+  }
+  #root .app-shell .navigation-drawer button[aria-current] {
+    background: #ffb763;
+    color: #432607;
+  }
+
+  /* White content cards. */
+  #root .app-shell :is(
+    .td-pc-panel, .panel-card,
+    .td-profile-page .account-panel, .td-work-cycle
+  ) {
+    background: #fff;
+    color: #173b29;
+    color-scheme: light;
+    border-color: #d8e6dc;
+    box-shadow: 0 8px 24px #072c2424;
+  }
+
+  /* Orange summary cards, shortcuts and small totals. */
+  #root .app-shell .td-pc-stats article,
+  #root .app-shell .td-pc-shortcuts button,
+  #root .app-shell .td-cycle-totals > div,
+  #root .app-shell .metric-chip {
+    background: linear-gradient(135deg, #ffc77d, #ffac4f 60%, #f39738);
+    color: #432607;
+    border-color: #ef9c40;
+    box-shadow: inset 0 1px 0 #ffffff70, 0 5px 14px #35210c14;
+  }
+
+  #root .app-shell .td-pc-stats :is(p, small),
+  #root .app-shell .td-cycle-totals dt {
+    color: #57330e;
+  }
+  #root .app-shell .td-pc-stat-icon {
+    background: #ffffff75;
+    color: #65360c;
+  }
+
+  #root .app-shell :is(.td-pc-search, .drawer-search) {
+    background: #fff;
+    border-color: #d8e6dc;
+    color: #526b5e;
+  }
+  #root .app-shell :is(.td-pc-search, .drawer-search) input {
+    color: #173b29;
+    color-scheme: light;
+  }
+  #root .app-shell :is(.td-pc-search, .drawer-search) input::placeholder {
+    color: #526b5e;
+  }
+  #root .app-shell .td-pc-header-tools button {
+    background: #fff0d9;
+    color: #65360c;
+  }
+
+  #root .app-shell .td-cycle-visual {
+    background: radial-gradient(circle, #fff, #e4f2e8);
+  }
+  #root .app-shell .td-cycle-center { background: #fff; }
+  #root .app-shell .td-cycle-center strong,
+  #root .app-shell .td-cycle-eyebrow {
+    background: none;
+    color: #226b42;
+  }
+  #root .app-shell .td-cycle-track { stroke: #e3ece5; }
+
+  #root .app-shell .td-work-cycle > header > span {
+    background: #fff0d9;
+    color: #65360c;
+    border-color: #f2d3aa;
+  }
+  #root .app-shell .td-cycle-note {
+    background: #f2f7f3;
+    color: #526b5e;
+  }
+  #root .app-shell .td-cycle-center span { color: #526b5e; }
+
+  #root .app-shell .td-profile-trigger {
+    background: #ffb763;
+    border-color: #ffd69e;
+    color: #432607;
+  }
+}

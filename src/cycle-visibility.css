@@ -1,0 +1,139 @@
+#root .app-shell .td-work-cycle.td-cycle-visible {
+  display: block;
+  min-width: 0;
+  padding: 24px;
+  background: linear-gradient(135deg, #fff, #f0f8f2);
+  color: #173b29;
+  border: 1px solid #b8d1bf;
+  box-shadow: 0 10px 28px #092e2429;
+  color-scheme: light;
+}
+
+#root .app-shell .td-cycle-visible h2 { color: #173b29; }
+
+#root .app-shell .td-cycle-visible .td-cycle-eyebrow {
+  background: none;
+  color: #226b42;
+  -webkit-text-fill-color: #226b42;
+}
+
+#root .app-shell .td-cycle-visible > header > span {
+  background: #fff0d9;
+  color: #65360c;
+  border-color: #edc38e;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 24px 0 16px;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-visual {
+  display: block;
+  position: relative;
+  flex: 0 0 248px;
+  width: 248px;
+  height: 248px;
+  max-width: 100%;
+  background: #edf5ef;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 0 #fff, 0 8px 20px #174b3114;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-v3-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  opacity: 1;
+  visibility: visible;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-center {
+  inset: 23%;
+  gap: 5px;
+  background: #fff;
+  color: #173b29;
+  border-radius: 50%;
+  box-shadow: 0 2px 12px #174b3112;
+  text-align: center;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-center strong {
+  font-size: 40px;
+  background: none;
+  color: #173b29;
+  -webkit-text-fill-color: #173b29;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-center :is(span, small) {
+  margin: 0;
+  color: #496253;
+  font-size: 11px;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-totals { gap: 14px; }
+
+#root .app-shell .td-cycle-visible .td-cycle-totals > div {
+  padding: 14px 18px;
+  background: linear-gradient(130deg, #ffd59b, #ffb35e);
+  border: 1px solid #edb36d;
+  border-left: 5px solid #008879;
+  color: #432607;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-totals > div + div {
+  border-left-color: #be3457;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-totals dt { color: #57330e; }
+
+#root .app-shell .td-cycle-visible .td-cycle-totals dd {
+  color: #432607;
+  font-size: 30px;
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-totals > div:first-child i {
+  background: linear-gradient(135deg, #04774d, #00bfcf);
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-totals > div + div i {
+  background: linear-gradient(135deg, #a21c49, #ef5475);
+}
+
+#root .app-shell .td-cycle-visible .td-cycle-note {
+  background: #e7f0e9;
+  color: #40594a;
+}
+
+#root .app-shell .td-cycle-visible > p[role=status] { color: #40594a; }
+
+#root .app-shell .td-cycle-visible > p button {
+  color: #174b31;
+  background: #fff;
+  border: 1px solid #8db09a;
+  border-radius: 7px;
+  padding: 6px 10px;
+}
+
+@media (max-width: 767px) {
+  #root .app-shell .td-work-cycle.td-cycle-visible { padding: 18px; }
+
+  #root .app-shell .td-cycle-visible .td-cycle-visual {
+    flex-basis: 184px;
+    width: 184px;
+    height: 184px;
+  }
+
+  #root .app-shell .td-cycle-visible .td-cycle-center strong {
+    font-size: 30px;
+  }
+
+  #root .app-shell .td-cycle-visible .td-cycle-center small {
+    font-size: 9px;
+  }
+}

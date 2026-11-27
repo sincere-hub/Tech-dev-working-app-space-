@@ -153,16 +153,16 @@ export default function NavigationDrawer({
 
   const search = query.trim().toLowerCase();
 
-  const matches = items.filter(item =>
+  const matches = (items.filter(item =>
     item.id !== "profile" && item.label.toLowerCase().includes(search)
-  );
+  )).filter(item=>phoneMenu || !["search","internal-search"].includes(item.id));
 
   const groups = allGroups
     .map(group => ({
       ...group,
 
       modules: group.modules.filter(module =>
-        (!phoneMenu || module.id !== "collaboration.chat") &&
+        /* TD_PC_SEARCH_MENU_V1 */ (phoneMenu || module.id !== "collaboration.search") && ((!phoneMenu || module.id !== "collaboration.chat") &&
         (
           !module.nativeView ||
           ["directory", "search"].includes(
@@ -172,7 +172,7 @@ export default function NavigationDrawer({
         ) &&
         `${module.title} ${group.label}`
           .toLowerCase()
-          .includes(search)
+          .includes(search))
       ),
     }))
     .filter(group => group.modules.length);

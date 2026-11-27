@@ -1,3 +1,4 @@
+import {useDesktopMode as usePCSearchLayout} from "../lib/useDesktopDashboard.js";
 import { lazy, Suspense, useState } from "react";
 import {
   ArrowLeft,
@@ -62,6 +63,7 @@ function displayStatus(status) {
 }
 
 export default function WorkplaceSuite({
+ initialSearchQuery = "",
   records,
   interactions,
   onInteract,
@@ -81,10 +83,12 @@ export default function WorkplaceSuite({
   onDelete,
   onNavigate,
 }) {
+ const pcSearchLayout=usePCSearchLayout();
+
   const moduleId = initialModuleId;
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(() => initialModuleId === "collaboration.search" ? initialSearchQuery : "");
   const selectedModule = workplaceModules.find(module => module.id === moduleId);
-  const visibleGroups = getWorkplaceGroupsForRole(role);
+  const visibleGroups = getWorkplaceGroupsForRole(role).map(group=>({...group,modules:group.modules.filter(module=>!pcSearchLayout || module.id!=="collaboration.search")})).filter(group=>group.modules.length);
 
   function openModule(module) {
     if (module.nativeView && !["directory", "search"].includes(module.nativeView)) {

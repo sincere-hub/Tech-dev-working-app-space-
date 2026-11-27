@@ -1,3 +1,4 @@
+import DesktopDashboard, {useDesktopMode} from "./components/DesktopDashboard.jsx";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownToLine,
@@ -505,6 +506,8 @@ function PasswordRecovery({ onComplete }) {
 }
 
 function App() {
+ const [desktopSearch,setDesktopSearch]=useState({owner:"",query:""});
+
   const [session, setSession] = useState(null);
   useEmployeeAccess(session?.user?.id, () => setSession(null));
   const [avatarUploadsEnabled, setAvatarUploadsEnabled] = useState(false);
@@ -2180,7 +2183,7 @@ if (!session) return <AuthScreen />;
             onTask={updateTask}
             onView={navigate}
             onDownload={downloadPayslip}
-          />}
+           onSearch={query=>{setDesktopSearch({owner:userId,query});navigate("suite","collaboration.search");}}  onOpenMenu={toggleNavigation}  displayName={displayName}  role={profile?.role || "employee"}  workspace={data} />}
           {activeView === "tasks" && <TasksView tasks={taskSections} isManager={isManager} employees={data.employees} employeeId={userId} onTask={updateTask} onClaim={claimTask} onSubmit={submitTask} />}
           {activeView === "attendance" && <AttendanceView entries={isManager ? data.timeEntries : data.timeEntries.filter(entry => entry.employee_id === userId)} employees={data.employees} employeeId={userId} openEntry={openEntry} seconds={todaySeconds} onClock={toggleClock} />}
           {activeView === "leave" && <LeaveView isManager={isManager} employeeId={userId} requests={employeeRequests} shiftRequests={employeeShiftRequests} shifts={upcomingShifts} employees={data.employees} onLeave={submitLeave} onShiftRequest={submitShiftRequest} onReview={reviewRequest} onShift={submitShift} />}
@@ -2207,7 +2210,7 @@ if (!session) return <AuthScreen />;
     )
   )}
           {activeView === "manager" && isManager && suiteModule !== "employee-bans" && <ManagerView tasks={data.tasks} announcements={announcements} employees={data.employees} requests={data.leaveRequests} shiftRequests={data.shiftRequests} shifts={data.shifts} onTask={submitTask} onUpdateTask={updateTask} onAnnouncement={submitAnnouncement} onReview={reviewRequest} onShift={submitShift} onView={navigate} />}
-          {activeView === "suite" && <WorkplaceSuite key={suiteModule || "all"} initialModuleId={suiteModule} interactions={data.interactions} onInteract={recordInteraction} records={data.workplaceRecords} employees={data.employees} tasks={data.tasks} announcements={announcements} isManager={isManager} userId={userId} onCreate={submitWorkplaceRecord} onSaveOkr={saveOkr} onSaveMeeting={saveMeeting} onSaveDesignReference={saveDesignReference} onRefreshDesign={() => loadWorkspace(session.user)} onStatus={updateWorkplaceRecord} onDelete={deleteWorkplaceRecord} onNavigate={navigate}role={profile?.role || "employee"} />}
+          {activeView === "suite" && <WorkplaceSuite key={suiteModule || "all"} initialModuleId={suiteModule} interactions={data.interactions} onInteract={recordInteraction} records={data.workplaceRecords} employees={data.employees} tasks={data.tasks} announcements={announcements} isManager={isManager} userId={userId} onCreate={submitWorkplaceRecord} onSaveOkr={saveOkr} onSaveMeeting={saveMeeting} onSaveDesignReference={saveDesignReference} onRefreshDesign={() => loadWorkspace(session.user)} onStatus={updateWorkplaceRecord} onDelete={deleteWorkplaceRecord} onNavigate={navigate}role={profile?.role || "employee"}  initialSearchQuery={desktopSearch.owner===userId?desktopSearch.query:""} />}
           {activeView === "notices" && (
   <>
     <PageHeading
@@ -2475,7 +2478,33 @@ function ClockCard({ openEntry, seconds, onClock, compact = false }) {
   return <section className={`clock-card${openEntry ? " is-clocked-in" : ""}${compact ? " clock-card-compact" : ""}`}><div className="clock-orbit" /><div className="clock-card-top"><div><p className="clock-eyebrow">YOUR WORKDAY</p><strong className="clock-time">{formatTime(now)}</strong><span className="clock-date">{formatDate(new Date(now), { weekday: "long", month: "long", day: "numeric" })}</span></div><span className={`clock-state${openEntry ? " clock-state-live" : ""}`}><i />{openEntry ? "Clocked in" : "Not clocked in"}</span></div><div className="clock-card-bottom"><div><span className="clock-hours-label">Hours worked today</span><strong className="clock-hours">{formatDuration(currentSeconds)}</strong></div><button className="clock-action" onClick={onClock}>{openEntry ? "Clock out" : "Clock in"} <ArrowRight size={15} /></button></div></section>;
 }
 
-function Overview({ name, employeeId, timeEntries = [], openEntry, seconds, onClock, onView }) {
+function Overview(props) {
+ /* TD_PC_DASHBOARD_V1 */
+ const { name, employeeId, timeEntries = [], openEntry, seconds, onClock, onView }=props;
+ const desktop=useDesktopMode();
+
+ if(desktop)return (
+  <DesktopDashboard
+   employeeId={employeeId}
+   name={name}
+   displayName={props.displayName}
+   role={props.role}
+   workspace={props.workspace}
+   onView={onView}
+   onTask={props.onTask}
+   onSearch={props.onSearch}
+   onOpenMenu={props.onOpenMenu}
+   clock={
+    <ClockCard
+     openEntry={openEntry}
+     seconds={seconds}
+     onClock={onClock}
+    />
+   }
+  />
+ );
+
+ 
  return <section className="td-dashboard" aria-labelledby="dashboard-title">
   <header className="td-dashboard-heading"><h1 id="dashboard-title">Dashboard</h1><p>Welcome, {name}</p></header>
   <ClockCard openEntry={openEntry} seconds={seconds} onClock={onClock}/>
@@ -2484,6 +2513,7 @@ function Overview({ name, employeeId, timeEntries = [], openEntry, seconds, onCl
   </div>
   <DashboardWorkCycle employeeId={employeeId} refreshKey={timeEntries.map(entry => `${entry.id}:${entry.clocked_out_at || "open"}`).join("|")}/>
  </section>;
+
 }
 
 function TaskRow({ task, employee, onChange, onClaim, managerMode = false }) {

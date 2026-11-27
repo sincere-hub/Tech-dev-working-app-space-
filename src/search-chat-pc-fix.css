@@ -1,0 +1,283 @@
+/* Explicit Search colours prevent white-on-white results. */
+#root .app-shell .td-internal-search {
+  --calm-ink: #173b29;
+  --calm-muted: #496253;
+  color-scheme: light;
+  color: #173b29;
+  box-sizing: border-box;
+  padding: clamp(14px, 2vw, 24px);
+  border: 1px solid #477856;
+  border-radius: 18px;
+  background: linear-gradient(140deg, #174b31, #205c3b);
+}
+
+#root .app-shell .td-internal-search .td-search-heading {
+  background: #123d29;
+  border-color: #527f60;
+  color: #f2fff5;
+}
+
+#root .app-shell .td-internal-search .td-search-heading h1 {
+  color: #f2fff5;
+}
+
+#root .app-shell .td-internal-search .td-search-heading p {
+  color: #d5efdd;
+}
+
+#root .app-shell .td-internal-search .td-search-heading-icon {
+  background: #ffb763;
+  border-color: #ffd39b;
+  color: #432607;
+}
+
+#root .app-shell .td-internal-search .td-search-box {
+  background: #fff;
+  border-color: #afcbb6;
+  color: #305740;
+}
+
+#root .app-shell .td-internal-search .td-search-box input {
+  background: transparent;
+  color: #173b29;
+  caret-color: #173b29;
+  -webkit-text-fill-color: #173b29;
+  opacity: 1;
+}
+
+#root .app-shell .td-internal-search .td-search-box input::placeholder {
+  color: #526b5e;
+  -webkit-text-fill-color: #526b5e;
+  opacity: 1;
+}
+
+#root .app-shell .td-internal-search .td-search-box button {
+  background: #ffb763;
+  border-color: #e79a43;
+  color: #432607;
+}
+
+#root .app-shell .td-internal-search .td-search-box:focus-within {
+  outline: 3px solid #ffb763;
+  outline-offset: 3px;
+}
+
+#root .app-shell .td-internal-search .td-search-scope {
+  color: #d5efdd;
+}
+
+#root .app-shell .td-internal-search .td-search-results-heading h2 {
+  color: #f2fff5;
+}
+
+#root .app-shell .td-internal-search .td-search-results-heading > span {
+  background: #ffb763;
+  border-color: #e79a43;
+  color: #432607;
+}
+
+#root .app-shell .td-internal-search .suite-search-result {
+  --search-accent: #65360c;
+  --search-tint: #fff0d9;
+  background: #fff;
+  border-color: #c6d9cb;
+  color: #173b29;
+  box-shadow: 0 5px 16px #08281720;
+}
+
+#root .app-shell .td-internal-search .td-search-result-copy h3,
+#root .app-shell .td-internal-search .suite-search-result > strong {
+  color: #173b29;
+}
+
+#root .app-shell .td-internal-search .td-search-preview,
+#root .app-shell .td-internal-search .td-search-expand > p,
+#root .app-shell .td-internal-search .suite-search-result > p {
+  color: #40594a;
+}
+
+#root .app-shell .td-internal-search .td-search-result-icon,
+#root .app-shell .td-internal-search .td-search-type {
+  background: #fff0d9;
+  border-color: #edc38e;
+  color: #65360c;
+}
+
+#root .app-shell .td-internal-search .td-search-expand > summary,
+#root .app-shell .td-internal-search .suite-search-result a {
+  color: #166440;
+}
+
+#root .app-shell .td-internal-search mark {
+  background: #ffd294;
+  color: #432607;
+}
+
+#root .app-shell .td-internal-search .td-search-empty {
+  background: #fff;
+  border-color: #a9c5b1;
+  color: #173b29;
+}
+
+#root .app-shell .td-internal-search .td-search-empty h2 {
+  color: #173b29;
+}
+
+#root .app-shell .td-internal-search .td-search-empty > p {
+  color: #40594a;
+}
+
+#root .app-shell .td-internal-search .td-search-empty > span,
+#root .app-shell .td-internal-search .td-search-categories > span {
+  background: #fff0d9;
+  border-color: #edc38e;
+  color: #65360c;
+}
+
+#root .app-shell .td-internal-search :is(button, summary, a):focus-visible {
+  outline: 3px solid #b96716;
+  outline-offset: 3px;
+}
+
+/* PC Chat fills the available viewport beneath the app header. */
+@media (min-width: 768px) {
+  #root .app-shell.organised-shell.calm-workspace:has(.td-chat) {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #root .app-shell:has(.td-chat) > .main-area {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    min-height: 0;
+    min-width: 0;
+    margin-left: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+
+  #root .app-shell:has(.td-chat) .topbar {
+    flex: 0 0 auto;
+  }
+
+  #root .app-shell:has(.td-chat) .topbar .menu-trigger {
+    color: #f0fff4;
+  }
+
+  #root .app-shell:has(.td-chat) .page-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 10px 14px 14px;
+    gap: 8px;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  #root .app-shell:has(.td-chat) .page-navigation,
+  #root .app-shell:has(.td-chat) .error-banner {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+
+  #root .app-shell:has(.td-chat) .page-back-button {
+    color: #e2f5e8;
+  }
+
+  /* The existing fieldset must also stretch with the chat. */
+  #root .app-shell .workspace-controls:has(.td-chat) {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    width: 100%;
+    min-width: 0;
+    min-inline-size: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  #root .app-shell .td-chat {
+    display: grid;
+    grid-template-columns: clamp(240px, 27vw, 360px) minmax(0, 1fr);
+    flex: 1 1 0;
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  #root .app-shell .td-chat :is(.td-chat-sidebar, .td-chat-room) {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  #root .app-shell .td-chat .td-chat-welcome {
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  #root .app-shell .td-chat .td-chat-list {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  #root .app-shell .td-chat .td-chat-feed-wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  #root .app-shell .td-chat .td-chat-feed {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  #root .app-shell .td-chat :is(
+    .td-chat-room-header,
+    .td-chat-composer,
+    .td-chat-pagination,
+    .td-chat-disclosure,
+    .td-chat-sidebar-footer
+  ) {
+    flex: 0 0 auto;
+  }
+
+  #root .app-shell .td-chat .td-chat-composer {
+    position: relative;
+    bottom: auto;
+    width: 100%;
+    min-width: 0;
+  }
+}

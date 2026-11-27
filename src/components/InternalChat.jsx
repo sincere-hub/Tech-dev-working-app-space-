@@ -1,3 +1,4 @@
+import useDesktopChatFrame from "../lib/useDesktopChatFrame.js";
 import { ChatDeleteMenu, ChatMediaMessage, ChatMediaUpload, ChatMessageText } from "./ChatSharing.jsx";
 import {
   Fragment,
@@ -152,6 +153,7 @@ function CompanyChat({
   const locks = useRef(new Set());
   const alive = useRef(true);
   const chatRoot = useRef(null);
+  useDesktopChatFrame(chatRoot);
   useChatViewport(chatRoot);
 
   useEffect(() => {
