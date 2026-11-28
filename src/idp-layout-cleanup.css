@@ -1,0 +1,96 @@
+/* Full-width IDP on both phones and PCs. */
+#root .app-shell.organised-shell.calm-workspace:has(.td-idp-v2) .page-content {
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:0;
+  gap:0;
+  min-width:0;
+}
+
+#root .app-shell .workspace-controls:has(.td-idp-v2) {
+  width:100%;
+  min-width:0;
+  min-inline-size:0;
+  margin:0;
+  padding:0;
+  border:0;
+}
+
+#root .app-shell .td-idp-v2 {
+  width:100%;
+  max-width:none;
+  min-width:0;
+  gap:0;
+  align-content:start;
+  min-height:calc(100dvh - 80px);
+}
+
+#root .app-shell .td-idp-v2 .td-idp-v2-grid {
+  gap:0;
+  align-items:stretch;
+}
+
+#root .app-shell .td-idp-v2 .td-idp-v2-card {
+  margin:0;
+  border-radius:0;
+  box-shadow:none;
+}
+
+#root .app-shell .td-idp-v2 .td-idp-v2-hero {
+  border-radius:0;
+  margin:0;
+}
+
+#root .app-shell .td-idp-v2 .td-idp-v2-form {
+  margin-top:0;
+}
+
+#root .app-shell .td-idp-v2 .td-idp-v2-search {
+  margin:0;
+  border-radius:0;
+}
+
+#root .app-shell .td-idp-v2 .td-idp-v2-tabs {
+  gap:0;
+  padding:0;
+  background:#e7f0e9;
+}
+
+#root .app-shell .td-idp-v2 .td-idp-v2-tabs button {
+  border-radius:0;
+  flex:1;
+}
+
+#root .app-shell .td-idp-v2 .td-idp-v2-controls > p {
+  margin:0;
+  padding:16px;
+  background:#fff;
+}
+
+#root .app-shell .td-idp-v2 .td-idp-guide {
+  padding-block:10px;
+}
+
+#root .app-shell .td-idp-v2 .td-idp-delete-button {
+  background:#ffe5dd;
+  color:#852b25;
+  border-color:#d79a89;
+}
+
+#root .app-shell:has(.td-idp-v2) .page-navigation {
+  margin:0;
+  padding:6px 16px;
+  background:#174b31;
+}
+
+#root .app-shell:has(.td-idp-v2) .page-back-button {
+  color:#e4f5e9;
+}
+
+@media(max-width:767px){
+  #root .app-shell .td-idp-v2 {
+    min-height:calc(100dvh - 180px);
+    padding-bottom:calc(90px + env(safe-area-inset-bottom));
+  }
+}

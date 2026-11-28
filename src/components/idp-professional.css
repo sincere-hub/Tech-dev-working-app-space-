@@ -1,0 +1,582 @@
+/* TechDev IDP — shared desktop and mobile theme. */
+
+body #root .app-shell .td-idp-v2 {
+  --idp-ink:#153d2b;
+  --idp-muted:#53695d;
+  --idp-line:#dce6df;
+  --idp-forest:#123c2b;
+  --idp-orange:#f7ab57;
+  width:100%;
+  max-width:none;
+  min-width:0;
+  gap:0;
+  align-content:start;
+  background:var(--idp-forest);
+  color:var(--idp-ink);
+  color-scheme:light;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,
+    BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px;
+  line-height:1.55;
+}
+
+body #root .app-shell .td-idp-v2 *,
+body #root .app-shell .td-idp-v2 *::before,
+body #root .app-shell .td-idp-v2 *::after {
+  box-sizing:border-box;
+}
+
+/* Header */
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-hero {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:24px;
+  padding:32px clamp(20px,3vw,40px);
+  margin:0;
+  border:0;
+  border-radius:0;
+  background:
+    radial-gradient(ellipse at 100% 0%,#65834a55,transparent 58%),
+    linear-gradient(120deg,#0e3023,#1e5840);
+  border-bottom:1px solid #ffffff20;
+  color:#f5fff8;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-hero p {
+  margin:0;
+  color:#c9dfd1;
+  max-width:65ch;
+  font-size:14px;
+  line-height:1.65;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-hero p:first-child {
+  color:#f6bd7c;
+  font-size:10px;
+  font-weight:750;
+  letter-spacing:.17em;
+  margin-bottom:12px;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-hero h1 {
+  margin:0 0 10px;
+  color:#fff;
+  font-size:clamp(25px,2.7vw,38px);
+  line-height:1.15;
+  font-weight:720;
+  letter-spacing:-.035em;
+}
+
+/* Navigation */
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-tabs {
+  display:flex;
+  flex-wrap:wrap;
+  gap:0;
+  margin:0;
+  padding:0;
+  background:#103725;
+  border-bottom:1px solid #ffffff18;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-tabs button {
+  flex:1;
+  position:relative;
+  min-height:56px;
+  padding:14px 18px;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  background:transparent;
+  color:#d3e4d9;
+  font-weight:650;
+  white-space:normal;
+}
+
+body #root .app-shell .td-idp-v2
+.td-idp-v2-tabs button[aria-pressed=true] {
+  background:#f7faf7;
+  color:#173f2b;
+  box-shadow:inset 0 3px var(--idp-orange);
+}
+
+/* Cards and layout */
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-controls {
+  min-width:0;
+  min-inline-size:0;
+  margin:0;
+  padding:0;
+  border:0;
+  background:#f6f8f5;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-grid {
+  display:grid;
+  grid-template-columns:repeat(
+    auto-fit,minmax(min(100%,300px),1fr)
+  );
+  gap:0;
+  align-items:stretch;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-card {
+  min-width:0;
+  margin:0;
+  padding:26px;
+  background:#fff;
+  color:var(--idp-ink);
+  border:1px solid var(--idp-line);
+  border-radius:0;
+  box-shadow:inset 0 1px #ffffff;
+  overflow-wrap:anywhere;
+}
+
+body #root .app-shell .td-idp-v2
+.td-idp-v2-card :is(h2,h3) {
+  margin:0 0 12px;
+  color:var(--idp-ink);
+  font-size:17px;
+  line-height:1.35;
+  font-weight:720;
+  letter-spacing:-.02em;
+}
+
+body #root .app-shell .td-idp-v2
+.td-idp-v2-card :is(p,li) {
+  color:var(--idp-muted);
+  font-size:13px;
+  line-height:1.75;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-card p {
+  margin:10px 0;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-card strong {
+  color:var(--idp-ink);
+  font-weight:650;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-card a {
+  color:#176243;
+  text-underline-offset:4px;
+  text-decoration-thickness:1px;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-badge {
+  display:inline-flex;
+  align-items:center;
+  min-height:29px;
+  padding:5px 10px;
+  border:1px solid #f3c793;
+  border-radius:7px;
+  background:linear-gradient(120deg,#fff2df,#ffe0b5);
+  color:#73420e;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.02em;
+}
+
+/* Forms */
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-form {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:20px 24px;
+  margin:0;
+  align-items:start;
+  border-inline-start:3px solid #2c684b;
+}
+
+body #root .app-shell .td-idp-v2
+.td-idp-v2-form > :is(h2,p,.td-idp-v2-wide) {
+  grid-column:1/-1;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-form > h2 {
+  margin:0;
+  padding-bottom:15px;
+  border-bottom:1px solid var(--idp-line);
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-form > p {
+  margin:0;
+}
+
+body #root .app-shell .td-idp-v2 label {
+  display:grid;
+  gap:8px;
+  min-width:0;
+  color:#34513e;
+  font-size:12px;
+  font-weight:650;
+}
+
+body #root .app-shell .td-idp-v2 :is(input,select,textarea) {
+  width:100%;
+  min-width:0;
+  min-height:46px;
+  padding:12px 14px;
+  border:1px solid #c6d7cb;
+  border-radius:9px;
+  background:#fbfdfb;
+  background-clip:padding-box;
+  color:#183d2a;
+  -webkit-text-fill-color:#183d2a;
+  font:inherit;
+  font-size:14px;
+  font-weight:450;
+  line-height:1.5;
+  box-shadow:inset 0 1px 2px #183d2a04;
+  transition:border-color .16s ease,box-shadow .16s ease;
+}
+
+body #root .app-shell .td-idp-v2 select {
+  cursor:pointer;
+  padding-inline-end:28px;
+}
+
+body #root .app-shell .td-idp-v2 option {
+  background:#fff;
+  color:#183d2a;
+}
+
+body #root .app-shell .td-idp-v2 textarea {
+  min-height:110px;
+  resize:vertical;
+}
+
+body #root .app-shell .td-idp-v2 input::placeholder,
+body #root .app-shell .td-idp-v2 textarea::placeholder {
+  color:#687c70;
+  -webkit-text-fill-color:#687c70;
+  opacity:1;
+}
+
+body #root .app-shell .td-idp-v2
+:is(input,select,textarea):focus {
+  outline:none;
+  border-color:#2c7852;
+  box-shadow:0 0 0 3px #2c78521a;
+}
+
+body #root .app-shell .td-idp-v2
+:is(input[type=checkbox],input[type=radio]) {
+  width:18px;
+  min-height:18px;
+  accent-color:#246c48;
+  box-shadow:none;
+}
+
+/* Buttons */
+
+body #root .app-shell .td-idp-v2 button {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:44px;
+  max-width:100%;
+  padding:10px 16px;
+  border:1px solid #c8d8cd;
+  border-radius:8px;
+  background:#f7faf7;
+  color:#244e35;
+  font:inherit;
+  font-size:12px;
+  font-weight:680;
+  line-height:1.45;
+  cursor:pointer;
+  white-space:normal;
+  box-shadow:0 1px 2px #0f302309;
+  transition:background-color .16s ease,
+    border-color .16s ease,box-shadow .16s ease;
+}
+
+body #root .app-shell .td-idp-v2 button[type=submit],
+body #root .app-shell .td-idp-v2
+.td-idp-v2-form > button:not([type]) {
+  justify-self:start;
+  padding-inline:22px;
+  background:linear-gradient(130deg,#ffc580,#f1a64f);
+  border-color:#e6a453;
+  color:#482a09;
+  box-shadow:0 3px 8px #b77e2720;
+}
+
+body #root .app-shell .td-idp-v2
+.td-idp-v2-hero > button {
+  flex-shrink:0;
+  background:#ffffff0d;
+  border-color:#ffffff40;
+  color:#fff;
+  box-shadow:none;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-delete-button {
+  background:#fff4ef;
+  border-color:#edc9ba;
+  color:#93402d;
+}
+
+body #root .app-shell .td-idp-v2 button:disabled {
+  opacity:.62;
+  cursor:not-allowed;
+  box-shadow:none;
+}
+
+body #root .app-shell .td-idp-v2
+:is(input,select,textarea):disabled {
+  background:#edf2ed;
+  color:#667b6b;
+  -webkit-text-fill-color:#667b6b;
+  cursor:not-allowed;
+}
+
+body #root .app-shell .td-idp-v2
+:is(button,a,input,select,textarea,summary):focus-visible {
+  outline:3px solid #318264;
+  outline-offset:3px;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-actions {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:9px;
+  margin:18px 0 0;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-actions a {
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  padding:8px 4px;
+  font-size:12px;
+  font-weight:650;
+}
+
+/* Search and expandable panels */
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-search {
+  display:grid;
+  gap:8px;
+  padding:18px 26px;
+  margin:0;
+  border:0;
+  border-bottom:1px solid var(--idp-line);
+  border-radius:0;
+  background:#f3f7f2;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-search input {
+  max-width:640px;
+  background:#fff;
+}
+
+body #root .app-shell .td-idp-v2 details {
+  min-width:0;
+}
+
+body #root .app-shell .td-idp-v2 summary {
+  min-height:40px;
+  padding:9px 0;
+  color:#214a33;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.6;
+}
+
+body #root .app-shell .td-idp-v2 summary::marker {
+  color:#b26b22;
+}
+
+body #root .app-shell .td-idp-v2
+details[open] > summary {
+  margin-bottom:14px;
+  border-bottom:1px solid var(--idp-line);
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-guide {
+  padding:8px 26px;
+  background:#f8faf6;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-guide ol {
+  margin:0;
+  padding-inline-start:22px;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-guide li {
+  padding:5px 0;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-form details {
+  padding:14px 18px;
+  border:1px solid var(--idp-line);
+  border-radius:10px;
+  background:#f7faf6;
+}
+
+body #root .app-shell .td-idp-v2
+.td-idp-v2-form details label + label {
+  margin-top:14px;
+}
+
+body #root .app-shell .td-idp-v2 code {
+  padding:3px 6px;
+  border-radius:4px;
+  background:#edf4ed;
+  color:#2c5740;
+  font-size:11px;
+  line-height:1.7;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+
+/* Feedback */
+
+body #root .app-shell .td-idp-v2 [role=alert] {
+  padding:14px 18px;
+  margin:0;
+  border:1px solid #ecc4ba;
+  border-inline-start:3px solid #b95338;
+  border-radius:0;
+  background:#fff3ee;
+  color:#843d2a;
+  font-size:13px;
+}
+
+body #root .app-shell .td-idp-v2 [role=status] {
+  padding:14px 18px;
+  margin:0;
+  border:1px solid #cedfce;
+  border-inline-start:3px solid #4a8056;
+  border-radius:0;
+  background:#eef6ec;
+  color:#2c5537;
+  font-size:13px;
+}
+
+body #root .app-shell .td-idp-v2
+.td-idp-v2-card [role=alert] {
+  color:#843d2a;
+}
+
+body #root .app-shell .td-idp-v2
+.td-idp-v2-card [role=status] {
+  color:#2c5537;
+}
+
+body #root .app-shell .td-idp-v2 .td-idp-v2-controls > p {
+  margin:0;
+  padding:22px 26px;
+  background:#fff;
+  color:var(--idp-muted);
+}
+
+/* Pointer interactions */
+
+@media(hover:hover) {
+  body #root .app-shell .td-idp-v2
+  button:not(:disabled):hover {
+    border-color:#9fbda9;
+    background:#edf4ee;
+    box-shadow:0 2px 5px #163f2a0d;
+  }
+
+  body #root .app-shell .td-idp-v2
+  button[type=submit]:not(:disabled):hover,
+  body #root .app-shell .td-idp-v2
+  .td-idp-v2-form > button:not([type]):not(:disabled):hover {
+    background:linear-gradient(130deg,#ffd39b,#f5b363);
+    border-color:#d6923c;
+  }
+
+  body #root .app-shell .td-idp-v2
+  .td-idp-v2-tabs button:not([aria-pressed=true]):hover,
+  body #root .app-shell .td-idp-v2
+  .td-idp-v2-hero > button:hover {
+    background:#ffffff15;
+    color:#fff;
+  }
+}
+
+/* Phones */
+
+@media(max-width:700px) {
+  body #root .app-shell .td-idp-v2 .td-idp-v2-hero {
+    padding:24px 18px;
+    align-items:flex-start;
+    flex-direction:column;
+    gap:18px;
+  }
+
+  body #root .app-shell .td-idp-v2 .td-idp-v2-tabs {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  body #root .app-shell .td-idp-v2 .td-idp-v2-tabs button {
+    min-height:52px;
+    padding:12px 8px;
+    font-size:12px;
+  }
+
+  body #root .app-shell .td-idp-v2 .td-idp-v2-grid,
+  body #root .app-shell .td-idp-v2 .td-idp-v2-form {
+    grid-template-columns:minmax(0,1fr);
+  }
+
+  body #root .app-shell .td-idp-v2 .td-idp-v2-card {
+    padding:20px 16px;
+  }
+
+  body #root .app-shell .td-idp-v2 .td-idp-v2-form {
+    gap:18px;
+  }
+
+  body #root .app-shell .td-idp-v2
+  :is(input,select,textarea) {
+    font-size:16px;
+  }
+
+  body #root .app-shell .td-idp-v2 .td-idp-v2-search {
+    padding:16px;
+  }
+
+  body #root .app-shell .td-idp-v2 .td-idp-guide {
+    padding:8px 16px;
+  }
+
+  body #root .app-shell .td-idp-v2 .td-idp-v2-form > button {
+    width:100%;
+    justify-self:stretch;
+  }
+
+  body #root .app-shell .td-idp-v2 .td-idp-v2-actions {
+    display:grid;
+    grid-template-columns:repeat(
+      auto-fit,minmax(min(100%,130px),1fr)
+    );
+  }
+
+  body #root .app-shell .td-idp-v2
+  .td-idp-v2-actions :is(button,a) {
+    width:100%;
+    justify-content:center;
+  }
+}
+
+@media(prefers-reduced-motion:reduce) {
+  body #root .app-shell .td-idp-v2 *,
+  body #root .app-shell .td-idp-v2 *::before,
+  body #root .app-shell .td-idp-v2 *::after {
+    animation:none!important;
+    transition:none!important;
+  }
+}

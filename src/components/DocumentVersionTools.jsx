@@ -9,6 +9,8 @@ import {
 
 import { supabase } from "../lib/supabase.js";
 import "./wiki-article-tools.css";
+import {fileExtension,fileMime,validateTransferFile,uploadStoredFile,downloadStoredFile,formatFileSize} from '../lib/fileTransfers.js';
+
 
 const types = {
   pdf: "application/pdf",
@@ -23,10 +25,7 @@ const types = {
   webp: "image/webp",
 };
 
-const sizeLabel = size =>
-  `${(Number(size || 0) / 1024).toLocaleString("en-ZA", {
-    maximumFractionDigits: 1,
-  })} KB`;
+const sizeLabel = formatFileSize;
 
 const dateLabel = date =>
   new Date(date).toLocaleString("en-ZA", {
@@ -292,20 +291,17 @@ export default function DocumentVersionTools({
         throw new Error("Choose a replacement file.");
       }
 
-      const extension = file.name
-        .split(".")
-        .pop()
-        .toLowerCase();
+      const extension = fileExtension(file.name);
 
       if (
-        !types[extension] ||
+        !fileMime(file.name) ||
         !file.size ||
-        file.size > 10485760 ||
+        false ||
         file.name.length > 200 ||
         /[/\\\x00-\x1f\x7f]/.test(file.name)
       ) {
         throw new Error(
-          "Choose a supported file with a valid name, no larger than 10 MB."
+          "Choose a non-empty file with a valid filename."
         );
       }
 
@@ -343,18 +339,13 @@ export default function DocumentVersionTools({
       setStage("Uploading replacement…");
 
       if (!pending.inflight) {
-        pending.inflight = bucket
-          .upload(pending.path, file, {
-            contentType: types[extension],
-            cacheControl: "0",
-            upsert: false,
-          })
+        pending.inflight = uploadStoredFile("legion-documents",pending.path,file,userId)
           .finally(() => {
             pending.inflight = null;
           });
       }
 
-      const uploaded = await timed(pending.inflight);
+      const uploaded = await pending.inflight;
 
       await checkAccount();
 
@@ -400,7 +391,7 @@ export default function DocumentVersionTools({
       const pending = attempt.current;
 
       if (pending.inflight) {
-        await timed(pending.inflight);
+        await pending.inflight;
       }
 
       if (await publishedAttempt(pending)) {
@@ -483,36 +474,15 @@ export default function DocumentVersionTools({
     });
   }
 
-  function download(version) {
-    return run(async () => {
-      const { data, error } = await timed(
-        bucket.download(version.metadata.storage_path)
-      );
-
-      if (error) throw error;
-
-      await checkAccount();
-
-      const url = URL.createObjectURL(data);
-      urls.current.add(url);
-
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = String(
-        version.metadata.file_name || "document"
-      ).replace(/[/\\\x00-\x1f\x7f]/g, "_");
-
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-        urls.current.delete(url);
-      }, 60000);
-    });
-  }
+  
+function download(version){
+ return run(()=>downloadStoredFile(
+  "legion-documents",
+  version.metadata.storage_path,
+  version.metadata.file_name,
+  userId
+ ));
+}
 
   if (!allowed) return null;
 
@@ -626,7 +596,7 @@ export default function DocumentVersionTools({
                     type="file"
                     required
                     disabled={Boolean(attempt.current)}
-                    accept=".pdf,.docx,.xlsx,.pptx,.txt,.csv,.jpg,.jpeg,.png,.webp"
+                    
                     onChange={event =>
                       setFile(event.target.files?.[0] || null)
                     }
@@ -634,9 +604,8 @@ export default function DocumentVersionTools({
                 </label>
 
                 <small>
-                  Maximum 10 MB. Keep this window open
-                  to retry an interrupted upload.
-                </small>
+Workspace storage limit applies. Keep this window open to retry.
+</small>
 
                 {file && (
                   <p>
@@ -752,3 +721,4 @@ export default function DocumentVersionTools({
     </div>
   );
 }
+// TD_ALL_FILES_V1

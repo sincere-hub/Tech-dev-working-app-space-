@@ -1,0 +1,107 @@
+#root .app-shell .td-idp-v2 {
+  width:100%;min-width:0;color:#173b29;color-scheme:light;
+  display:grid;gap:18px
+}
+#root .app-shell .td-idp-v2 * {box-sizing:border-box}
+#root .app-shell .td-idp-v2 .td-idp-v2-hero {
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:24px;border:1px solid #629572;border-radius:18px;
+  background:linear-gradient(125deg,#123c29,#226442);color:#f0fff4
+}
+#root .app-shell .td-idp-v2 .td-idp-v2-hero :is(h1,p) {
+  color:#f0fff4;margin:0 0 10px
+}
+#root .app-shell .td-idp-v2 .td-idp-v2-hero h1 {
+  font-size:clamp(24px,4vw,34px)
+}
+#root .app-shell .td-idp-v2-tabs,.td-idp-v2-actions {
+  display:flex;flex-wrap:wrap;gap:10px
+}
+#root .app-shell .td-idp-v2 button {
+  min-height:44px;padding:10px 15px;border:1px solid #d79c52;
+  border-radius:10px;background:linear-gradient(135deg,#ffd59b,#ffb35e);
+  color:#432607;font:inherit;font-size:13px;cursor:pointer
+}
+#root .app-shell .td-idp-v2 button:disabled {opacity:.55;cursor:wait}
+#root .app-shell .td-idp-v2-tabs button[aria-pressed=true] {
+  background:#174b31;color:#fff;border-color:#7cab89
+}
+#root .app-shell .td-idp-v2 :is(button,input,select,textarea,summary,a):focus-visible {
+  outline:3px solid #078879;outline-offset:3px
+}
+#root .app-shell .td-idp-v2-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));
+  gap:16px
+}
+#root .app-shell .td-idp-v2 .td-idp-v2-card {
+  min-width:0;padding:22px;background:#fff;color:#173b29;
+  border:1px solid #c4d9cb;border-radius:16px;
+  box-shadow:0 7px 20px #082b2214;overflow-wrap:anywhere
+}
+#root .app-shell .td-idp-v2 .td-idp-v2-card :is(h2,h3,strong,summary) {
+  color:#173b29
+}
+#root .app-shell .td-idp-v2 .td-idp-v2-card :is(p,li) {
+  color:#496253;line-height:1.7;font-size:13px
+}
+#root .app-shell .td-idp-v2 .td-idp-v2-card a {
+  color:#09604b;text-decoration:underline
+}
+#root .app-shell .td-idp-v2 .td-idp-v2-actions {
+  margin:14px 0;align-items:center
+}
+#root .app-shell .td-idp-v2 .td-idp-v2-badge {
+  display:inline-block;background:#fff0d9;color:#65360c;
+  padding:6px 10px;border-radius:20px;font-size:12px
+}
+#root .app-shell .td-idp-v2-form {
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;margin-top:16px
+}
+#root .app-shell .td-idp-v2-form > h2,
+#root .app-shell .td-idp-v2-wide {grid-column:1/-1}
+#root .app-shell .td-idp-v2 :is(label,.td-idp-v2-search) {
+  display:grid;gap:8px;min-width:0;color:#173b29;font-size:13px
+}
+#root .app-shell .td-idp-v2 .td-idp-v2-search {
+  padding:14px;border-radius:12px;background:#e7f0e9
+}
+#root .app-shell .td-idp-v2 :is(input,select,textarea) {
+  width:100%;min-width:0;min-height:44px;padding:10px 12px;
+  border:1px solid #abc6b4;border-radius:9px;background:#fff;
+  color:#173b29;-webkit-text-fill-color:#173b29;
+  font:inherit;font-size:16px
+}
+#root .app-shell .td-idp-v2 input::placeholder {
+  color:#526b5e;opacity:1;-webkit-text-fill-color:#526b5e
+}
+#root .app-shell .td-idp-v2 textarea {min-height:90px;resize:vertical}
+#root .app-shell .td-idp-v2-controls {
+  min-width:0;min-inline-size:0;border:0;padding:0;margin:0
+}
+#root .app-shell .td-idp-v2 [role=alert] {
+  padding:12px;background:#fff0ee;color:#8d243e;
+  border:1px solid #d9a1ad;border-radius:10px
+}
+#root .app-shell .td-idp-v2 > p[role=status] {
+  padding:12px;background:#e7f0e9;color:#173b29;border-radius:10px
+}
+#root .app-shell .td-idp-v2 summary {
+  cursor:pointer;min-height:36px;font-weight:650
+}
+#root .app-shell .td-idp-v2 code {
+  white-space:pre-wrap;overflow-wrap:anywhere
+}
+@media(max-width:650px){
+  #root .app-shell .td-idp-v2-form {
+    grid-template-columns:minmax(0,1fr)
+  }
+  #root .app-shell .td-idp-v2 .td-idp-v2-card {padding:16px}
+  #root .app-shell .td-idp-v2 .td-idp-v2-hero {
+    padding:18px;align-items:flex-start;flex-direction:column
+  }
+  #root .app-shell .td-idp-v2-tabs {
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr))
+  }
+}

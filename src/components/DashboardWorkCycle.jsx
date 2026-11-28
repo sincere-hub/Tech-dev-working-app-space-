@@ -3,6 +3,7 @@ import { useEffect, useId, useState } from "react";
 import { supabase } from "../lib/supabase.js";
 import { monthWindow, workdayCycle } from "../lib/workdayCycle.js";
 import "./dashboard-work-cycle.css";
+import './attendance-cycle-clean.css';
 
 export default function DashboardWorkCycle({
   employeeId,
@@ -168,33 +169,10 @@ export default function DashboardWorkCycle({
   }, [employeeId, refreshKey, retry]);
 
     const data = snapshot?.employeeId === employeeId ? snapshot : null;
-  const percent = data?.total ? Math.round(data.worked / data.total * 100) : 0;
-  const workedShare = data?.total ? data.worked / data.total * 100 : 0;
+  
+  
 
-  function segmentLabel(value, start, share, label) {
-    if (!value || !share) return null;
-
-    const angle = (start + share / 2) / 100 * Math.PI * 2 - Math.PI / 2;
-    const x = 100 + 76 * Math.cos(angle);
-    const y = 100 + 76 * Math.sin(angle);
-
-    return (
-      <g key={label} aria-hidden="true">
-        <rect
-          x={x - 16} y={y - 11}
-          width="32" height="22" rx="11"
-          fill="#fff" stroke="#284d38"
-        />
-        <text
-          x={x} y={y} dy=".35em"
-          textAnchor="middle"
-          fill="#173b29" fontSize="12" fontWeight="750"
-        >
-          {value}
-        </text>
-      </g>
-    );
-  }
+  
 
   const month = new Intl.DateTimeFormat("en-ZA", {
     timeZone: "Africa/Johannesburg",
@@ -204,7 +182,7 @@ export default function DashboardWorkCycle({
 
   return (
     <section
-      className="td-work-cycle td-cycle-visible"
+      className="td-work-cycle td-cycle-visible td-cycle-clean"
       aria-labelledby={id + "-heading"}
       aria-busy={!data && !error}
     >
@@ -234,105 +212,123 @@ export default function DashboardWorkCycle({
         </p>
       )}
 
-      <div className="td-cycle-body">
-        <div className="td-cycle-visual">
-          <svg
-            className="td-cycle-v3-svg"
-            width="248" height="248"
-            viewBox="0 0 200 200"
-            role="img"
-            aria-label={data
-              ? `${data.worked} days worked; ${data.notWorked} scheduled days not worked`
-              : "Attendance cycle awaiting data"}
-          >
-            <defs>
-              <linearGradient id={id + "-green"} x1="0" y1="0" x2="1" y2="1">
-                <stop stopColor="#04774d"/>
-                <stop offset=".48" stopColor="#00b99e"/>
-                <stop offset="1" stopColor="#35efff"/>
-              </linearGradient>
-              <linearGradient id={id + "-missed"} x1="0" y1="0" x2="1" y2="1">
-                <stop stopColor="#a21c49"/>
-                <stop offset=".55" stopColor="#ef5475"/>
-                <stop offset="1" stopColor="#ffab8f"/>
-              </linearGradient>
-            </defs>
+      
+<div className="td-attendance-chart">
+  <div className="td-attendance-wheel">
+    <svg
+      className="td-attendance-ring-svg"
+      width="320"
+      height="320"
+      viewBox="0 0 320 320"
+      role="img"
+      aria-label={
+        data
+          ? month+": "+data.worked+" days worked; "+
+            data.notWorked+" scheduled days not worked"
+          : "Attendance cycle awaiting data"
+      }
+    >
+      <defs>
+        <linearGradient
+          id={id+"-clean-work"}
+          x1="0" y1="0" x2="1" y2="1"
+        >
+          <stop offset="0" stopColor="#087853"/>
+          <stop offset=".5" stopColor="#08b49c"/>
+          <stop offset="1" stopColor="#36d9ec"/>
+        </linearGradient>
+        <linearGradient
+          id={id+"-clean-unworked"}
+          x1="0" y1="0" x2="1" y2="1"
+        >
+          <stop offset="0" stopColor="#b63555"/>
+          <stop offset=".55" stopColor="#e76076"/>
+          <stop offset="1" stopColor="#ff9a7a"/>
+        </linearGradient>
+      </defs>
 
+      <circle
+        cx="160" cy="160" r="128"
+        fill="none"
+        stroke="#dfeae3"
+        strokeWidth="36"
+      />
+
+      {data?.total>0&&(
+        <g transform="rotate(-90 160 160)">
+          {data.worked>0&&(
             <circle
-              cx="100" cy="100" r="76"
-              fill="none" stroke="#cbd9d0" strokeWidth="24"
+              cx="160" cy="160" r="128"
+              pathLength="1"
+              fill="none"
+              stroke={"url(#"+id+"-clean-work)"}
+              strokeWidth="36"
+              strokeLinecap="butt"
+              strokeDasharray={(data.worked/data.total)+" 1"}
             />
+          )}
 
-            {data?.total > 0 && (
-              <g transform="rotate(-90 100 100)">
-                {data.worked > 0 && (
-                  <circle
-                    cx="100" cy="100" r="76"
-                    pathLength="100" fill="none"
-                    stroke={`url(#${id}-green)`}
-                    strokeWidth="24"
-                    strokeDasharray={`${workedShare} 100`}
-                  />
-                )}
-                {data.notWorked > 0 && (
-                  <circle
-                    cx="100" cy="100" r="76"
-                    pathLength="100" fill="none"
-                    stroke={`url(#${id}-missed)`}
-                    strokeWidth="24"
-                    strokeDasharray={`${100 - workedShare} 100`}
-                    strokeDashoffset={-workedShare}
-                  />
-                )}
-              </g>
-            )}
+          {data.notWorked>0&&(
+            <circle
+              cx="160" cy="160" r="128"
+              pathLength="1"
+              fill="none"
+              stroke={"url(#"+id+"-clean-unworked)"}
+              strokeWidth="36"
+              strokeLinecap="butt"
+              strokeDasharray={(data.notWorked/data.total)+" 1"}
+              strokeDashoffset={-data.worked/data.total}
+            />
+          )}
+        </g>
+      )}
+    </svg>
 
-            {data?.total > 0 &&
-              segmentLabel(data.worked, 0, workedShare, "worked")}
+    <div className="td-attendance-center" aria-hidden="true">
+      {data?(
+        data.total>0?(
+          <>
+            <p>
+              <i/>
+              <span>
+                <strong>
+                  {data.worked} {data.worked===1?"day":"days"}
+                </strong>{" "}worked
+              </span>
+            </p>
 
-            {data?.total > 0 &&
-              segmentLabel(
-                data.notWorked,
-                workedShare,
-                100 - workedShare,
-                "missed"
-              )}
-          </svg>
+            <p className="td-attendance-unworked">
+              <i/>
+              <span>
+                <strong>
+                  {data.notWorked} {data.notWorked===1?"day":"days"}
+                </strong>{" "}not worked
+              </span>
+            </p>
+          </>
+        ):(
+          <p>No counted days yet this month</p>
+        )
+      ):(
+        <p>{error?"Attendance unavailable":"Loading attendance…"}</p>
+      )}
+    </div>
+  </div>
+</div>
 
-          <div className="td-cycle-center" aria-hidden="true">
-            <strong>{data?.total ? percent + "%" : "—"}</strong>
-            <span>
-              {!data
-                ? "Awaiting data"
-                : data.total ? "days worked" : "No records yet"}
-            </span>
-            <small>
-              {data
-                ? `${data.worked} of ${data.total} days`
-                : "Counts will appear here"}
-            </small>
-          </div>
-        </div>
-
-        <dl className="td-cycle-totals">
-          <div>
-            <dt><i aria-hidden="true"/>Days worked</dt>
-            <dd>{data ? data.worked : "—"}</dd>
-          </div>
-          <div>
-            <dt><i aria-hidden="true"/>Scheduled days missed</dt>
-            <dd>{data ? data.notWorked : "—"}</dd>
-          </div>
-        </dl>
-      </div>
-
-      <p className="td-cycle-note">
-        Worked means any recorded attendance that day.
-        Not worked means a completed scheduled day with no attendance,
-        including leave. Future days and unscheduled days off are excluded.
-        South African time.
-      </p>
+      
+<details className="td-attendance-help">
+  <summary>How days are counted</summary>
+  <p>
+    Worked days have recorded attendance. Not worked counts completed
+    published-shift days with no attendance, including leave.
+    Future days, unscheduled days off and the current incomplete day
+    are excluded from the not-worked count. South African time.
+  </p>
+</details>
     </section>
   );
 }
 
+
+// TD_ATTENDANCE_CLEAN_V1

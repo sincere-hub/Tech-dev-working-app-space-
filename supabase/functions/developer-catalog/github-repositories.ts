@@ -80,7 +80,7 @@ async function loadRepositories(appId: string, installationId: string, pem: stri
   throw new Error("Repository list exceeds the catalog limit.");
 }
 
-export async function accessibleRepositories() {
+export async function accessibleRepositories(refresh = false) {
   const appId = env("TD_GITHUB_APP_ID");
   const installationId = env("TD_GITHUB_INSTALLATION_ID");
   const key = env("TD_GITHUB_APP_PRIVATE_KEY");
@@ -95,7 +95,7 @@ export async function accessibleRepositories() {
     throw new Error("GitHub App settings are incomplete.");
   }
 
-  if (access && access.until > Date.now()) return access;
+  if (!refresh && access && access.until > Date.now()) return access;
 
   pending ??= loadRepositories(appId, installationId, key).then(result => {
     access = { ...result, until: Date.now() + 60_000 };

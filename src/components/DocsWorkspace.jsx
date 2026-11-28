@@ -9,6 +9,8 @@ import {
 import DocsWiki from "./DocsWiki.jsx";
 import DocumentLibrary from "./DocumentLibrary.jsx";
 import "./knowledge-workspace.css";
+import {TransferProgress} from './FileTransferUi.jsx';
+
 
 const sections = [
   {
@@ -62,7 +64,7 @@ export default function DocsWorkspace(props) {
   const selected = sections.find(section => section.id === tab);
 
   return (
-    <section className="td-knowledge" ref={root}>
+    <section className="td-knowledge td-knowledge-compact" ref={root}>
       <header className="td-knowledge-heading">
         <div className="td-knowledge-heading-icon">
           <BookOpen size={24} aria-hidden="true" />
@@ -125,7 +127,7 @@ export default function DocsWorkspace(props) {
           </div>
         </aside>
 
-        <div className="td-knowledge-content">
+        <div className="td-knowledge-content"><TransferProgress userId={props.userId}/>
           <div
             className="td-knowledge-breadcrumb"
             aria-label="Current section"
@@ -155,3 +157,4 @@ export default function DocsWorkspace(props) {
     </section>
   );
 }
+// TD_ALL_FILES_V1

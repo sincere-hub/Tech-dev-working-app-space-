@@ -1,0 +1,187 @@
+/* Shared attendance cycle: desktop and phone. */
+
+body #root .app-shell .td-work-cycle.td-cycle-clean {
+  min-width:0;
+  padding:24px;
+  border:1px solid #d4e5dc;
+  border-radius:20px;
+  background:
+    radial-gradient(ellipse at 100% 0%,#d6f5e980,transparent 60%),
+    linear-gradient(135deg,#ffffff,#f1f9f5);
+  color:#173d2c;
+  color-scheme:light;
+  box-shadow:0 8px 24px #123c2b0d;
+}
+
+body #root .app-shell .td-cycle-clean > header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:12px;
+}
+
+body #root .app-shell .td-cycle-clean .td-cycle-eyebrow {
+  margin:0 0 6px;
+  background:none;
+  color:#47745d;
+  -webkit-text-fill-color:#47745d;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.12em;
+}
+
+body #root .app-shell .td-cycle-clean h2 {
+  margin:0;
+  color:#173d2c;
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:-.025em;
+}
+
+body #root .app-shell .td-cycle-clean > header > span {
+  padding:7px 11px;
+  border:1px solid #ead3b3;
+  border-radius:8px;
+  background:#fff2df;
+  color:#755025;
+  font-size:11px;
+  font-weight:600;
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-chart {
+  display:grid;
+  place-items:center;
+  padding:22px 0 12px;
+  min-width:0;
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-wheel {
+  position:relative;
+  width:min(100%,340px);
+  aspect-ratio:1;
+  min-width:0;
+  margin:auto;
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-ring-svg {
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:visible;
+  opacity:1;
+  visibility:visible;
+  filter:drop-shadow(0 5px 7px #0b473a12);
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-center {
+  position:absolute;
+  inset:23%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  text-align:center;
+  pointer-events:none;
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-center p {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  margin:0;
+  padding:0;
+  background:none;
+  color:#355744;
+  font-size:clamp(12px,2vw,15px);
+  line-height:1.65;
+  overflow-wrap:normal;
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-center strong {
+  display:inline;
+  color:#173d2c;
+  -webkit-text-fill-color:#173d2c;
+  background:none;
+  font-size:inherit;
+  font-weight:750;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:normal;
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-center i {
+  display:block;
+  flex:0 0 8px;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#049d86;
+}
+
+body #root .app-shell .td-cycle-clean
+.td-attendance-center .td-attendance-unworked i {
+  background:#d55069;
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-help {
+  margin-top:8px;
+  padding-top:10px;
+  border-top:1px solid #dce9e1;
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-help summary {
+  padding:5px 0;
+  color:#53715e;
+  font-size:11px;
+  cursor:pointer;
+}
+
+body #root .app-shell .td-cycle-clean .td-attendance-help p {
+  margin:10px 0 0;
+  color:#526b5b;
+  font-size:11px;
+  line-height:1.8;
+}
+
+body #root .app-shell .td-cycle-clean > p[role=status] {
+  color:#526b5b;
+  font-size:12px;
+  line-height:1.7;
+}
+
+body #root .app-shell .td-cycle-clean > p button {
+  min-height:40px;
+  padding:7px 12px;
+  border:1px solid #b5cebf;
+  border-radius:7px;
+  background:#fff;
+  color:#28563c;
+  font:inherit;
+  cursor:pointer;
+}
+
+body #root .app-shell .td-cycle-clean
+:is(button,summary):focus-visible {
+  outline:3px solid #348567;
+  outline-offset:3px;
+}
+
+@media(max-width:767px) {
+  body #root .app-shell .td-work-cycle.td-cycle-clean {
+    padding:18px;
+  }
+
+  body #root .app-shell .td-cycle-clean .td-attendance-wheel {
+    width:min(100%,300px);
+  }
+
+  body #root .app-shell .td-cycle-clean h2 {
+    font-size:18px;
+  }
+
+  body #root .app-shell .td-cycle-clean .td-attendance-center {
+    gap:12px;
+  }
+}

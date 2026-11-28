@@ -1,3 +1,6 @@
+import {warmPdfPreview as tdWarmPdfPreview} from './FilePreviewRouter.jsx';
+import { previewKind as tdPreviewKind, readPreviewText as tdReadPreviewText } from '../lib/documentPreview.js';
+import TdFilePreview from './FilePreviewRouter.jsx';
 import {
   useEffect,
   useRef,
@@ -26,6 +29,9 @@ import {
   DocumentMoreActions,
   DocumentPreview,
 } from "./DocumentFileUi.jsx";
+import {fileExtension,fileMime,validateTransferFile,uploadStoredFile,downloadStoredFile,formatFileSize} from '../lib/fileTransfers.js';
+import {FileTypeIcon} from './FileTransferUi.jsx';
+
 
 const documentTypes = {
   pdf: "application/pdf",
@@ -49,63 +55,29 @@ const topics = [
   "Reference",
 ];
 
-function validateDocument(file) {
-  const extension = String(file?.name || "")
-    .split(".")
-    .pop()
-    .toLowerCase();
+function validateDocument(file){validateTransferFile(file);return fileExtension(file.name);}
 
-  if (!documentTypes[extension]) {
-    throw new Error(
-      "Choose a PDF, DOCX, XLSX, PPTX, TXT, CSV, JPG, PNG or WEBP file."
-    );
-  }
-
-  if (!file.size || file.size > 10485760) {
-    throw new Error(
-      "Choose a non-empty file no larger than 10 MB."
-    );
-  }
-
-  if (
-    file.name.length > 200 ||
-    /[/\\\x00-\x1f\x7f]/.test(file.name)
-  ) {
-    throw new Error(
-      "Use a shorter filename without special path characters."
-    );
-  }
-
-  return extension;
-}
-
-function sizeLabel(bytes) {
-  const size = Number(bytes || 0);
-
-  return size < 1048576
-    ? `${Math.ceil(size / 1024)} KB`
-    : `${(size / 1048576).toFixed(2)} MB`;
-}
-function documentMime(record) {
-  const extension = String(
-    record.metadata?.file_name || ""
-  )
-    .split(".")
-    .pop()
-    .toLowerCase();
-
-  return (
-    documentTypes[extension] ||
-    record.metadata?.content_type ||
-    ""
-  );
-}
+function sizeLabel(bytes){return formatFileSize(bytes);}
+function documentMime(record){return fileMime(record.metadata?.file_name||"");}
 export default function DocumentLibrary({
   userId,
   isManager,
   employees = [],
   records = [],
 }) {
+ const tdPreviewState = useRef({
+   id: 0, abort: null, cache: new Map(),
+ });
+ useEffect(() => {
+   const state = tdPreviewState.current;
+   state.cache.clear();
+   return () => {
+     state.id++;
+     state.abort?.abort();
+     state.cache.clear();
+   };
+ }, [userId]);
+
   const [showArchived, setShowArchived] = useState(false);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
@@ -360,15 +332,7 @@ export default function DocumentLibrary({
       }
 
       if (record.metadata.file_state !== "ready") {
-        const uploaded = await bucket.upload(
-          record.metadata.storage_path,
-          file,
-          {
-            contentType: documentTypes[extension],
-            cacheControl: "0",
-            upsert: false,
-          }
-        );
+        const uploaded = await uploadStoredFile("legion-documents",record.metadata.storage_path,file,userId);
 
         if (
           uploaded.error &&
@@ -489,6 +453,8 @@ export default function DocumentLibrary({
   }
 
   function closePreview() {
+ tdPreviewState.current.id++; tdPreviewState.current.abort?.abort();
+
   const url = preview?.url;
 
   setPreview(null);
@@ -499,136 +465,142 @@ export default function DocumentLibrary({
   }
 }
 
+
 async function openFile(record, showPreview) {
-  await operate(async () => {
-    const mime = documentMime(record);
+  if (lock.current) return;
 
-    const { data, error } = await bucket.download(
-      record.metadata.storage_path
-    );
+  const meta = record.metadata || {};
+  const title = meta.file_name || record.title || 'Document';
 
-    if (error) throw error;
-
-    await currentUser();
-
-    if (!mounted.current) return;
-
-    if (
-      showPreview &&
-      ["text/plain", "text/csv"].includes(mime)
-    ) {
-      const text = await data
-        .slice(0, 100000)
-        .text();
-
-      await currentUser();
-
-      if (!mounted.current) return;
-
-      setPreview({
-        title: record.metadata.file_name,
-        text,
-        truncated: data.size > 100000,
-      });
-
-      return;
-    }
-
-    const blob =
-      data.type === mime
-        ? data
-        : new Blob([data], {
-            type: mime || "application/octet-stream",
-          });
-
-    const url = URL.createObjectURL(blob);
-
-    urls.current.add(url);
-
-    if (showPreview) {
-      setPreview({
-        title: record.metadata.file_name,
-        url,
-      });
-
-      return;
-    }
-
-    const link = document.createElement("a");
-
-    link.href = url;
-
-    link.download =
-      record.metadata.file_name.replace(
-        /[\\/\x00-\x1f\x7f]/g,
-        "_"
+  if (!showPreview) {
+    return operate(async () => {
+      const result = await bucket.createSignedUrl(
+        meta.storage_path, 300, { download: title }
       );
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-      urls.current.delete(url);
-    }, 60000);
-  });
-}
-
-  async function openFile(record, showPreview) {
-    await operate(async () => {
-      const { data, error } = await bucket.download(
-        record.metadata.storage_path
-      );
-
-      if (error) throw error;
-
-      await currentUser();
-
-      if (!mounted.current) return;
-
-      const mime = record.metadata.content_type;
-
-      if (
-        showPreview &&
-        ["text/plain", "text/csv"].includes(mime)
-      ) {
-        setPreview({
-          title: record.metadata.file_name,
-          text: await data.slice(0, 100000).text(),
-          truncated: data.size > 100000,
-        });
-      } else {
-        const url = URL.createObjectURL(data);
-        urls.current.add(url);
-
-        if (showPreview) {
-          setPreview({
-            title: record.metadata.file_name,
-            url,
-          });
-        } else {
-          const link = document.createElement("a");
-
-          link.href = url;
-          link.download =
-            record.metadata.file_name.replace(
-              /[/\\\x00-\x1f]/g,
-              "_"
-            );
-
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-
-          setTimeout(() => {
-            URL.revokeObjectURL(url);
-            urls.current.delete(url);
-          }, 60000);
-        }
+      if (result.error) throw result.error;
+      if (!result.data?.signedUrl) {
+        throw Error('Could not download this file.');
       }
+      await currentUser();
+
+      const link = document.createElement('a');
+      link.href = result.data.signedUrl;
+      link.download = title;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     });
   }
+
+  const state = tdPreviewState.current;
+  state.abort?.abort();
+
+  const controller = new AbortController();
+  state.abort = controller;
+
+  const requestId = ++state.id;
+  const kind = tdPreviewKind(title);
+  const active = () =>
+    mounted.current &&
+    state.id === requestId &&
+    !controller.signal.aborted;
+
+  let completed = false;
+
+  const show = content => {
+    if (content.kind !== 'loading') completed = true;
+    if (active()) {
+      setPreview({ ...content, title, record, requestId });
+    }
+  };
+
+  show({ kind: 'loading' });
+
+  if (!navigator.onLine) {
+    show({
+      kind: 'error',
+      error: 'Connect to the internet to preview this file.',
+    });
+    return;
+  }
+
+  if (kind === 'pdf') {
+    tdWarmPdfPreview(title).catch(() => {});
+  }
+
+  await operate(async () => {
+    try {
+      if (!active()) return;
+
+      if (kind === 'unsupported') {
+        show({ kind });
+        return;
+      }
+
+      const key = JSON.stringify([
+        userId,
+        meta.storage_path,
+        record.document_revision,
+        record.updated_at,
+      ]);
+
+      const cached = state.cache.get(key);
+      let content = cached?.expires > Date.now()
+        ? cached.content
+        : null;
+
+      if (!content) {
+        const result = await bucket.createSignedUrl(
+          meta.storage_path, 3600
+        );
+
+        if (result.error) throw result.error;
+        if (!result.data?.signedUrl) {
+          throw Error('Could not open this document.');
+        }
+        if (!active()) return;
+
+        content = kind === 'text'
+          ? await tdReadPreviewText(
+              result.data.signedUrl, controller.signal
+            )
+          : { url: result.data.signedUrl };
+      }
+
+      await currentUser();
+      if (!active()) return;
+
+      if (!cached || cached.expires <= Date.now()) {
+        if (state.cache.size >= 6) {
+          state.cache.delete(state.cache.keys().next().value);
+        }
+        state.cache.set(key, {
+          content,
+          expires: Date.now() + 240000,
+        });
+      }
+
+      show({ ...content, kind });
+    } catch (error) {
+      if (!active()) return;
+      show({
+        kind: 'error',
+        error: error.message ||
+          'Could not load this preview. Close and try again.',
+      });
+      throw error;
+    }
+  });
+
+  if (active() && !completed) {
+    show({
+      kind: 'error',
+      error: 'Could not open the preview. Check your connection and sign-in, then try again.',
+    });
+  }
+}
+
+  
 
   return (
     <section
@@ -662,10 +634,7 @@ async function openFile(record, showPreview) {
         </button>
       </header>
 
-      <p className="lf-summary">
-        PDF, Word, Excel, PowerPoint, text and images
-        {" · "}Maximum 10 MB per file
-      </p>
+      <p className="lf-summary">All file types · Resumable uploads · Workspace storage limit applies</p>
 
       {uploading && (
         <section className="ld-editor">
@@ -702,7 +671,7 @@ async function openFile(record, showPreview) {
                   name="file"
                   type="file"
                   required
-                  accept=".pdf,.docx,.xlsx,.pptx,.txt,.csv,.jpg,.jpeg,.png,.webp"
+                  
                 />
                 <small>
                   {resume
@@ -907,79 +876,33 @@ async function openFile(record, showPreview) {
               isManager || record.created_by === userId;
 
             const canPreview =
-              /^(image\/(jpeg|png|webp)|text\/(plain|csv))$/.test(
-              documentMime(record)
-         );
+              true;
 
             return (
               <article
-                className="ld-card"
+                className="ld-card td-compact-file"
                 key={record.id}
                 id={`workplace-${record.id}`}
                 data-document-id={record.id}
-              >
-                <div className="ld-card-top">
-                  <span className="ld-tag">
-                    {String(
-                      record.metadata.field_value || "General"
-                    )}
-                  </span>
-
-                  {record.visibility === "private" && (
-                    <LockKeyhole
-                      size={16}
-                      aria-label="Private document"
-                    />
-                  )}
-                </div>
-
-                <span
-                  className="lf-filetype"
-                  data-type={extension}
-                >
-                  {extension.toUpperCase()}
-                </span>
-
-                <h3>{record.title}</h3>
-
-                <p>
-                  {record.description ||
-                    record.metadata.file_name}
-                </p>
-
-                <div className="ld-card-bottom">
-                  <strong className="lf-filename">
-                    {record.metadata.file_name}
-                  </strong>
-
-                  <span>
-                    {sizeLabel(record.metadata.file_size)}
-                    {" · "}
-                    {extension.toUpperCase()}
-                  </span>
-
-                  <span>{author(record.created_by)}</span>
-
-                  <small>
-                    {new Date(
-                      record.created_at
-                    ).toLocaleDateString("en-ZA", {
-                      timeZone: "Africa/Johannesburg",
-                    })}
-                  </small>
-                </div>
-
-                <p className="lf-access">
-                  {ready
-                    ? record.visibility === "company"
-                      ? "Shared with the company"
-                      : "Only uploader and managers"
-                    : state === "deleting"
-                      ? "Deletion pending · retry Delete"
-                      : "Incomplete upload · select the original file to retry"}
-                </p>
-
-              <footer className="lf-actions td-file-card-actions">
+              ><FileTypeIcon name={record.metadata.file_name}/>
+  <div className="td-compact-file-copy">
+   <h3 title={record.metadata.file_name}>
+    {record.metadata.file_name||record.title}
+   </h3>
+   <p>
+    <span>{sizeLabel(record.metadata.file_size)}</span>
+    <span>{record.visibility==="private"?"Private":"Company"}</span>
+    {record.status==="archived"&&<span>Archived</span>}
+   </p>
+   {!ready&&(
+    <small role="status">
+     {state==="deleting"
+      ?"Deletion pending"
+      :"Upload incomplete — retry upload"}
+    </small>
+   )}
+  </div>
+ <footer className="lf-actions td-file-card-actions">
   <span className="td-document-version">
     Version {record.document_revision || 1}
 
@@ -1001,7 +924,7 @@ async function openFile(record, showPreview) {
   )}
 
   {ready && canPreview && (
-    <button
+    <button onFocus={() => tdWarmPdfPreview(record.metadata?.file_name).catch(() => {})} onPointerEnter={() => tdWarmPdfPreview(record.metadata?.file_name).catch(() => {})}
       type="button"
       className="ld-open"
       disabled={busy}
@@ -1090,8 +1013,7 @@ async function openFile(record, showPreview) {
     </DocumentMoreActions>
     </div>
   )}
-</footer>
-              </article>
+</footer></article>
             );
           })}
         </div>
@@ -1122,8 +1044,8 @@ async function openFile(record, showPreview) {
       </section>
 
 {preview && (
-  <DocumentPreview
-    key={preview.url || preview.title}
+  <TdFilePreview onDownload={() => openFile(preview.record, false)}
+    key={preview.requestId || preview.title}
     preview={preview}
     onClose={closePreview}
   />
@@ -1131,3 +1053,6 @@ async function openFile(record, showPreview) {
     </section>
   );
 }
+// TD_ALL_FILES_V1
+
+// TD_COMPACT_FILE_ROWS_V1

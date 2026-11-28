@@ -1,3 +1,4 @@
+import IdpSelfService from "./IdpSelfService.jsx";
 import { useId, useRef, useState } from "react";
 import {
   Check, ChevronDown, ExternalLink, Layers3, Search,
@@ -146,7 +147,7 @@ function PlatformOwnerPicker({ employees, initialId = "", disabled }) {
     </div>
   );
 }
-export default function InternalDeveloperPlatform({
+function LegacyInternalDeveloperPlatform({
   module,
   records,
   employees,
@@ -155,6 +156,7 @@ export default function InternalDeveloperPlatform({
   onSave,
   onDelete,
   onInteract,
+ onRefresh,
 }) {
   const [form, setForm] = useState(null);
   const [type, setType] = useState(types[0]);
@@ -215,8 +217,8 @@ export default function InternalDeveloperPlatform({
 
   return (
     <section className="suite-detail td-developer-workspace" data-module-id={module.id}>
-      <DeveloperToolHeading module={module} />
-      <DeveloperCatalog />
+      
+      
       {form && (!record || rows.some(row => row.id === record.id)) && (
         <section className="card panel-card td-idp-panel td-idp-editor">
         <header className="td-idp-panel-head">
@@ -430,3 +432,5 @@ export default function InternalDeveloperPlatform({
     </section>
   );
 }
+/* TD_IDP_SELF_SERVICE_V1 */
+export default function InternalDeveloperPlatform(props){return <IdpSelfService {...props} />;}

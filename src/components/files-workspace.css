@@ -1,0 +1,218 @@
+/* Knowledge hub and attachments: PC and phone. */
+body #root .app-shell:has(.td-knowledge) .page-content,
+body #root .app-shell:has(.td-chat) .page-content {
+ width:100%;max-width:none;min-width:0;margin:0;padding:0;gap:0;
+}
+body #root .app-shell .workspace-controls:has(.td-knowledge),
+body #root .app-shell .workspace-controls:has(.td-chat) {
+ min-width:0;min-inline-size:0;width:100%;margin:0;padding:0;border:0;
+}
+body #root .app-shell .td-knowledge {
+ width:100%;min-width:0;padding:0;margin:0;gap:0;
+ background:#f5f8f4;color:#173d2b;color-scheme:light;
+}
+body #root .app-shell .td-knowledge [data-knowledge-tab][hidden] {
+ display:none!important;
+}
+body #root .app-shell .td-knowledge .td-knowledge-heading {
+ display:flex;align-items:center;gap:18px;margin:0;padding:28px;
+ border:0;border-radius:0;background:linear-gradient(125deg,#103825,#226448);
+ color:#fff;
+}
+body #root .app-shell .td-knowledge .td-knowledge-heading :is(h1,p) {
+ color:#f1fff5;margin:4px 0;
+}
+body #root .app-shell .td-knowledge .td-knowledge-heading h1 {
+ font-size:clamp(25px,3vw,34px);letter-spacing:-.035em;
+}
+body #root .app-shell .td-knowledge .td-knowledge-heading-icon {
+ display:grid;place-items:center;flex:0 0 54px;height:54px;
+ border-radius:14px;background:#ffffff15;color:#ffcf95;
+}
+body #root .app-shell .td-knowledge .td-knowledge-layout {
+ display:grid;grid-template-columns:220px minmax(0,1fr);gap:0;margin:0;
+}
+body #root .app-shell .td-knowledge .td-knowledge-sidebar {
+ padding:16px 0;margin:0;border:0;border-radius:0;
+ background:#153e2c;color:#e6f4eb;
+}
+body #root .app-shell .td-knowledge .td-knowledge-sidebar nav {
+ display:grid;gap:0;
+}
+body #root .app-shell .td-knowledge .td-knowledge-nav-label {
+ margin:0;padding:12px 18px;color:#c4dece;font-size:10px;letter-spacing:.13em;
+}
+body #root .app-shell .td-knowledge .td-knowledge-nav-item {
+ display:flex;align-items:center;gap:10px;min-height:76px;
+ width:100%;padding:16px;border:0;border-radius:0;
+ background:transparent;color:#effaf3;text-align:left;
+}
+body #root .app-shell .td-knowledge .td-knowledge-nav-item span {
+ flex:1;min-width:0;
+}
+body #root .app-shell .td-knowledge .td-knowledge-nav-item strong {
+ display:block;color:inherit;font-size:13px;
+}
+body #root .app-shell .td-knowledge .td-knowledge-nav-item small {
+ display:block;margin-top:5px;color:inherit;opacity:.8;font-size:11px;line-height:1.6;
+}
+body #root .app-shell .td-knowledge .td-knowledge-nav-item[aria-current] {
+ background:#fff;color:#194831;box-shadow:inset 3px 0 #f4ae61;
+}
+body #root .app-shell .td-knowledge .td-knowledge-help {
+ margin:18px 16px 0;padding:16px;border:1px solid #ffffff20;
+ border-radius:10px;background:#ffffff08;color:#d1e6d9;
+}
+body #root .app-shell .td-knowledge .td-knowledge-help :is(strong,p) {
+ color:inherit;font-size:12px;line-height:1.75;
+}
+body #root .app-shell .td-knowledge .td-knowledge-content {
+ min-width:0;margin:0;padding:0;background:#fff;
+}
+body #root .app-shell .td-knowledge .td-knowledge-breadcrumb {
+ display:flex;align-items:center;gap:8px;margin:0;padding:15px 22px;
+ border-bottom:1px solid #dce7df;background:#f4f8f3;color:#496854;font-size:12px;
+}
+body #root .app-shell .td-knowledge .legion-docs {
+ min-width:0;margin:0;padding:0;gap:0;border:0;border-radius:0;
+ background:#fff;color:#173d2b;color-scheme:light;
+}
+body #root .app-shell .td-knowledge :is(
+ .ld-hero,.ld-library,.ld-editor,.ld-reader,.ld-paper
+) {
+ margin:0;padding:22px;border:1px solid #dce7df;border-radius:0;
+ background:#fff;color:#173d2b;box-shadow:none;
+}
+body #root .app-shell .td-knowledge .ld-hero {
+ display:flex;align-items:center;flex-wrap:wrap;gap:16px;background:#f9fcf8;
+}
+body #root .app-shell .td-knowledge :is(h1,h2,h3,strong) {
+ color:#173d2b;
+}
+body #root .app-shell .td-knowledge :is(.lf-summary,.ld-byline,.lf-access) {
+ margin:0;padding:12px 22px;color:#57705f;background:#f7faf5;
+ font-size:12px;line-height:1.7;
+}
+body #root .app-shell .td-knowledge :is(.ld-grid,.ld-stats) {
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));
+ gap:0;margin:0;padding:0;
+}
+body #root .app-shell .td-knowledge .ld-card {
+ display:flex;flex-direction:column;min-width:0;gap:12px;padding:22px;
+ margin:0;border:1px solid #dce7df;border-radius:0;background:#fff;box-shadow:none;
+}
+body #root .app-shell .td-knowledge .ld-card :is(h3,p) {
+ margin:0;overflow-wrap:anywhere;
+}
+body #root .app-shell .td-knowledge .ld-card h3 {
+ font-size:16px;line-height:1.5;letter-spacing:-.015em;
+}
+body #root .app-shell .td-knowledge .ld-card p {
+ color:#536e5c;font-size:13px;line-height:1.75;
+}
+body #root .app-shell .td-knowledge .ld-card-bottom {
+ display:grid;gap:6px;color:#5c7564;font-size:12px;
+}
+body #root .app-shell .td-knowledge .lf-filename {
+ overflow-wrap:anywhere;font-size:12px;
+}
+body #root .app-shell .td-knowledge .lf-actions {
+ display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:14px;
+ border-top:1px solid #e5ece5;
+}
+body #root .app-shell .td-knowledge .ld-fields {
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;
+ min-width:0;min-inline-size:0;margin:0;padding:0;border:0;
+}
+body #root .app-shell .td-knowledge .ld-wide {grid-column:1/-1;}
+body #root .app-shell .td-knowledge :is(input,select,textarea) {
+ min-width:0;max-width:100%;min-height:44px;padding:10px 12px;
+ border:1px solid #c7d9cd;border-radius:8px;background:#fff;
+ color:#193f2c;-webkit-text-fill-color:#193f2c;font:inherit;font-size:14px;
+}
+body #root .app-shell .td-knowledge :is(input[type=checkbox],input[type=radio]) {
+ width:18px;min-height:18px;padding:0;accent-color:#256749;
+}
+body #root .app-shell .td-knowledge input[type=file] {
+ width:100%;padding:14px;background:#f5faf4;border-style:dashed;
+}
+body #root .app-shell .td-knowledge input::file-selector-button {
+ padding:8px 12px;margin-right:12px;border:0;border-radius:6px;
+ background:#e4efe5;color:#234c34;font-weight:650;
+}
+body #root .app-shell .td-knowledge :is(.ld-primary,.td-wiki-save) {
+ min-height:44px;padding:10px 16px;border:1px solid #e8a65b;
+ border-radius:8px;background:linear-gradient(130deg,#ffcd91,#f4ad58);color:#4c2d0d;
+}
+body #root .app-shell .td-knowledge :is(.ld-secondary,.ld-open) {
+ min-height:42px;padding:9px 12px;border:1px solid #ccddcf;
+ border-radius:7px;background:#f6faf5;color:#28553a;
+}
+body #root .app-shell .td-knowledge .ld-filters {
+ display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:16px 0;
+}
+body #root .app-shell .td-knowledge .ld-search {flex:1;min-width:min(100%,220px);}
+body #root .app-shell .td-knowledge :is(button,input,select,textarea,summary):focus-visible {
+ outline:3px solid #438d69;outline-offset:3px;
+}
+body .td-file-type-icon {
+ display:inline-grid;justify-items:center;align-content:center;gap:5px;
+ width:60px;min-width:60px;height:72px;border:1px solid #dce4e8;
+ border-radius:12px;background:linear-gradient(135deg,#f4f7fa,#e7edf3);color:#52677d;
+}
+body .td-file-type-icon small {
+ color:inherit;font:750 9px/1.2 system-ui;letter-spacing:.06em;
+}
+body .td-file-type-icon[data-tone=pdf] {background:linear-gradient(135deg,#fff3f0,#ffe1dd);border-color:#f1c9c2;color:#ac4138;}
+body .td-file-type-icon[data-tone=word] {background:linear-gradient(135deg,#eff6ff,#dceafd);border-color:#c9dbf4;color:#30639b;}
+body .td-file-type-icon[data-tone=sheet] {background:linear-gradient(135deg,#edf9f0,#d7efdf);border-color:#bfe0cb;color:#277346;}
+body .td-file-type-icon[data-tone=slides] {background:linear-gradient(135deg,#fff4e5,#ffe3bd);border-color:#edcf9d;color:#9d6222;}
+body .td-file-type-icon[data-tone=archive],
+body .td-file-type-icon[data-tone=code] {background:linear-gradient(135deg,#f7f1ff,#e9dffa);border-color:#dacbef;color:#78509a;}
+body .td-file-type-icon[data-tone=image],
+body .td-file-type-icon[data-tone=audio] {background:linear-gradient(135deg,#ecfafa,#d4eeee);border-color:#bfe0df;color:#277878;}
+body .td-file-type-icon[data-tone=video] {background:linear-gradient(135deg,#fff0f5,#f8dce7);border-color:#edc6d5;color:#a04568;}
+body .td-transfer-progress {
+ display:grid;gap:7px;padding:14px 18px;background:#edf7ef;
+ border-bottom:1px solid #c9dfcf;color:#234d34;
+ font:12px/1.6 system-ui;overflow-wrap:anywhere;
+}
+body .td-transfer-progress strong {color:#234d34;}
+body .td-transfer-progress progress {width:100%;height:7px;accent-color:#27855c;}
+body .td-chat-file-card {
+ display:flex;align-items:center;gap:13px;width:min(100%,340px);
+ padding:14px;border:1px solid #cfdfd3;border-radius:12px;
+ background:#f8fcf7;color:#234b34;
+}
+body .td-chat-file-copy {display:grid;gap:7px;min-width:0;}
+body .td-chat-file-copy strong {color:#234b34;font-size:13px;overflow-wrap:anywhere;}
+body .td-chat-file-copy small {color:#5a7162;font-size:11px;}
+body .td-chat-file-copy button {
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:40px;padding:8px 12px;border:1px solid #bfd4c5;
+ border-radius:7px;background:#e8f3e9;color:#245b38;font:600 12px system-ui;
+}
+body .td-chat-file-copy p {color:#9b3f36;font-size:12px;overflow-wrap:anywhere;}
+body #root .app-shell.organised-shell.calm-workspace .td-chat {
+ margin:0;padding:0;gap:0;border:0;border-radius:0;box-shadow:none;
+}
+@media(min-width:768px){
+ body #root .app-shell.organised-shell.calm-workspace .td-chat {
+  inset:var(--td-pc-chat-top,136px) 0 0;
+  width:auto;height:auto;max-width:none;max-height:none;
+ }
+}
+@media(max-width:767px){
+ body #root .app-shell .td-knowledge .td-knowledge-layout {grid-template-columns:minmax(0,1fr);}
+ body #root .app-shell .td-knowledge .td-knowledge-sidebar {padding:0;}
+ body #root .app-shell .td-knowledge .td-knowledge-sidebar nav {grid-template-columns:repeat(2,minmax(0,1fr));}
+ body #root .app-shell .td-knowledge .td-knowledge-help,
+ body #root .app-shell .td-knowledge .td-knowledge-nav-label {display:none;}
+ body #root .app-shell .td-knowledge .td-knowledge-nav-item {padding:14px 10px;min-height:66px;}
+ body #root .app-shell .td-knowledge .td-knowledge-nav-item small {display:none;}
+ body #root .app-shell .td-knowledge .td-knowledge-heading {padding:22px 16px;}
+ body #root .app-shell .td-knowledge :is(.ld-hero,.ld-library,.ld-editor,.ld-reader,.ld-paper) {padding:18px 14px;}
+ body #root .app-shell .td-knowledge :is(.ld-grid,.ld-fields) {grid-template-columns:minmax(0,1fr);}
+ body #root .app-shell .td-knowledge :is(input,select,textarea) {font-size:16px;}
+ body #root .app-shell .td-knowledge .ld-filters {align-items:stretch;flex-direction:column;}
+}

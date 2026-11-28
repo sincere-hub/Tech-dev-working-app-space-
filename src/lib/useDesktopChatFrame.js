@@ -31,7 +31,7 @@ export default function useDesktopChatFrame(root) {
         bottom = Math.max(bottom, element.getBoundingClientRect().bottom);
       }
 
-      const next = Math.ceil(Math.max(0, bottom) + 8) + 'px';
+      const next = Math.ceil(Math.max(0,bottom)) + 'px';
 
       if (node.style.getPropertyValue('--td-pc-chat-top') !== next) {
         node.style.setProperty('--td-pc-chat-top', next);

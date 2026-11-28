@@ -24,6 +24,9 @@ import {
 } from "../lib/chatSharing.js";
 
 import "./chat-sharing.css";
+import {fileMime} from '../lib/fileTransfers.js';
+import {ChatFileMessage,FileTypeIcon,TransferProgress} from './FileTransferUi.jsx';
+
 
 function SharingDialog({ title, busy = false, onClose, children }) {
   const dialog = useRef(null);
@@ -93,25 +96,22 @@ export function ChatMessageText({ text, employees }) {
   );
 }
 
-function usePreview(file) {
-  const [preview, setPreview] = useState("");
 
-  useEffect(() => {
-    if (!file) {
-      setPreview("");
-      return;
-    }
-
-    const url = URL.createObjectURL(file);
-    setPreview(url);
-
-    return () => URL.revokeObjectURL(url);
-  }, [file]);
-
-  return preview;
+function usePreview(file){
+ const [preview,setPreview]=useState("");
+ useEffect(()=>{
+  if(!file||file.size>8*1024*1024||
+   !/^(image\/(jpeg|png|webp|gif)|video\/(mp4|webm))$/.test(fileMime(file))){
+   setPreview("");return;
+  }
+  const url=URL.createObjectURL(file);
+  setPreview(url);
+  return()=>URL.revokeObjectURL(url);
+ },[file]);
+ return preview;
 }
 
-export function ChatMediaMessage({
+export function LegacyChatMediaMessage({
   attachment,
   userId,
   expiresAt = null,
@@ -284,8 +284,8 @@ export function ChatMediaUpload({ userId, roomId, disabled, onSent }) {
       <button
         type="button"
         className="td-chat-icon"
-        aria-label="Attach photo or video"
-        title="Photo or video"
+        aria-label="Attach a file"
+        title="Attach a file"
         disabled={disabled || busy}
         onClick={() => input.current?.click()}
       >
@@ -303,7 +303,7 @@ export function ChatMediaUpload({ userId, roomId, disabled, onSent }) {
 
       {file && (
         <SharingDialog
-          title="Send photo or video"
+          title="Send attachment"
           busy={busy}
           onClose={() => setFile(null)}
         >
@@ -327,7 +327,7 @@ export function ChatMediaUpload({ userId, roomId, disabled, onSent }) {
 
                 await chatCall(userId, "td_chat_media_send", {
                   p_upload: uploadId.current,
-                  p_caption: caption,
+                  p_caption: caption||file.name,
                 });
 
                 setFile(null);
@@ -340,10 +340,10 @@ export function ChatMediaUpload({ userId, roomId, disabled, onSent }) {
               }
             }}
           >
-            <fieldset disabled={busy}>
+            <fieldset disabled={busy}><FileTypeIcon name={file.name}/><TransferProgress userId={userId}/>
               {preview && (
                 <div className="td-upload-preview">
-                  {file.type.startsWith("video/") ? (
+                  {fileMime(file.name).startsWith("video/") ? (
                     <video
                       src={preview}
                       controls
@@ -711,7 +711,7 @@ export function ChatStatuses({ userId, employees = [] }) {
 
                 {preview && (
                   <div className="td-upload-preview">
-                    {file.type.startsWith("video/") ? (
+                    {fileMime(file.name).startsWith("video/") ? (
                       <video
                         src={preview}
                         controls
@@ -1054,3 +1054,12 @@ export function ChatStatuses({ userId, employees = [] }) {
     </>
   );
 }
+
+export function ChatMediaMessage(props){
+ const mime=props.attachment?.mime||"";
+ return /^(image\/(jpeg|png|webp|gif)|video\/(mp4|webm))$/.test(mime)
+  ?<LegacyChatMediaMessage {...props}/>
+  :<ChatFileMessage {...props}/>;
+}
+
+// TD_ALL_FILES_V1
